@@ -86,37 +86,29 @@ export class MenuController {
    * items, and never inferred from the box having been squeezed: a long page of
    * prose squeezes a two-item menu just as hard as a store's twenty do.
    */
-  fitColumns(budget: number, allowColumns = true): void {
+  fitColumns(budget: number): void {
     const c = this.container;
     if (!c) return;
     c.classList.remove('gf-menu--dense');
     c.style.removeProperty('max-height');
-    // Touch rows carry their descriptions with them and are deliberately tall.
-    // Splitting those rows into newspaper columns can make the balanced box
-    // taller than the pane; dense mode has no vertical scrollbar, so its last
-    // choices (usually Back) would be clipped. Give the ordinary one-column
-    // menu the measured room instead, so its own vertical scrollbar remains
-    // inside the pane rather than being clipped with the rows it should reach.
-    if (!allowColumns) {
-      c.style.maxHeight = `${budget}px`;
-      return;
-    }
+    c.style.removeProperty('--gf-menu-rows');
     if (c.scrollHeight <= budget) return;
+
+    // Bound the scroll box before laying the choices across it. Grid, unlike
+    // CSS multi-column flow, can keep two columns inside this height and scroll
+    // down to their final rows instead of creating hidden columns to the right.
+    c.style.maxHeight = `${budget}px`;
+    c.style.setProperty('--gf-menu-rows', String(Math.ceil(this.rows.length / 2)));
     c.classList.add('gf-menu--dense');
 
     // Below the width at which the stylesheet allows a second column there is
-    // nothing for this to do — and worse than nothing: a multi-column box with
-    // a ceiling and only one column to fill lays the overrun out sideways,
-    // off the edge of the frame, where the player can neither see it nor
-    // reach it. Ask the glass what it actually gave us.
-    if (getComputedStyle(c).columnCount === '1') {
+    // nothing for this to do. Ask the glass what it actually gave us rather
+    // than repeating its breakpoint here.
+    if (getComputedStyle(c).getPropertyValue('--gf-menu-columns').trim() === '1') {
       c.classList.remove('gf-menu--dense');
+      c.style.removeProperty('--gf-menu-rows');
       return;
     }
-
-    // With auto height, column-count balances into exactly two columns. Do not
-    // reverse the decision from a transient flex measurement: doing so made
-    // the same menu alternate between one and two columns while it was used.
   }
 
   /** True when the menu is currently laid across columns. */
@@ -239,7 +231,7 @@ export class MenuController {
       const marker = row.querySelector('.gf-menu-marker');
       if (marker) marker.textContent = idx === this.highlight ? '▸' : ' ';
     });
-    if (opts.scroll !== false && !this.isDense) {
+    if (opts.scroll !== false) {
       this.rows[this.highlight]?.scrollIntoView({ block: 'nearest' });
     }
     this.announce();

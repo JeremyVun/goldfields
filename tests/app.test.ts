@@ -78,19 +78,7 @@ describe('browser application', () => {
     Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: storage });
   });
 
-  it('budgets a touch menu from its pane when the ledger is stacked above it', () => {
-    const originalMatchMedia = window.matchMedia;
-    const touchMedia = {
-      matches: true,
-      media: '(hover: none)',
-      onchange: null,
-      addEventListener: () => {},
-      removeEventListener: () => {},
-      addListener: () => {},
-      removeListener: () => {},
-      dispatchEvent: () => true,
-    } as MediaQueryList;
-    Object.defineProperty(window, 'matchMedia', { configurable: true, value: () => touchMedia });
+  it('budgets a long menu from its pane when the ledger is stacked above it', () => {
     const { app, root } = mount();
     const content = root.querySelector('.gf-content') as HTMLElement;
     const main = root.querySelector('.gf-main') as HTMLElement;
@@ -99,11 +87,11 @@ describe('browser application', () => {
     Object.defineProperties(content, { clientHeight: { configurable: true, value: 300 } });
     Object.defineProperties(main, { clientHeight: { configurable: true, value: 800 } });
     Object.defineProperties(body, { scrollHeight: { configurable: true, value: 100 } });
+    Object.defineProperties(menu, { scrollHeight: { configurable: true, value: 500 } });
 
     (app as unknown as { fitMenu(): void }).fitMenu();
 
     expect(menu.style.maxHeight).toBe('190px');
-    Object.defineProperty(window, 'matchMedia', { configurable: true, value: originalMatchMedia });
   });
 });
 
@@ -126,18 +114,32 @@ describe('menu controller', () => {
     expect(selected).toEqual(['third']);
   });
 
-  it('keeps an overflowing touch menu in its scrollable single-column form', () => {
+  it('keeps an overflowing two-column menu inside its vertical scroll budget', () => {
     const host = document.createElement('nav');
     const menu = new MenuController([
       { key: '1', label: 'First', note: 'A touch row carries this description.', onSelect: () => {} },
+      { key: '2', label: 'Second', onSelect: () => {} },
+      { key: '3', label: 'Third', onSelect: () => {} },
       { key: '0', label: 'Back', onSelect: () => {} },
     ]);
     menu.render(host);
     Object.defineProperty(host, 'scrollHeight', { configurable: true, value: 500 });
+    const originalGetComputedStyle = globalThis.getComputedStyle;
+    Object.defineProperty(globalThis, 'getComputedStyle', {
+      configurable: true,
+      value: () => ({
+        getPropertyValue: () => '2',
+      }) as unknown as CSSStyleDeclaration,
+    });
 
-    menu.fitColumns(100, false);
+    menu.fitColumns(100);
 
-    expect(host.classList.contains('gf-menu--dense')).toBe(false);
+    expect(host.classList.contains('gf-menu--dense')).toBe(true);
     expect(host.style.maxHeight).toBe('100px');
+    expect(host.style.getPropertyValue('--gf-menu-rows')).toBe('2');
+    Object.defineProperty(globalThis, 'getComputedStyle', {
+      configurable: true,
+      value: originalGetComputedStyle,
+    });
   });
 });

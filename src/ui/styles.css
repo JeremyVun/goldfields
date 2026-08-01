@@ -436,9 +436,10 @@ body {
 /* ------------------------------------------------------------------ */
 
 .gf-menu {
-  /* Never shrinks. A long page of prose must not squeeze the choices — the
-     prose is what gives way, and scrolls. */
-  flex: 0 0 auto;
+  /* The scroll box may shrink to the pane; its rows never do, so the choices
+     scroll instead of being crushed or clipped. */
+  flex: 0 1 auto;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -471,23 +472,21 @@ body {
 }
 
 /* Only when a list will not fit in one honest column — the store's twenty-odd
-   articles — is it laid across the width. Flow runs down, then across, and the
-   left and right arrows cross between the columns.
-
-   The height must be left free. A multi-column box with a ceiling on it does
-   not grow downwards when it runs out of room — it opens a third column off to
-   the side and hands you a horizontal scrollbar. */
+   articles — is it laid across the width. Grid keeps the original column-major
+   reading order while allowing the whole two-column shelf to scroll vertically;
+   CSS newspaper columns would instead make more columns off the right edge when
+   given a height limit. */
 .gf-menu--dense {
-  display: block;
-  flex: 0 0 auto;
-  columns: 2;
+  --gf-menu-columns: 2;
+  display: grid;
+  grid-template-columns: repeat(var(--gf-menu-columns), minmax(0, 1fr));
+  grid-template-rows: repeat(var(--gf-menu-rows), auto);
+  grid-auto-flow: column;
+  align-content: start;
   column-gap: clamp(20px, 3vw, 40px);
-  max-height: none;
-  overflow: visible;
 }
 
 .gf-menu--dense .gf-menu-item {
-  break-inside: avoid;
   margin-bottom: 2px;
 }
 
@@ -495,7 +494,7 @@ body {
    here it takes the room and the prose above it gives way instead. */
 @media (max-width: 900px) {
   .gf-menu--dense {
-    columns: 1;
+    --gf-menu-columns: 1;
   }
   .gf-main.has-aside .gf-body {
     max-height: 30%;

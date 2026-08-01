@@ -963,10 +963,7 @@ export class App {
       this.inspectorEl.offsetHeight -
       (this.inputEl.style.display === 'none' ? 0 : this.inputEl.offsetHeight) -
       reserve;
-    // Two balanced columns suit compact pointer rows. Touch rows include their
-    // flavour text and must remain one vertically scrollable list, otherwise a
-    // tablet can clip the final actions with no way to reach them.
-    this.activeMenu?.fitColumns(Math.max(budget, 0), !isTouch());
+    this.activeMenu?.fitColumns(Math.max(budget, 0));
   }
 
   /** The colour scheme is the player's affair, not the game's — a UI-only item. */
