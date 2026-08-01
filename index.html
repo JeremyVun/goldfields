@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en-AU">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- viewport-fit so the cabinet can be told where the notch is; the
+         interactive-widget rule so a soft keypad shortens the frame rather
+         than covering the row being typed into. -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content"
+    />
+    <meta name="color-scheme" content="dark" />
+    <title>Goldfields</title>
+    <meta
+      name="description"
+      content="Goldfields - a faithful web clone of the 1986 Jacaranda Software educational simulation by Trevor K. Jacob."
+    />
+  </head>
+  <body>
+    <div id="crt">
+      <div id="screen" role="application" aria-label="Goldfields" tabindex="0"></div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,1113 @@
+/*
+ * Goldfields — retro 8-bit presentation.
+ * Ink on paper by default; deep blue and black & white as alternates.
+ * Chunky system-monospace type, no webfonts, no network, no CRT filters.
+ */
+
+/* Default: ink on paper (The Angus Gazette), with a printer's two colours. */
+:root,
+body[data-gf-theme='paper'] {
+  color-scheme: light;
+  --gf-bg: #efe7d3;
+  --gf-bg-deep: #ddd2b6;
+  --gf-frame-border: #3a3428;
+  --gf-frame-border-light: #8a8069;
+  --gf-body: #201c12;
+  --gf-body-dim: #6b6350;
+  --gf-yellow: #201c12;
+  --gf-white: #100e08;
+  --gf-good: #14512b;
+  --gf-bad: #7c1d0e;
+  --gf-grave: #7c1d0e;
+  --gf-hover-bg: rgba(32, 28, 18, 0.07);
+  --gf-highlight-bg: rgba(32, 28, 18, 0.12);
+  --gf-save-bg: rgba(32, 28, 18, 0.05);
+  --gf-scrim: rgba(58, 52, 40, 0.55);
+  --gf-shade: rgba(32, 28, 18, 0.28);
+  --gf-map-bg: rgba(32, 28, 18, 0.05);
+  --gf-marker-bg: rgba(32, 28, 18, 0.18);
+  --gf-font: 'Courier New', 'DejaVu Sans Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+}
+
+/*
+ * One scale for the whole frame, set here and re-set per band at the foot of
+ * this file. Nothing below may reach for a clamp() of its own: a phone is not
+ * a small desktop, and sizing off the viewport alone shrinks the type exactly
+ * where a reader is furthest from the glass and holding it in one hand.
+ */
+:root {
+  --gf-fs-title: clamp(20px, 2.9vw, 25px);
+  --gf-fs-subtitle: clamp(12px, 1.8vw, 14px);
+  --gf-fs-prose: clamp(14px, 1.9vw, 16px);
+  --gf-fs-loud: clamp(16px, 2.2vw, 19px);
+  --gf-fs-menu: clamp(13.5px, 1.8vw, 15px);
+  --gf-fs-note: 12px;
+  --gf-fs-inspector: clamp(12.5px, 1.7vw, 14px);
+  --gf-fs-status: clamp(11.5px, 1.6vw, 13px);
+  --gf-fs-aside: clamp(12px, 1.6vw, 13.5px);
+  --gf-fs-input: clamp(15px, 2vw, 17px);
+  --gf-fs-map: clamp(7px, 1vw, 11px);
+
+  /* The least a thing may be and still be worth aiming a finger at. Zero on a
+     mouse: a pointer hits a 20px row perfectly well, and rows that tall would
+     turn a store's twenty articles into a scroll for no gain. */
+  --gf-tap: 0px;
+  --gf-row-pad-y: 3px;
+  --gf-overlay-pad: clamp(12px, 2.5vw, 22px);
+
+  --gf-safe-t: env(safe-area-inset-top, 0px);
+  --gf-safe-r: env(safe-area-inset-right, 0px);
+  --gf-safe-b: env(safe-area-inset-bottom, 0px);
+  --gf-safe-l: env(safe-area-inset-left, 0px);
+}
+
+body[data-gf-theme='blue'] {
+  color-scheme: dark;
+  --gf-bg: #14148a;
+  --gf-bg-deep: #0c0c5c;
+  --gf-frame-border: #5858e0;
+  --gf-frame-border-light: #8f8ff5;
+  --gf-body: #a8e8ff;
+  --gf-body-dim: #7bb8cf;
+  --gf-yellow: #ffe45c;
+  --gf-white: #ffffff;
+  --gf-good: #7cff9e;
+  --gf-bad: #ff8b6b;
+  --gf-grave: #ff4d4d;
+  --gf-hover-bg: rgba(255, 255, 255, 0.08);
+  --gf-highlight-bg: rgba(255, 228, 92, 0.14);
+  --gf-save-bg: rgba(255, 228, 92, 0.08);
+  --gf-scrim: rgba(6, 6, 40, 0.82);
+  --gf-shade: rgba(0, 0, 0, 0.45);
+  --gf-map-bg: rgba(0, 0, 0, 0.2);
+  --gf-marker-bg: rgba(255, 228, 92, 0.3);
+}
+
+/* Strict black & white: brightness carries the tone. */
+body[data-gf-theme='noir'] {
+  --gf-bg: #0c0c0c;
+  --gf-bg-deep: #000000;
+  --gf-frame-border: #d8d8d8;
+  --gf-frame-border-light: #7c7c7c;
+  --gf-body: #c8c8c8;
+  --gf-body-dim: #7c7c7c;
+  --gf-yellow: #ffffff;
+  --gf-white: #ffffff;
+  --gf-good: #ffffff;
+  --gf-bad: #8f8f8f;
+  --gf-grave: #ffffff;
+  --gf-hover-bg: rgba(255, 255, 255, 0.1);
+  --gf-highlight-bg: rgba(255, 255, 255, 0.18);
+  --gf-save-bg: rgba(255, 255, 255, 0.08);
+  --gf-scrim: rgba(0, 0, 0, 0.85);
+  --gf-shade: rgba(255, 255, 255, 0.3);
+  --gf-map-bg: rgba(255, 255, 255, 0.05);
+  --gf-marker-bg: rgba(255, 255, 255, 0.35);
+}
+
+/* Where a single hue cannot say good from bad, type must. */
+body[data-gf-theme='noir'] .gf-tone-bad {
+  font-style: italic;
+}
+body[data-gf-theme='noir'] .gf-tone-grave {
+  text-decoration: underline;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--gf-bg-deep);
+  font-family: var(--gf-font);
+  /* Safari in landscape otherwise inflates the type on its own account and
+     the careful budget below stops adding up. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  overflow: hidden;
+}
+
+#crt {
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at center, var(--gf-bg) 0%, var(--gf-bg-deep) 100%);
+  /* The cabinet keeps clear of the notch and the home bar both. */
+  padding: max(clamp(6px, 2vw, 24px), var(--gf-safe-t)) max(clamp(6px, 2vw, 24px), var(--gf-safe-r))
+    max(clamp(6px, 2vw, 24px), var(--gf-safe-b)) max(clamp(6px, 2vw, 24px), var(--gf-safe-l));
+}
+
+#screen {
+  width: min(1120px, 100%);
+  height: min(760px, 100%);
+  max-height: 100%;
+  background: var(--gf-bg);
+  border: 4px solid var(--gf-frame-border);
+  outline: 2px solid var(--gf-frame-border-light);
+  outline-offset: -8px;
+  border-radius: 4px;
+  color: var(--gf-body);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 0 0 2px var(--gf-bg-deep), 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+#screen:focus {
+  outline: 2px solid var(--gf-frame-border-light);
+}
+
+/* ------------------------------------------------------------------ */
+/* Frame / layout                                                      */
+/* ------------------------------------------------------------------ */
+
+.gf-frame {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: clamp(10px, 2vw, 22px) clamp(14px, 3vw, 30px) 6px;
+  /* The frame itself never scrolls: the header and the menu are pinned, and
+     only the prose in the middle gives way. */
+  overflow: hidden;
+}
+
+.gf-main {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0 clamp(16px, 2.5vw, 28px);
+}
+
+.gf-main.has-aside {
+  grid-template-columns: minmax(220px, 320px) 1fr;
+}
+
+/* Where a ledger takes a column, the prose beside it has some 350px less to
+   run in — and the screen copy is hard-wrapped for the full width of the
+   frame. Set it a notch smaller so those lines still land whole, rather than
+   spilling a word or two onto a ragged orphan line.
+   Only while the ledger really is a column: below 760px it becomes a strip
+   across the top, the prose has the full width back, and the small-screen
+   type scale must not be undercut. */
+@media (min-width: 761px) {
+  .gf-main.has-aside {
+    --gf-fs-prose: clamp(13px, 1.5vw, 14px);
+  }
+}
+
+.gf-content {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+
+.gf-header {
+  flex: 0 0 auto;
+}
+
+.gf-title {
+  margin: 0;
+  font-size: var(--gf-fs-title);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.15;
+  text-transform: uppercase;
+  color: var(--gf-yellow);
+  text-shadow: 2px 2px 0 var(--gf-bg-deep);
+}
+
+.gf-subtitle {
+  margin: 4px 0 0;
+  font-size: var(--gf-fs-subtitle);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gf-white);
+  font-weight: 700;
+}
+
+.gf-rule {
+  height: 8px;
+  margin: 10px 0 16px;
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--gf-frame-border-light) 0,
+    var(--gf-frame-border-light) 4px,
+    var(--gf-bg) 4px,
+    var(--gf-bg) 8px,
+    var(--gf-frame-border) 8px,
+    var(--gf-frame-border) 12px,
+    var(--gf-bg) 12px,
+    var(--gf-bg) 16px
+  );
+  border-top: 2px solid var(--gf-frame-border-light);
+  border-bottom: 2px solid var(--gf-frame-border-light);
+  flex: 0 0 auto;
+}
+
+.gf-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  margin-bottom: 10px;
+}
+
+.gf-para {
+  margin: 0 0 10px;
+  max-width: 76ch;
+  font-size: var(--gf-fs-prose);
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  font-weight: 700;
+}
+
+/* Screen copy is laid out by the engine, which indents and rules off in
+   columns. Collapse that whitespace and the alignment it depends on is lost. */
+.gf-para--line {
+  margin-bottom: 0;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.gf-para--blank {
+  height: 0.6em;
+  margin-bottom: 10px;
+}
+
+.gf-para--save {
+  border: 3px double var(--gf-yellow);
+  padding: 10px 12px;
+  color: var(--gf-yellow);
+  background: var(--gf-save-bg);
+}
+
+.gf-tone-good {
+  color: var(--gf-good);
+}
+
+.gf-tone-bad {
+  color: var(--gf-bad);
+}
+
+.gf-tone-grave {
+  color: var(--gf-grave);
+  font-size: var(--gf-fs-loud);
+}
+
+.gf-tone-title {
+  color: var(--gf-yellow);
+  font-size: var(--gf-fs-loud);
+}
+
+.gf-tone-neutral {
+  color: var(--gf-body);
+}
+
+/* ------------------------------------------------------------------ */
+/* Input (game-number ritual)                                          */
+/* ------------------------------------------------------------------ */
+
+.gf-input {
+  flex: 0 0 auto;
+  margin-bottom: 12px;
+}
+
+.gf-input-row {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  min-height: var(--gf-tap);
+  font-size: var(--gf-fs-input);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  cursor: text;
+}
+
+/*
+ * A real field, laid invisibly over the row. The digits and the block cursor
+ * you can see are ours, drawn as they always were; this is here only so that a
+ * device with no keys of its own will put one on the glass when the row is
+ * touched. 16px or Safari zooms the whole cabinet on focus.
+ */
+.gf-input-field {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  font: inherit;
+  font-size: max(16px, var(--gf-fs-input));
+  color: transparent;
+  caret-color: transparent;
+}
+
+.gf-input-hint {
+  flex: 1 0 100%;
+  margin: 6px 0 0;
+  color: var(--gf-body-dim);
+  font-size: var(--gf-fs-note);
+  font-style: italic;
+}
+
+.gf-input-prompt {
+  color: var(--gf-yellow);
+  text-transform: uppercase;
+}
+
+.gf-input-buffer {
+  color: var(--gf-white);
+}
+
+.gf-input-cursor {
+  color: var(--gf-white);
+}
+
+.gf-input-error {
+  margin: 6px 0 0;
+  color: var(--gf-bad);
+  font-weight: 700;
+}
+
+/* ------------------------------------------------------------------ */
+/* Menu                                                                 */
+/* ------------------------------------------------------------------ */
+
+.gf-menu {
+  /* Never shrinks. A long page of prose must not squeeze the choices — the
+     prose is what gives way, and scrolls. */
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: 8px;
+  max-height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+/*
+ * When the choices run past the bottom of their box — a store's twenty
+ * articles on a phone — the paper is shaded away at the cut edge, so a player
+ * can see there is more below without being told. Drawn with local-scrolling
+ * gradients, which means no listener and no reflow: the shade appears only
+ * where the box is actually scrolled away from its end.
+ */
+.gf-menu,
+.gf-overlay-panel,
+.gf-body {
+  background-image: linear-gradient(var(--gf-bg) 40%, rgba(0, 0, 0, 0)),
+    linear-gradient(rgba(0, 0, 0, 0), var(--gf-bg) 60%),
+    linear-gradient(var(--gf-shade), rgba(0, 0, 0, 0)),
+    linear-gradient(rgba(0, 0, 0, 0), var(--gf-shade));
+  background-position: top, bottom, top, bottom;
+  background-size: 100% 18px, 100% 18px, 100% 8px, 100% 8px;
+  background-repeat: no-repeat;
+  background-attachment: local, local, scroll, scroll;
+}
+
+/* Only when a list will not fit in one honest column — the store's twenty-odd
+   articles — is it laid across the width. Flow runs down, then across, and the
+   left and right arrows cross between the columns.
+
+   The height must be left free. A multi-column box with a ceiling on it does
+   not grow downwards when it runs out of room — it opens a third column off to
+   the side and hands you a horizontal scrollbar. */
+.gf-menu--dense {
+  display: block;
+  flex: 0 0 auto;
+  columns: 2;
+  column-gap: clamp(20px, 3vw, 40px);
+  max-height: none;
+  overflow: visible;
+}
+
+.gf-menu--dense .gf-menu-item {
+  break-inside: avoid;
+  margin-bottom: 2px;
+}
+
+/* Too narrow for two columns of prices. The menu is the part being used, so
+   here it takes the room and the prose above it gives way instead. */
+@media (max-width: 900px) {
+  .gf-menu--dense {
+    columns: 1;
+  }
+  .gf-main.has-aside .gf-body {
+    max-height: 30%;
+  }
+}
+
+.gf-menu-item {
+  display: flex;
+  /* A row never gives up height. Left to shrink — which is what a flex child
+     does by default when the menu runs past the bottom of its box — a row with
+     a second line of flavour in it is squashed to the height of one and prints
+     over the row beneath. The menu scrolls instead. */
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  align-items: baseline;
+  /* With a floor under the row height, the words sit in the middle of it
+     rather than clinging to the top edge. */
+  align-content: center;
+  gap: 8px;
+  padding: var(--gf-row-pad-y) 6px;
+  min-height: var(--gf-tap);
+  cursor: pointer;
+  font-size: var(--gf-fs-menu);
+  font-weight: 700;
+  border-radius: 2px;
+  /* A choice is a button, not prose: no double-tap zoom, no blue flash, and no
+     word selected out from under a finger that meant to press. */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+/* A mouse may be hovered; a finger may not. Left ungated, the last row tapped
+   keeps a phantom hover for as long as the screen is on it. */
+@media (hover: hover) {
+  .gf-menu-item:hover:not(.is-disabled) {
+    background: var(--gf-hover-bg);
+  }
+}
+
+/* What a finger gets instead of a hover: the row answers under the press. */
+.gf-menu-item:active:not(.is-disabled) {
+  background: var(--gf-highlight-bg);
+  color: var(--gf-white);
+}
+
+.gf-menu-item.is-highlight {
+  background: var(--gf-highlight-bg);
+  color: var(--gf-white);
+}
+
+.gf-menu-item.is-disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.gf-menu-marker {
+  width: 1em;
+  color: var(--gf-yellow);
+  flex: 0 0 auto;
+}
+
+.gf-menu-key {
+  color: var(--gf-yellow);
+  min-width: 2.4em;
+  flex: 0 0 auto;
+}
+
+.gf-menu-label {
+  /* Basis nought, so that a long label never shoulders itself onto a line of
+     its own below the key — it stays in its column and wraps its own words. */
+  flex: 1 1 0;
+  min-width: 0;
+  color: inherit;
+  text-transform: uppercase;
+}
+
+.gf-menu-alert {
+  color: var(--gf-bad);
+  font-weight: 700;
+  text-transform: none;
+  font-size: 0.88em;
+  white-space: nowrap;
+}
+
+/*
+ * The flavour, carried in the row itself. It is hidden wherever the marker can
+ * be moved without choosing — there the inspector line above says it instead —
+ * and shown where it cannot: on a touch screen the only way to put the marker
+ * on a line is to press it, by which time the line has been taken and the
+ * flavour would never have been read at all.
+ */
+.gf-menu-note {
+  display: none;
+  flex-basis: 100%;
+  margin-left: calc(1em + 2.4em + 16px);
+  color: var(--gf-body-dim);
+  font-style: italic;
+  font-weight: 400;
+  font-size: var(--gf-fs-note);
+  line-height: 1.3;
+  text-transform: none;
+}
+
+/* The flavour of whatever sits under the marker. It holds its line whether or
+   not it has anything to say, so the menu below never jumps. */
+.gf-inspector {
+  flex: 0 0 auto;
+  margin: 0 0 6px;
+  padding: 4px 6px;
+  min-height: 1.6em;
+  border-left: 3px solid var(--gf-frame-border);
+  color: var(--gf-body-dim);
+  font-style: italic;
+  font-size: var(--gf-fs-inspector);
+  line-height: 1.35;
+}
+
+.gf-inspector.is-empty {
+  border-left-color: transparent;
+}
+
+/* ------------------------------------------------------------------ */
+/* The ledger pane                                                     */
+/* ------------------------------------------------------------------ */
+
+.gf-aside {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  background: var(--gf-map-bg);
+  border: 2px solid var(--gf-frame-border);
+  font-size: var(--gf-fs-aside);
+}
+
+.gf-aside-title {
+  margin: 0 0 8px;
+  font-size: 1em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gf-yellow);
+}
+
+/* Two fixed columns, not a wrapping flex row: a value three characters too
+   long must wrap inside its own column, never drop beneath its label and take
+   the alignment of the whole ledger with it. */
+.gf-aside-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: baseline;
+  gap: 2px 10px;
+  padding: 3px 0;
+  border-bottom: 1px dotted var(--gf-frame-border);
+}
+
+.gf-aside-row:last-child {
+  border-bottom: 0;
+}
+
+.gf-aside-heading {
+  margin: 10px 0 3px;
+  padding-bottom: 2px;
+  border-bottom: 1px solid var(--gf-frame-border);
+  color: var(--gf-body-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.88em;
+}
+
+.gf-aside-heading:first-of-type {
+  margin-top: 4px;
+}
+
+.gf-aside-label {
+  color: var(--gf-body-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.gf-aside-value {
+  color: var(--gf-white);
+  font-weight: 700;
+  text-align: right;
+  overflow-wrap: break-word;
+}
+
+.gf-prompt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--gf-tap);
+  color: var(--gf-yellow);
+  font-size: var(--gf-fs-menu);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-align: center;
+  padding: 10px 0;
+  cursor: pointer;
+  text-transform: uppercase;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+/* ------------------------------------------------------------------ */
+/* Status bar                                                          */
+/* ------------------------------------------------------------------ */
+
+.gf-status {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 20px;
+  padding: 8px clamp(14px, 3vw, 30px);
+  background: var(--gf-bg-deep);
+  border-top: 2px solid var(--gf-frame-border);
+  color: var(--gf-white);
+  font-size: var(--gf-fs-status);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.gf-status-line {
+  min-width: 0;
+}
+
+/* The legend keeps to itself: it is there to be found, not to be read. */
+.gf-legend {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  font-weight: 400;
+  font-size: 0.92em;
+  color: var(--gf-body-dim);
+  white-space: nowrap;
+}
+
+.gf-legend-key {
+  color: var(--gf-yellow);
+  font-weight: 700;
+}
+
+.gf-legend-what {
+  margin-right: 3px;
+}
+
+.gf-legend-sep {
+  opacity: 0.45;
+}
+
+/*
+ * Where the frame's own doings — the kitty, the map — have no key to be
+ * pressed, the legend stops being a legend and becomes the buttons themselves.
+ * Same row, same words, same place at the foot of the glass.
+ */
+.gf-legend-act {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: var(--gf-tap);
+  padding: 2px 4px;
+  border-radius: 2px;
+  color: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+@media (hover: hover) {
+  .gf-legend-act:hover {
+    background: var(--gf-hover-bg);
+  }
+}
+
+.gf-legend-act:active {
+  background: var(--gf-highlight-bg);
+}
+
+/* ------------------------------------------------------------------ */
+/* Overlays: the kitty and the map                                     */
+/* ------------------------------------------------------------------ */
+
+.gf-overlay-layer {
+  position: absolute;
+  inset: 0;
+  background: var(--gf-scrim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(10px, 3vw, 30px);
+  z-index: 10;
+}
+
+.gf-overlay-panel {
+  width: 100%;
+  max-width: 620px;
+  max-height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  /* Colour only: the shade that marks a panel with more below it is painted
+     with background-image, and the shorthand would wipe it. */
+  background-color: var(--gf-bg);
+  border: 4px solid var(--gf-yellow);
+  padding: var(--gf-overlay-pad);
+  color: var(--gf-body);
+}
+
+.gf-overlay-panel--map {
+  max-width: 900px;
+}
+
+/*
+ * Pinned to the top of the panel while the rest of it scrolls beneath. The
+ * kitty runs to a page and a half on a phone, and a way out that has to be
+ * scrolled to is not a way out.
+ */
+.gf-overlay-head {
+  position: sticky;
+  top: calc(-1 * var(--gf-overlay-pad));
+  z-index: 1;
+  margin: calc(-1 * var(--gf-overlay-pad)) calc(-1 * var(--gf-overlay-pad)) 0;
+  padding: var(--gf-overlay-pad) var(--gf-overlay-pad) 0;
+  background: var(--gf-bg);
+}
+
+.gf-overlay-titlerow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.gf-overlay-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  min-width: var(--gf-tap);
+  min-height: var(--gf-tap);
+  margin: -4px -6px -4px 0;
+  color: var(--gf-yellow);
+  font-size: var(--gf-fs-loud);
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.gf-overlay-close:active {
+  background: var(--gf-highlight-bg);
+}
+
+.gf-overlay-title {
+  margin: 0;
+  font-size: var(--gf-fs-loud);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gf-yellow);
+}
+
+.gf-overlay-body {
+  margin-top: 10px;
+}
+
+/* The way out of an overlay, and on a touch screen the only one: pressable,
+   and sized to be pressed. */
+.gf-overlay-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--gf-tap);
+  margin: 12px 0 0;
+  color: var(--gf-body-dim);
+  font-size: max(0.85em, var(--gf-fs-note));
+  text-align: center;
+  font-style: italic;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+@media (hover: hover) {
+  .gf-overlay-hint:hover {
+    color: var(--gf-body);
+    background: var(--gf-hover-bg);
+  }
+}
+
+/*
+ * The map is drawn to a fixed 116 columns and cannot be reflowed; a phone
+ * either shows it whole and illegible or legible and scrolling sideways. It
+ * scrolls. Dragging it must not be taken for a press, or the map would shut
+ * the moment a player tried to look at the far side of it.
+ */
+.gf-map {
+  margin: 10px 0;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
+  white-space: pre;
+  font-family: var(--gf-font);
+  font-size: var(--gf-fs-map);
+  line-height: 1.35;
+  color: var(--gf-body);
+  font-weight: 700;
+  background: var(--gf-map-bg);
+  padding: 10px;
+  border: 2px solid var(--gf-frame-border);
+}
+
+.gf-map-hint {
+  margin: -4px 0 10px;
+  color: var(--gf-body-dim);
+  font-size: var(--gf-fs-note);
+  font-style: italic;
+}
+
+.gf-map-marker {
+  color: var(--gf-yellow);
+  background: var(--gf-marker-bg);
+}
+
+/* ------------------------------------------------------------------ */
+/* Blink, respecting reduced motion                                    */
+/* ------------------------------------------------------------------ */
+
+.gf-blink {
+  animation: gf-blink 1.1s steps(1) infinite;
+}
+
+@keyframes gf-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gf-blink {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* The bands: a finger, a narrow glass, a short one                    */
+/* ------------------------------------------------------------------ */
+
+/*
+ * Anything a finger must find gets a floor under it, whatever the width of
+ * the glass — a tablet in landscape is 1024px wide and still has no mouse.
+ * 44px is the smallest mark a thumb hits reliably.
+ */
+@media (pointer: coarse) {
+  :root {
+    --gf-tap: 44px;
+    --gf-row-pad-y: 7px;
+  }
+}
+
+/*
+ * A finger cannot hover, so it cannot put the marker on a line to read the
+ * flavour of it: the only way to reach a row is to take it. The flavour
+ * therefore comes down out of the inspector line and into the rows themselves,
+ * where it can be read before the choosing rather than after.
+ */
+@media (hover: none) {
+  /* Two lines of it at most: flavour is worth a row's height, not a screen's. */
+  .gf-menu-note {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .gf-inspector {
+    display: none;
+  }
+}
+
+/*
+ * A narrow glass, or one held in the hand at all. The type here grows rather
+ * than shrinks: the old viewport-scaled sizes bottomed out at 12.5px on a
+ * phone — the one place a reader is furthest from the glass — and a tablet at
+ * 768px was being given desktop type for want of a mouse to go with it.
+ */
+@media (max-width: 760px), (pointer: coarse) {
+  :root {
+    --gf-fs-title: 22px;
+    --gf-fs-subtitle: 13px;
+    --gf-fs-prose: 16px;
+    --gf-fs-loud: 19px;
+    --gf-fs-menu: 16px;
+    --gf-fs-note: 13px;
+    --gf-fs-inspector: 14px;
+    --gf-fs-status: 12.5px;
+    --gf-fs-aside: 13.5px;
+    --gf-fs-input: 17px;
+    /* The map is 116 columns of fixed drawing: legible and scrolled sideways
+       beats whole and unreadable. */
+    --gf-fs-map: 10px;
+  }
+}
+
+/* The rest of the narrow band is layout, and turns on the width alone. */
+@media (max-width: 760px) {
+  :root {
+    --gf-tap: 44px;
+    --gf-row-pad-y: 7px;
+  }
+
+  .gf-frame {
+    padding-bottom: 4px;
+  }
+
+  /* Rows this tall will not all fit, and a menu given its head takes the whole
+     pane and leaves the prose nothing — the shopkeeper's advice vanishing off
+     a screen that has room for it. It keeps three-quarters and no more; the
+     rest of the choices are a thumb's push away. */
+  .gf-menu {
+    max-height: 74%;
+  }
+
+  /* The status line and the frame's own doings each get a line of their own
+     rather than fighting over one. */
+  .gf-status {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    row-gap: 0;
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+  .gf-status-line {
+    flex: 1 1 100%;
+  }
+  .gf-legend {
+    flex-wrap: wrap;
+    white-space: normal;
+  }
+
+  /* No room for a column beside the counter: the ledger becomes a strip of
+     facts above it, wrapped and stripped of its dotted rules. */
+  .gf-main.has-aside {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+  .gf-aside {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px 14px;
+    overflow: visible;
+    padding: 6px 8px;
+  }
+  .gf-aside-title,
+  .gf-aside-heading {
+    display: none;
+  }
+  .gf-aside-row {
+    display: inline-flex;
+    align-items: baseline;
+    justify-content: flex-start;
+    gap: 6px;
+    border-bottom: 0;
+    padding: 0;
+  }
+  .gf-aside-value {
+    text-align: left;
+  }
+}
+
+@media (max-width: 480px) {
+  /* The cabinet goes edge to edge, less whatever the notch and the home bar
+     claim for themselves. */
+  #crt {
+    padding: var(--gf-safe-t) var(--gf-safe-r) var(--gf-safe-b) var(--gf-safe-l);
+  }
+  #screen {
+    width: 100%;
+    height: 100%;
+    border-width: 3px;
+    border-radius: 0;
+  }
+  .gf-frame {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .gf-status {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  /* A warning has room to wrap here rather than being held to one line. */
+  .gf-menu-alert {
+    white-space: normal;
+  }
+}
+
+/*
+ * A short glass — a phone laid on its side, where the whole frame is barely
+ * 250px of usable height. Everything decorative gives way to the choices: the
+ * flavour goes (in either channel), the rule thins, and the menu takes what it
+ * needs up to three-quarters of the pane before it scrolls.
+ */
+@media (max-height: 520px) {
+  :root {
+    --gf-fs-title: 18px;
+    --gf-fs-subtitle: 12px;
+    --gf-fs-prose: 14px;
+    --gf-fs-loud: 16px;
+    --gf-fs-menu: 14px;
+    --gf-fs-status: 12px;
+    --gf-row-pad-y: 4px;
+  }
+  .gf-frame {
+    padding-top: 8px;
+    padding-bottom: 4px;
+  }
+  .gf-rule {
+    height: 5px;
+    margin: 6px 0 8px;
+  }
+  .gf-body {
+    margin-bottom: 6px;
+  }
+  .gf-menu {
+    max-height: 76%;
+  }
+  /* The rows give up their second line here. The inspector is not touched:
+     where there is a pointer it costs one line for the whole menu, and where
+     there is not it has already gone. */
+  .gf-menu-note {
+    display: none;
+  }
+  .gf-status {
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+}
+
+/* Room is too tight here to give a thumb its full 44px; 38 is the compromise,
+   and still nearly twice what the rows stood at before. */
+@media (max-height: 520px) and (pointer: coarse) {
+  :root {
+    --gf-tap: 38px;
+  }
+}

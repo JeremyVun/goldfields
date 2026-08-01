@@ -1,0 +1,20 @@
+{
+  "name": "goldfields",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A faithful web clone of Goldfields (Jacaranda Software, 1986, by Trevor K. Jacob)",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "tune": "vitest run tests/balance.test.ts --reporter=basic"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10",
+    "vitest": "^2.1.4"
+  }
+}

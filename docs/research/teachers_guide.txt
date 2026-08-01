@@ -1,0 +1,917 @@
+Goldfields 
+
+
+
+
+
+Jacaranda! Teacher’s Guide 
+Software Trevor K. Jacob 
+
+
+CAP 
+43! 
+
+
+First published 1986 by 
+
+JACARANDA SOFTWARE 
+
+65 Park Road, Milton, Qld 4064 
+
+140A Victoria Road, Gladesville, N.S.W. 2111 
+90 Ormond Road, Elwood, Vic. 3184 
+
+4 Kirk Street, Grey Lynn, Auckland 2, N.Z. 
+
+
+Typeset in 10/11pt Triumvirate Lignt 
+
+
+Printed in Australia by 
+Watson Ferguson & Company, Brisbane 
+
+
+Reprinted in Australia 1987 
+© Trevor K. Jacob 1986 
+
+
+All rights reserved. No part of this publication 
+may be reproduced, stored in a retrieval system, 
+or transmitted in any form or by any means, 
+electronic, mechanical, photocopying, recording, 
+or otherwise, without the prior permission of 
+
+the publisher. 
+
+
+Acknowledgments 
+
+
+The author and the publishers wish to thank the following for per- 
+mission to reproduce photographs and etchings in A Goldfields 
+Journal: the Battye Library of West Australian History for photo- 
+graphs Ib 7271 (Figure 3), 4718 P (Figure 4), 816B/TB 4183 
+(Figure 5), 816B/TB 3987 (Figure 6) and 20062 P (Figure 9), and 
+the New South Wales Department of Mineral Resources for the 
+etchings tn Figures 1, 7 and 8. 
+
+
+Guidelines 
+General information 
+
+
+Goldfields contains the following components: 
+a floppy disk, 
+a Teacher's Guide containing 
+
+guidelines and 
+
+suggested activities, 
+a copy of A Goldfields Journal, 
+black line masters of 
+
+a key words summary sheet, 
+
+a diary sheet and 
+
+a sheet with a bank draft and three share certificates, 
+a poster with a map and getting started information on tt. 
+Note: Teachers can copy the Goldfields Journal, the black line 
+masters and the program disk only for use in the educational insti- 
+tution for which they were purchased. In these circumstances, 
+no payment for copying is required by the publisher. It is recom- 
+mended that you keep the original disk for backup and use a 
+
+
+Copy. 
+Introduction 
+
+
+Goldfields simulates a nineteenth century goldrush— players can 
+make decisions in situations consistent with the place and time. 
+Similar rushes took place in Australia, Canada, New Zealand and 
+the United States of America, although Goldfields uses a lot of 
+Australian idiom. 
+
+
+The names of people and places in Goldfields may be fictional, 
+but the situations are based on fact. 
+
+Although Goldfields may be used in isolation from normal 
+school programmes (it is an enjoyable game in its own right), its 
+best application is when incorporated with a carefully planned 
+unit on gold. 
+
+Goldfields is primarily intended for use in upper primary and 
+lower secondary social studies classes, but cross-curricula studies 
+can be based on it. Possibilities exist for research, creative writing, 
+drama, art, oral work and the development of some arithmetic 
+Skills. 
+
+Individuals or groups must plan to succeed in the environment. 
+Where a group is playing, the members should discuss their ideas 
+and clarify their reasons for making particular decisions. 
+
+
+Aim of the program 
+
+
+The aim of the game is to give students a “feel” for the social his- 
+tory of the goldrushes. This is achieved by working in a gold- 
+mining area. 
+
+Students will need to 
+
+read and comprehend text information and instructions, 
+draw inferences from their own experiences and life skills, 
+use experience and reading to improve results, 
+
+make logical assessments of situations as they arise, 
+
+take notes and recognise key words for later use, and 
+discriminate between fact and fiction. 
+
+
+About the program 
+
+
+The players are “new chums’, recent arrivals at Suze Port, in the 
+year 1854. Players are given a “year” to “make their fortune’ on 
+the goldfields. Before beginning the simulation, the class should 
+discuss the criteria for success — the computer makes no judg- 
+ment. After a “year”, players can obtain a summary of their 
+experience and posessions and may continue for another year. 
+students should develop an understanding of the concepts 
+behind Goldfields when they are familiar with all aspects of the 
+program. While subsequent games will show the benefits of 
+experience, players can be successful and become wealthy in 
+
+
+2 
+
+
+the early stages if they read and research the Goldfields Journal 
+carefully. 
+
+Penniless, they first must reach the mining area. How do they 
+get there? (It is a long walk.) What equipment do they take? 
+
+Sections of the Goldfields Journal hold clues on survival. Some 
+unpredictable things may happen — players should look after 
+their health and try not to fall foul of the law. 
+
+When seeking gold they may choose from various mining loca- 
+tions, each with its own peculiarities. Sometimes there are rumours 
+of a secret mine. 
+
+lf the diggers find gold, they can exchange it for money, but 
+exchange rates vary, depending upon one's location. 
+
+In Fields Town there are opportunities for other work. Employ- 
+ment is offered in the hospital, at the store, in the hotel or at the 
+market gardens just out of town. 
+
+
+The kitty 
+
+
+This is an information screen that records a miner's fortunes and 
+misfortunes throughout the game. It is inspected by entering “@” 
+at any time. The kitty lists all gold and money held, the exchange 
+rate of the day, and any equipment and property owned. It also 
+notes a player's experiences, including a resume of health and 
+legal status (honest, petty criminal, etc.). 
+
+A summary of kitty information appears at the bottom of most 
+screens. 
+
+
+Prerequisites 
+
+
+Goldfields is suitable for anyone who might be interested in the 
+place gold mining occupies in our history. School children might 
+study this topic as early as year 5 (about age 10), studying more 
+sophisticated concepts in later years. 
+
+As the program is experiential, students who are unfamiliar with 
+the historical background will not be handicapped. They can still 
+participate and pick up (or deduce) information from the program 
+and the documentation. 
+
+students should also be able to 
+e start the program (disk) 
+e¢ know the location of significant keys and the SPACE BAR, and 
+e enter text and press the RETURN key when required. 
+
+
+Playing time and saving 
+
+
+Play continues for one year (365 days) and can be extended for 
+a second year. The game can be saved at any stage and re- 
+sumed later. To save a game, enter @ and select C (save the 
+game) from the menu. An identification number shows on the 
+screen; players must write this down. 
+
+Although there is an option to play for a second year, it is recom- 
+mended that players begin a new game so they can experiment 
+with new situations and compare the results with former decisions. 
+Thus players can improve their Goldfields experience. 
+
+
+Teacher involvement 
+
+
+Teachers need not provide specific help, because the program 
+holds all the instructions required. Students are likely to learn more 
+by making mistakes and correcting them than by being guided. 
+Adult help might be needed when students are consulting the 
+Goldfields Journal, particularly sections containing new words and 
+concepts. 
+
+
+Activities section 
+
+
+The teacher directed activities are contained here in two sections: 
+e overview 1 (primary and secondary), 
+e overview 2 (for secondary). 
+
+The themes chosen for both overviews are orientated towards 
+Social Studies; however, the majority of sample activities are inter- 
+disciplinary, ready for modification to suit particular programme 
+needs. Both overviews are divided into four sections: 
+
+e information objectives (general understanding), 
+e skills objectives, 
+
+e values objectives, 
+
+e sample activities. 
+
+
+Ideas for enrichment 
+
+
+These extension activities are included to provide guidelines for 
+
+activities in two areas: 
+
+e descriptive and interpretive skills for photographs and 
+drawings; 
+
+
+e further insight (or empathy) as students reflect on and justify 
+what they would have done if confronted with certain situations. 
+
+
+Overview 1 
+‘People and events of the past influence the way in which we live.” 
+
+
+Information 
+
+Note: The points in the information, skills and values sections 
+
+correlate. 
+
+1. Name or recognise the names of prominent goldfields perso- 
+nalities. 
+
+2. Name or recognise the names of important gold-mining towns 
+and locations. 
+
+3. Place the discovery of gold in its historical context (e.g., com- 
+pare the times of the West Australian and Queensland rushes 
+with those in Victoria and New South Wales, and note any 
+differences this made). 
+
+4. Appreciate aspects of life peculiar to the gold era. 
+
+5. Understand the importance of gold discoveries to local areas 
+and the nation. 
+
+6. Name or recognise current significant mining locations (gold 
+and other). 
+
+
+Skills 
+
+1. Research and note taking, biography writing. 
+
+2. Research, map identification, terrain and climate indicators. 
+
+3. Research and time-line construction — (a) gold related to sig- 
+nificant historical events in Australia, (b) important events per- 
+taining only to gold. 
+
+4. List key words. Generalise about goldfields life: travel, dress, 
+camps, etc. 
+
+5. Discuss and list the short and long term results: political, eco- 
+nomic, demographic, social and enviromental. 
+
+6. Locate existing mining towns. Note their type, inception and 
+growth. 
+
+
+Values 
+
+1. Are these characters worth a place in history? How much is 
+folklore? 
+
+2. Was gold good for towns? List beneficial and detrimental 
+affects. 
+
+
+3. Justify gold’s place in our history compared with that of con- 
+victs, squatters, land-settlement schemes, exploration and 
+immigration. 
+
+4. Did any aspects of goldfields life create permanent changes? 
+
+5. Did the positive results of the discovery of gold outweigh the 
+negative results? 
+
+6. Do modern mining towns have their own peculiarities and 
+problems? 
+
+
+Sample activities 
+1. Life on the goldfields can be discussed/researched under 
+various headings: 
+transport — the roads, vehicles, distances, costs, suppliers, 
+stock (remembering the camels used in the desert): 
+supplies — transportation, expense, food, equipment, water, 
+
+
+demand; 
+
+medical facilities — disease, doctors, hospitals, bush 
+medicine; 
+
+mining — methods, difficulty, isolation, success, terrain, 
+claims; 
+
+
+camps — work, housing, supplies, law, recreation, popula- 
+tions, mateship; 
+
+law — licences, crime, justice, mateship, officials; 
+
+towns — business, facilities, growth. 
+
+2. How did alluvial and shaft workings differ’. 
+
+3. Who benefited by the discovery of gold? Gold benefited 
+which sections of society, in what way? Explain from some 
+of the following points of view: farmer, miner, policeman, 
+banker, squatter, exporter/importer, butcher, priest, labourer, 
+convict. 
+
+4. List some of the problems caused by gold. Rank them in 
+order of importance to you. Compare your results. 
+
+5. Immigrants were attracted by gold discoveries. Write an 
+essay from a new arrival’s point of view: 
+
+Who are you? 
+
+Where are you from? 
+
+What problems confront you? 
+List your aims/hopes. 
+
+Will you stay in this country? 
+Why? 
+
+
+10. 
+11. 
+
+
+12. 
+
+
+. Write an obituary, radio story or short story about a real gold- 
+
+
+fields personality. Include reference to their contribution and 
+why they appeal to you. 
+
+
+. Make up ashort story using a fictional character but real loca- 
+
+
+tions, things and possible events from the goldrush days. 
+
+
+. Which townships have developed due to the presence of 
+
+
+minerals? Use a map (with title, key, scale and labels) to 
+locate places and activities. 
+
+
+. What minerals have been discovered more recently in Aus- 
+
+
+tralia? Include dates on the various mineral deposits (perhaps 
+use an overlay to mark those workings that have closed 
+down). 
+
+What is the land in former gold mining areas used for now? 
+Discuss the concept of a “ghost town’. From a list of key 
+words, write about a gold “boom town’ and its disappear- 
+ance some years later. (Croydon in Queensiand might make 
+an interestin’~ study. From a population of around 40 000 
+in the early twentieth century it has shrunk to around 100 
+inhabitants. White ants have destroyed most traces of the 
+town; only the shafts and iron lie in the bush.) 
+
+The following titles are some of the classic Australian stories 
+written about goldfields life: 
+
+The Loaded Dog, 
+
+The Golden Shanty, 
+
+The Chinaman’s Ghost. 
+
+
+Overview 2 
+
+
+‘AS societies grow, they develop certain characteristics. These 
+characteristics are strongly influenced by a society's natural 
+environment.” 
+
+
+Information 
+
+
+Note: The points in the information, skills and values sections 
+correlate. 
+
+
+1. 
+2. 
+3. 
+
+
+some characteristics or images of Australians are traditional 
+ones, others modern. 
+
+Assess the influence gold discoveries had on the develop- 
+ment of Australia and Australian society. 
+
+Hardships and privation helped foster mateship and an 
+independent spirit amongst miners. 
+
+
+4. 
+5. 
+
+
+1 
+2. 
+
+
+Skills 
+
+
+Australia is mainly a country of recent immigrants (the last 200 
+years). 
+
+The natural environment helped determine the character of 
+the mining and gold seekers. 
+
+
+Collate evidence from magazines, newspapers, poetry, prose 
+and family history. 
+
+List positive and negative factors. From a time-line, relate the 
+importance of the gold era to other times and industries; e.g., 
+pastoral, industrial, convicts, land settlement. 
+
+
+. Research life in the mining fields, difficulties with the law, 
+
+
+miners’ rights and the Eureka Stockade. 
+
+
+. Find magazine, pictorial and other evidence to show the mix 
+
+
+of cultures. Research immigration figures. 
+In what sort of terrain and geographic locations were the major 
+gold discoveries made? 
+
+
+Values 
+
+
+a ae 
+
+
+2. 
+
+
+Does a typical Australian exist? 
+
+Was the influx of people a good thing? 
+
+Was the rebellion at Eureka justified? 
+
+Have there been immigrations of people of different national- 
+ities, in stages, at various times? Have there been changing 
+prerequisites for immigrants? Who should be allowed to 
+migrate? 
+
+Why will people undergo extreme hardship in the search for 
+gold? 
+
+
+Sample activities 
+
+
+1. 
+
+
+2. 
+
+
+How do we describe a typical Australian today? Have we 
+changed over the years (1850s, 1915, 1956, now)? 
+Make an advertisement to portray the typical Aussie to 
+people overseas. Include ideas on food, drink, clothes, phy- 
+sique, phrases, entertainment, religion, cars, houses, sports, 
+work. Is there any conflict in choice? 
+
+What is the image portrayed by some of the characters In 
+the following: 
+
+The Man From Snowy River, 
+
+Waltzing Matilda, 
+
+cricket and football teams, 
+
+bushranger stories, 
+
+
+10. 
+
+
+11. 
+
+
+12. 
+
+
+Dad and Dave, 
+
+The Man From Ironbark, 
+
+the political arena? 
+
+Discuss other images portrayed in modern films, and by 
+business people and people in the spotlight. Is the typical 
+Australian now a city (or cosmopolitan) character, rather than 
+country? 
+
+Review urbanisation in Australia. How many people are 
+urban? Map the population density, describe and account 
+for the pattern. How has it changed from the gold days? 
+Look at the influence of immigrants in our history. Research 
+the waves of migration and discuss the truth of the state- 
+ment “Australia is a nation of migrants.’ 
+
+Using pictorial or written evidence (newspapers, telephone 
+book, statistics, photographs, surveys) present information 
+about the influence of other cultures in Australia. 
+
+People reacted to news of gold discoveries in different ways. 
+Give your opinion on how some of the following might have 
+reacted: 
+
+a city baker, 
+
+an unemployed labourer, 
+
+a Chinese immigrant, 
+
+a city landlord, 
+
+an old doctor, 
+
+a teacher, 
+
+a newly arrived sailor, 
+
+a Clerk's wife (with son aged 6), 
+
+an importer/exporter. 
+
+What was a miner's licence? What did it cost? Why was it 
+introduced? Was its introduction necessary? What part did 
+the licence fee play in the Eureka Stockade? Are miner's 
+licences still purchased today? Why? 
+
+Accurately reproduce the flag of the Eureka miners. 
+Describe it in words. Where, and for what reasons, Is the 
+flag in use today? 
+
+How well were Chinese and/or Afghan immigrants accepted 
+on the goldfields? 
+
+Discuss the difficulties that Vietnamese, Yugoslavian, Italian, 
+Lebanese or English immigrants might have in settling here. 
+
+
+9 
+
+
+13. 
+14. 
+
+
+Comment on the relative difficulties each of these nationali- 
+ties have in mixing. List some of the advantages and dis- 
+advantages each might have. 
+In what ways did miners “stick up” for, or help each other, 
+in the camps and goldfields? 
+Does gold have real value? What is meant when it is said 
+that gold has no “intrinsic” value? Why is gold worth so 
+much? How do we use gold? 
+
+
+Enrichment 
+imagine that... 
+
+
+ie 
+
+
+You are eleven years old and have been taken to the Ballaarat 
+
+goldfields by your father; there were no other relations you 
+
+could live with. Your father is either (choose one) 
+
+a miner, 
+
+a storekeeper, or 
+
+a policeman. 
+
+He is very busy working to provide food and shelter for you 
+
+both. There are only a few children and women at the 
+
+diggings. 
+
+(a) Describe the work your father does on any day. 
+
+(b) Are you likely to go to school? Explain. 
+
+(c) Describe what you would do during the day. 
+
+(d) Describe your food, clothes and other belongings. 
+
+(e) Would it be fun for an eleven-year-old at the diggings? 
+Why? 
+
+
+. Imagine you are one of the many poor miners at the diggings. 
+
+
+You cant afford the licence fee of thirty shillings each month. 
+
+You continue to mine regardless of the consequences, are 
+
+caught by police, fined, and, as you have no money, 
+
+imprisoned. 
+
+(a) Do you think this treatment is just? 
+
+(b) Is a licence fee reasonable considering only a few might 
+strike it rich? Explain. 
+
+(c) Why do you think the licence fee was required? 
+
+(d) Were the Eureka miners who objected and staged a rebel- 
+lion wrong to oppose the law? 
+
+(e) Was your decision to mine for gold a good one? Was it 
+a responsible decision? 
+
+
+3. You are a doctor in Suze Port. On hearing of the goldrush, 
+you leave your patients and head for Goldfields to mine. 
+(a) List reasons why you should and why you should not go. 
+
+Consider that there were few doctors available at the time. 
+(b) What would happen to your patients if you chose to go? 
+(c) How would you travel to the diggings? What sorts of 
+characters would you meet there? 
+(d) When you returned after two years, how would you feel 
+about treating the same patients you had left behind? 
+
+
+Notes for BBC network managers 
+
+
+Goldfields can easily be networked. 
+
+The files on the disk are as follows: 
+
+IBOOT An EXEC file 
+INTRO, SUZE, TRAVEL, MUIR, 
+
+FTOWN, MINING, END id i. sale 
+STOF, MAP screen data files 
+
+All these should be transferred to a directory. If the directory 
+is $.GOLD, and a user called GOLD is created, with start-up 
+option set by “OPT 4,3 to EXEC, then logging on by *| AM GOLD 
+will run the software exactly as on the disk version. 
+
+PAGE is set to &1100 by this software, which is lower than usual 
+for the network, but the software will still run properly. Remember 
+to press BREAK after using the software. On some networks (for 
+example if ANFS chips are being used), it may be necessary to 
+press CONTROL-BREAK (or else a “Bad net checksum’ error will 
+be given). In this case, the user will probably find that he or she 
+needs to log on again. 
+
+lf the files are put in a directory as described, the user will have 
+ownership of all the files. In this case, the saving and loading of 
+games will happen exactly as on the disk version. However, only 
+15 games may be saved and there is no check against different 
+users picking the same game number (in which case only the 
+last game with that number will be saved). The files containing 
+saved games are called GAMEO1 to GAME15. The manager 
+may, of course, rename these files, or move them to a different 
+directory, thus allowing more games to be saved. The files must 
+
+
+11 
+
+
+be restored to their original names before being loaded when 
+a player wants to resume a game. 
+
+Many managers choose to put software on public access (LR/R) 
+in directories which users do not own, to guard against accidental 
+or malicious interference with files. In this case, game-saving will 
+not work as the user is not permitted to save in the current direc- 
+tory. An “insufficient access’ error will be given and the program 
+will continue. 
+
+Managers wishing to alter the software to allow game-saving 
+while still not giving users ownership of the software are welcome 
+to do so. Remember to keep a backup! The loading of games 
+is done in the “SUZE" program only, and routines exist in SUZE, 
+FTOWN, MINING and END for saving games. These saving rou- 
+tines are almost identical (but note the different setting of A% in 
+each case). Possible alterations would be (1) changing directory 
+to the user's own directory for saving and loading, then returning 
+to the GOLD directory, or (2) removing the restriction to fifteen 
+saved games. 
+
+
+Getting started on the... 
+
+
+Apple 
+
+
+1. Put the Goldfields disk (label side up) in the disk drive. (Do 
+not shut the door of the drive yet.) 
+
+. owitch on the monitor. 
+
+. owitch on the computer. 
+
+. When the red light on the disk drive is glowing, shut the drive 
+door. 
+
+. The Goldfields title screen will soon appear. Once that has 
+happened, press the SPACE BAR to start the program. 
+
+
+BBC 
+
+
+1. Switch on the monitor. 
+2. Switch on the computer. 
+3. Put the Goldfields disk in the disk drive and shut the drive door. 
+
+
+oO & G NO 
+
+
+12 
+
+
+. Hold down the SHIFT key and press the BREAK key; then 
+
+
+release the BREAK key before taking your finger off the SHIFT 
+key. 
+
+
+. When the program has loaded, the title screen will appear. 
+
+
+Press the SPACE BAR to start the program. 
+
+
+Commodore 64 
+
+
+“i o> O1 & GN — 
+
+
+. Switch on the computer. 
+
+. owitch on the monitor. 
+
+. Switch on the disk drive. 
+
+. When the red light on the drive goes out, put the disk (label 
+
+
+side up) in the disk drive and shut the door. 
+
+
+. Type LOAD “GOLD*«’,8: (Don't forget the colon.) 
+. Hold down the SHIFT key and tap the RUN/STOP key. 
+. After a few minutes, the title screen will appear. Press the 
+
+
+SPACE BAR to start the program. 
+
+
+. Put the DOS (master) disk in Drive A; switch on the computer 
+
+
+and monitor. If the computer is already switched on, hold 
+down the CTRL, ALT and DEL keys simultaneously. 
+
+
+. When the computer asks for the time and date, just press the 
+
+
+“enter” key. 
+
+
+. When the A> prompt is showing, remove the DOS disk and 
+
+
+replace it with the Goldfields disk. Type GOLD and press the 
+“enter’ key. 
+
+
+. When the title screen appears, press the SPACE BAR to start 
+
+
+the program. 
+
+
+Microbee 
+
+
+1. 
+
+
+Turn on the monitor. 
+
+
+2. Turn on the computer. 
+
+3. Put the master disk in the disk drive, label side up. (With a 
+_ dual disk drive, put it in the one with the light on.) 
+
+4. 
+
+5 
+
+
+When the A> prompt shows, remove the master disk and 
+insert the Goldfields disk. Type “GOLD” and press RETURN. 
+
+
+. When the title screen appears, press the SPACE BAR to start 
+
+
+the program. 
+
+
+13 
+
+

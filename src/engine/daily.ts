@@ -1,0 +1,207 @@
+import { season } from './time';
+import { agitationTick } from './agitation';
+import { banditDayTick, banditWeek } from './bandit';
+import { companyWeek } from './company';
+import { estateDay, estateWeek } from './estate';
+import { CAMP_DEFS, LODGING, STARVATION_HEALTH, THIRST_HEALTH_OTHER, THIRST_HEALTH_SUMMER } from './constants';
+import { damage, nightlyHealth, warnIfGrave } from './health';
+import { cleanDayTick, toTheLogs } from './law';
+import { walkRate } from './market';
+import type { Log } from './narrate';
+import { nightAtCamp, nightInTown, newsTick, pursuitTick, weatherTick } from './events';
+import type { RNG } from './rng';
+import { checkYearEnd, isCamp, recordWorth } from './state';
+import type { GameState } from './types';
+
+export { checkYearEnd };
+
+export interface DayCtx {
+  /** Hard physical labour today (digging, humping a swag). */
+  toil?: boolean;
+  /** On the road; water is drunk and there are no lodgings to pay for. */
+  travelling?: boolean;
+  /** Narrate the small weather and camp colour. */
+  verbose?: boolean;
+  /** In gaol or hospital: fed and housed by others. */
+  kept?: boolean;
+}
+
+function payLodging(state: GameState, log: Log): boolean {
+  if (state.location !== 'suze-port' && state.location !== 'fields-town') return false;
+  if (state.lodging === 'rough') return false;
+
+  if (state.lodging === 'tentground') {
+    if (state.items.tent < 1) {
+      state.lodging = 'rough';
+      log.raw('You have no tent to pitch on your rented patch, so you sleep in the open.', 'bad');
+      return false;
+    }
+    if (state.tentGroundPaidUntil < state.day) {
+      const rent = LODGING.tentground.weekly;
+      if (state.moneyPence < rent) {
+        state.lodging = 'rough';
+        log.raw('The ground-agent wants his five shillings and you have not got it.', 'bad');
+        return false;
+      }
+      state.moneyPence -= rent;
+      state.tentGroundPaidUntil = state.day + 6;
+    }
+    return false;
+  }
+
+  const nightly = state.lodging === 'inn' ? LODGING.inn.nightly : LODGING.stable.nightly;
+  if (state.moneyPence < nightly) {
+    state.lodging = 'rough';
+    log.raw('There is no bed for a man without the money for it. You sleep rough.', 'bad');
+    return false;
+  }
+  state.moneyPence -= nightly;
+  // A bed at these extraordinary prices includes the house's plain supper.
+  return true;
+}
+
+function claimsDay(state: GameState, rng: RNG): void {
+  const camps = ['damp-camp', 'snakey-gully', 'deep-mountains'] as const;
+  for (const camp of camps) {
+    const claim = state.claims[camp];
+    if (!claim || claim.jumpedOn) continue;
+    if (state.location === camp) {
+      claim.lastAttendedDay = state.day;
+      continue;
+    }
+    if (state.day - (claim.lastAttendedDay ?? claim.peggedOn) < 3) continue;
+    const standingFactor = Math.max(0, 1 - state.standing / 100);
+    const registeredFactor = claim.registered ? 0.45 : 1;
+    const guardedFactor = (claim.guardedUntilDay ?? 0) >= state.day ? 0.15 : 1;
+    const p = 0.012 * CAMP_DEFS[camp].crime * standingFactor * registeredFactor * guardedFactor;
+    if (rng.chance(p)) claim.jumpedOn = state.day;
+  }
+}
+
+/**
+ * One day's upkeep, applied after whatever the player did with the day.
+ * Every multi-day action loops through this.
+ */
+export function endDay(state: GameState, rng: RNG, log: Log, ctx: DayCtx = {}): void {
+  if (state.gameOver) return;
+  const s = season(state.day);
+
+  weatherTick(state, rng, log, ctx.verbose || rng.chance(0.14));
+
+  // Lodging is settled first because the inn and stable include a plain meal.
+  const lodgedAndFed = !ctx.travelling && !ctx.kept ? payLodging(state, log) : false;
+
+  // --- food -----------------------------------------------------------
+  if (!ctx.kept && !lodgedAndFed && !state.fedToday) {
+    if (state.provisionDays > 0) {
+      state.provisionDays -= 1;
+    } else {
+      damage(state, STARVATION_HEALTH, 'starvation');
+      if (ctx.verbose || rng.chance(0.4)) log.say('day.hungry', undefined, 'bad');
+      if (state.gameOver) return;
+    }
+  }
+  state.fedToday = false;
+
+  // --- water ----------------------------------------------------------
+  const needsWater = ctx.travelling || state.location === 'secret-mine';
+  if (needsWater && !ctx.kept) {
+    if (state.waterDays > 0) {
+      state.waterDays -= 1;
+      if (state.horse === 'brumby' && state.waterDays === 0 && rng.chance(0.5)) {
+        // Brumbies will find water, sometimes by scratching for it (faithful).
+        state.waterDays = rng.int(2, 4);
+        log.say('travel.water.brumby', undefined, 'good');
+      }
+    } else {
+      const harm = s === 'summer' ? THIRST_HEALTH_SUMMER : THIRST_HEALTH_OTHER;
+      damage(state, harm, 'thirst');
+      log.say(s === 'summer' ? 'day.thirsty.summer' : 'day.thirsty', undefined, 'bad');
+      if (state.gameOver) return;
+    }
+  }
+
+  // --- roof over the head --------------------------------------------
+  // --- greens, fatigue ------------------------------------------------
+  state.daysWithoutGreens += 1;
+  // Sunday is the diggers' day of rest, and even a gold-mad man takes it.
+  if (ctx.toil && state.day % 7 !== 0) state.fatigue += 1;
+  else state.fatigue = Math.max(0, state.fatigue - 2);
+  if (ctx.toil && state.health < 40 && rng.chance(0.25)) {
+    damage(state, rng.int(2, 5), 'overwork');
+    if (state.gameOver) return;
+  }
+
+  // --- sickness -------------------------------------------------------
+  if (!ctx.kept) {
+    nightlyHealth(state, rng, log);
+    if (state.gameOver) return;
+  }
+
+  // --- the night ------------------------------------------------------
+  if (!ctx.travelling && !ctx.kept) {
+    // A camp in the ranges that nobody knows of is the one safe bed a wanted
+    // man has (§23.4): no thieves, no landlord, and no troopers.
+    if (state.location === 'hideout') {
+      // nothing whatever happens, which is the whole point of the place
+    } else if (state.location === 'secret-mine') {
+      // The expedition is not a camp: no storekeepers, thieves, troopers or camp incidents.
+    } else if (isCamp(state.location)) nightAtCamp(state, rng, log);
+    else nightInTown(state, rng, log);
+    if (state.gameOver) return;
+  }
+
+  // --- a wanted man is hunted ------------------------------------------
+  if (!ctx.kept && pursuitTick(state, rng, log)) {
+    if (state.outlawed) {
+      // A proclaimed man is put to his choice: stand, run, or give himself up.
+      if (!state.pending) state.pending = { kind: 'patrol', data: { where: 'lodging' } };
+    } else if (rng.chance(0.45)) {
+      toTheLogs(state, rng, log);
+      if (state.gameOver || state.endOfYear) return;
+    } else {
+      log.raw(
+        'You go out the back of the tent and lie in a gully with the flies until the troopers have satisfied themselves and ridden off.',
+        'good',
+      );
+    }
+  }
+
+  warnIfGrave(state, log);
+
+  // --- the world turns ------------------------------------------------
+  cleanDayTick(state, log);
+  newsTick(state, rng);
+  walkRate(state, rng);
+
+  // Sunday: the diggers' day of rest, and the day the company settles its
+  // books, pays its men and finds out what its scrip is worth (§19.2). The
+  // books balanced, a man may reckon what he is worth (§21).
+  if (state.day % 7 === 0) {
+    companyWeek(state, rng, log);
+    // The house, the counter, the paper and the shanty (§26, §28.3).
+    estateWeek(state, rng, log);
+    banditWeek(state, rng, log);
+    recordWorth(state);
+  }
+  agitationTick(state, log);
+  banditDayTick(state, log);
+  estateDay(state, log);
+  claimsDay(state, rng);
+
+  state.day += 1;
+
+  // The season turning is the one calendar event a digger genuinely feels, and
+  // it changes what every method and every price is worth. It gets said out
+  // loud, four times a year, wherever the player happens to be standing.
+  if (season(state.day) !== s) log.say(`season.turn.${season(state.day)}`, undefined, 'neutral');
+
+  checkYearEnd(state);
+}
+
+/** Advance a run of days that the player has no say in (gaol, hospital, fever). */
+export function passKeptDays(state: GameState, rng: RNG, log: Log, days: number): void {
+  for (let i = 0; i < days && !state.gameOver && !state.endOfYear; i++) {
+    endDay(state, rng, log, { kept: true });
+  }
+}
