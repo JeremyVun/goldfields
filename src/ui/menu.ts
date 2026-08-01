@@ -86,10 +86,21 @@ export class MenuController {
    * items, and never inferred from the box having been squeezed: a long page of
    * prose squeezes a two-item menu just as hard as a store's twenty do.
    */
-  fitColumns(budget: number): void {
+  fitColumns(budget: number, allowColumns = true): void {
     const c = this.container;
     if (!c) return;
     c.classList.remove('gf-menu--dense');
+    c.style.removeProperty('max-height');
+    // Touch rows carry their descriptions with them and are deliberately tall.
+    // Splitting those rows into newspaper columns can make the balanced box
+    // taller than the pane; dense mode has no vertical scrollbar, so its last
+    // choices (usually Back) would be clipped. Give the ordinary one-column
+    // menu the measured room instead, so its own vertical scrollbar remains
+    // inside the pane rather than being clipped with the rows it should reach.
+    if (!allowColumns) {
+      c.style.maxHeight = `${budget}px`;
+      return;
+    }
     if (c.scrollHeight <= budget) return;
     c.classList.add('gf-menu--dense');
 

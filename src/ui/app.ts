@@ -55,6 +55,7 @@ export class App {
   private readonly subtitleEl: HTMLElement;
   private readonly mainEl: HTMLElement;
   private readonly asideEl: HTMLElement;
+  private readonly contentEl: HTMLElement;
   private readonly bodyEl: HTMLElement;
   private readonly inputEl: HTMLElement;
   private readonly inspectorEl: HTMLElement;
@@ -120,13 +121,13 @@ export class App {
 
     // Only the prose scrolls. The menu is the part a player must reach, so it
     // is never allowed to fall off the bottom of the screen.
-    const content = el('div', { className: 'gf-content' }, [
+    this.contentEl = el('div', { className: 'gf-content' }, [
       this.bodyEl,
       this.inputEl,
       this.inspectorEl,
       this.menuEl,
     ]);
-    this.mainEl = el('div', { className: 'gf-main' }, [this.asideEl, content]);
+    this.mainEl = el('div', { className: 'gf-main' }, [this.asideEl, this.contentEl]);
 
     this.frame = el('div', { className: 'gf-frame' }, [header, this.mainEl]);
     this.statusLineEl = el('span', { className: 'gf-status-line' });
@@ -952,14 +953,20 @@ export class App {
     // working pane before a long action list is split into columns. On a short
     // glass the reserve scales down, but never to the near-hidden strip that
     // made the prose unreadable in the Blackcap Ranges.
-    const proseReserve = Math.max(90, Math.min(240, this.mainEl.clientHeight * 0.42));
+    // Measure the action column, not the whole main grid: on a narrow screen
+    // the ledger is stacked above it and has already spent some of that room.
+    const paneHeight = this.contentEl.clientHeight;
+    const proseReserve = Math.max(90, Math.min(240, paneHeight * 0.42));
     const reserve = Math.min(this.bodyEl.scrollHeight + 10, proseReserve);
     const budget =
-      this.mainEl.clientHeight -
+      paneHeight -
       this.inspectorEl.offsetHeight -
       (this.inputEl.style.display === 'none' ? 0 : this.inputEl.offsetHeight) -
       reserve;
-    this.activeMenu?.fitColumns(Math.max(budget, 0));
+    // Two balanced columns suit compact pointer rows. Touch rows include their
+    // flavour text and must remain one vertically scrollable list, otherwise a
+    // tablet can clip the final actions with no way to reach them.
+    this.activeMenu?.fitColumns(Math.max(budget, 0), !isTouch());
   }
 
   /** The colour scheme is the player's affair, not the game's — a UI-only item. */

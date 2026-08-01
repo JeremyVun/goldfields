@@ -77,6 +77,34 @@ describe('browser application', () => {
     expect(root.querySelector('.gf-title')?.textContent).toBe('GOLDRUSH');
     Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: storage });
   });
+
+  it('budgets a touch menu from its pane when the ledger is stacked above it', () => {
+    const originalMatchMedia = window.matchMedia;
+    const touchMedia = {
+      matches: true,
+      media: '(hover: none)',
+      onchange: null,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => true,
+    } as MediaQueryList;
+    Object.defineProperty(window, 'matchMedia', { configurable: true, value: () => touchMedia });
+    const { app, root } = mount();
+    const content = root.querySelector('.gf-content') as HTMLElement;
+    const main = root.querySelector('.gf-main') as HTMLElement;
+    const body = root.querySelector('.gf-body') as HTMLElement;
+    const menu = root.querySelector('.gf-menu') as HTMLElement;
+    Object.defineProperties(content, { clientHeight: { configurable: true, value: 300 } });
+    Object.defineProperties(main, { clientHeight: { configurable: true, value: 800 } });
+    Object.defineProperties(body, { scrollHeight: { configurable: true, value: 100 } });
+
+    (app as unknown as { fitMenu(): void }).fitMenu();
+
+    expect(menu.style.maxHeight).toBe('190px');
+    Object.defineProperty(window, 'matchMedia', { configurable: true, value: originalMatchMedia });
+  });
 });
 
 describe('menu controller', () => {
@@ -96,5 +124,20 @@ describe('menu controller', () => {
     expect(rows[2].getAttribute('tabindex')).toBe('0');
     menu.handleKey(new KeyboardEvent('keydown', { key: 'Enter' }));
     expect(selected).toEqual(['third']);
+  });
+
+  it('keeps an overflowing touch menu in its scrollable single-column form', () => {
+    const host = document.createElement('nav');
+    const menu = new MenuController([
+      { key: '1', label: 'First', note: 'A touch row carries this description.', onSelect: () => {} },
+      { key: '0', label: 'Back', onSelect: () => {} },
+    ]);
+    menu.render(host);
+    Object.defineProperty(host, 'scrollHeight', { configurable: true, value: 500 });
+
+    menu.fitColumns(100, false);
+
+    expect(host.classList.contains('gf-menu--dense')).toBe(false);
+    expect(host.style.maxHeight).toBe('100px');
   });
 });
