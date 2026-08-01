@@ -1,4 +1,3 @@
-import { JOURNAL_SECTIONS } from '../content/library';
 import { hasKey, sayFixed } from '../content/say';
 import { agitationWord, canSellSupplies, epilogueFor } from './agitation';
 import {
@@ -15,26 +14,36 @@ import {
 import {
   canFloat,
   floatRequirements,
+  leaseIsWet,
   leaseWord,
   purse,
   subscriptionCost,
 } from './company';
 import {
   BAILUP_VICTIMS,
+  BALL_STANDING,
+  BALL_TICKET,
   CAMP_DEFS,
   COACH_FARE,
   COMPANY_CREW_WAGES,
+  COMPANY_BATTERY_COST,
+  COMPANY_DRIVE_COST,
   COMPANY_FLOAT_STANDING,
   COMPANY_MAX_CREWS,
+  COMPANY_PUMP_PLANT,
   COMPANY_REGISTRATION_FEE,
   COMPANY_SHARES,
+  COMPANY_SINK_COST,
   COMPANY_SUBSCRIPTIONS,
+  COMPANY_TIMBER_PLANT,
+  COOKSHOP_MEAL_PRICE,
+  COTTAGE_PRICE_LARGE,
+  COTTAGE_PRICE_SMALL,
   HORSE_PRICE,
   HOSPITAL_FEE_PER_DAY,
   JOBS,
   LICENCE_COST,
   MATE_WAGE,
-  MAX_SHARES,
   MINERS_RIGHT_COST,
   OWN_HOUSE_SHOUT_FACTOR,
   PARLOUR_STAKES,
@@ -42,17 +51,19 @@ import {
   QUACK_FEE,
   ROUTES,
   SECRET_TRAVEL_DAYS,
-  SHARE_PRICE,
   SHOUT_CAP_DAYS,
   SHOUT_HEADS,
   SHOUT_HEAD_COST,
   SPREE_COST,
   STANDING_COUNCIL_JOB,
   GANG_MAX,
+  GIFT_LAVISH_COST,
+  GIFT_SMALL_MAX,
   PASSAGE_FARE,
   STANDING_PARTNER,
   STOCKADE_CAMP,
   WAGON_FARE,
+  WEDDING_COST,
   WORTH_SPARK_WIDTH,
   GAZETTE_SHARE_PRICE,
   JP_FEE,
@@ -83,6 +94,17 @@ import {
 } from './estate';
 import { ILLNESS_NAMES, hospitalFee } from './health';
 import {
+  ballTonight,
+  canPayAddresses,
+  canReconcile,
+  eventOpenHere,
+  hearthReckoning,
+  hearthResumeLine,
+  hearthVerbsOpen,
+  lettersWaiting,
+  nextEventLine,
+} from './hearth';
+import {
   ITEM_HINTS,
   ITEM_NAMES,
   briggsDiscountLabel,
@@ -111,6 +133,7 @@ import {
   bushRankOf,
   companyWorth,
   estateWorth,
+  hearthWorth,
   healthWord,
   heatOf,
   heatWord,
@@ -122,9 +145,9 @@ import {
   isLicensed,
   licenceWord,
   locationName,
+  netWorth,
   shaftRank,
   standingPhrase,
-  statusLine,
   titleCase,
   washRank,
 } from './state';
@@ -144,12 +167,17 @@ import type {
   MiningMethod,
   Route,
   ScreenView,
+  ViewPanel,
   SkillRank,
   WorkId,
 } from './types';
 
 function item(key: string, label: string, action: Action, note?: string, disabled?: boolean): MenuItem {
   return { key, label, action, note, disabled };
+}
+
+function isMenuItem(value: MenuItem | null): value is MenuItem {
+  return value !== null;
 }
 
 /** Letters available to menus after reserving M for the global map shortcut. */
@@ -336,6 +364,12 @@ function storeMenu(state: GameState, homeScreen: ScreenView['screen']): MenuItem
     menu.push(item('Y', `Sell ${state.salvage} scavenged chest${state.salvage === 1 ? '' : 's'}`, { type: 'sellSalvage' },
       'he asks where they came from, and does not wait for the answer'));
   }
+  if (isCamp(state.location)) {
+    menu.push(
+      item('S', 'Sell all your gold here', { type: 'sellGold', where: 'camp', watch: false }, 'a poor camp rate, and his hand may be light on the scales', state.goldCentiOz <= 0),
+      item('W', 'Watch the scales while he buys your gold', { type: 'sellGold', where: 'camp', watch: true }, 'the same poor rate, but much less chance of being short-weighted', state.goldCentiOz <= 0),
+    );
+  }
   const owned = STORE_ORDER.some((it) => state.items[it] > 0);
   menu.push(
     item('V', 'Sell your goods back', { type: 'goto', screen: 'store-sell' },
@@ -348,7 +382,7 @@ function storeMenu(state: GameState, homeScreen: ScreenView['screen']): MenuItem
 /**
  * The ledger kept open on the counter. Everything a man weighs a purchase
  * against, so that buying a pick does not mean shutting the store to go and
- * count his provisions in the kitty.
+ * count his provisions in the menu.
  */
 function storeAside(state: GameState): AsidePanel {
   const rows: AsidePanel['rows'] = [
@@ -356,7 +390,10 @@ function storeAside(state: GameState): AsidePanel {
   ];
   if (state.bankPence > 0) rows.push({ label: 'In the bank', value: formatMoney(state.bankPence) });
   rows.push({ label: 'Gold', value: formatGold(state.goldCentiOz) });
-  rows.push({ label: 'Gold buyer', value: 'the bank only' });
+  rows.push({
+    label: 'Gold buyer',
+    value: isCamp(state.location) ? `${formatMoney(rateAt(state, state.location))} the ounce here` : 'the bank pays best',
+  });
   if (state.location === 'suze-port' || state.location === 'fields-town') {
     rows.push({ label: 'Bell standing', value: briggsDiscountLabel(state) });
   }
@@ -386,18 +423,15 @@ function storeAside(state: GameState): AsidePanel {
  * criminal it is greyed with the reason, which is how this game teaches
  * everything else it teaches (§23.1).
  */
-function banditEntry(state: GameState, key: string): MenuItem {
-  const open = crimeVisible(state);
+function banditEntry(state: GameState, key: string): MenuItem | null {
+  if (!crimeVisible(state)) return null;
   return item(
     key,
-    open ? 'Business of another kind' : 'The men in the back room',
+    'Business of another kind',
     { type: 'goto', screen: 'bandit' },
-    open
-      ? state.outlawed
-        ? 'the roads, the ranges, and the gold escort'
-        : 'the roads, and the men who make a living off them'
-      : 'they stop talking when you come in; nobody trusts a man with a clean sheet',
-    !open,
+    state.outlawed
+      ? 'the roads, the ranges, and the gold escort'
+      : 'the roads, and the men who make a living off them',
   );
 }
 
@@ -405,19 +439,40 @@ function banditEntry(state: GameState, key: string): MenuItem {
  * The way onto the civic ladder, offered at every hub the way the dark one is
  * (§26). A man with nothing sees what the deeds would cost him.
  */
-function estateEntry(state: GameState, key: string): MenuItem {
+function estateEntry(state: GameState, key: string): MenuItem | null {
   const e = state.estate;
+  if (isCamp(state.location) && e.store && e.store.camp !== state.location) return null;
   const held = estateDeeds(state).length + e.works.length;
+  const localStore = isCamp(state.location) && e.store?.camp === state.location;
   return item(
     key,
-    held > 0 ? 'Your property in the district' : 'What a man of property may buy here',
+    localStore
+      ? `Your store at ${CAMP_DEFS[state.location as CampId].name}`
+      : isCamp(state.location) && !e.store
+        ? `Open a store at ${CAMP_DEFS[state.location as CampId].name}`
+        : held > 0
+          ? 'Your property in the district'
+          : 'What a man of property may buy here',
     { type: 'goto', screen: 'estate' },
     e.jpSince !== null
-      ? 'deeds, subscriptions, and the business of the Bench'
+      ? 'deeds, public works, and the business of the Bench'
       : held > 0
         ? 'deeds, the store\'s prices, and the paper'
         : 'a hotel, a store, a half-share in the Times; standing buys what money cannot',
   );
+}
+
+function hearthHubItems(state: GameState): MenuItem[] {
+  const out: MenuItem[] = [];
+  if (ballTonight(state)) {
+    out.push(item('U', 'The subscription ball tonight', { type: 'goto', screen: 'ball' }, `ticket ${formatMoney(BALL_TICKET)}; introductions begin at standing ${BALL_STANDING}`, state.standing < BALL_STANDING || state.moneyPence < BALL_TICKET));
+  }
+  if (state.hearth.intended) {
+    out.push(item('Y', state.hearth.cottage ? 'Your hearth in Port Gannet' : `Your understanding with ${state.hearth.intended.name}`, { type: 'goto', screen: 'hearth' }, nextEventLine(state) ?? hearthResumeLine(state) ?? undefined));
+  }
+  const waiting = lettersWaiting(state);
+  if (waiting > 0) out.push(item('Q', `${waiting} letter${waiting === 1 ? '' : 's'} waiting at the post office`, { type: 'goto', screen: 'letters' }, 'a penny to take up the mail'));
+  return out;
 }
 
 /**
@@ -446,16 +501,16 @@ function shamrockEntry(state: GameState, key: string): MenuItem {
   );
 }
 
-/** What the subscription list strikes out of the world's dice (§27). */
+/** What the public-works list strikes out of the world's dice (§27). */
 const WORK_NOTES: Record<WorkId, string> = {
   bridge: 'no more bogging or flood-crossing on the Reedbank Camp road, for you or any bullocky on it',
   waterRace: 'summer halved at that camp, the Sandy Blight struck out, puddling the year round, and the ground goes off slower',
-  ward: 'treatment free to the subscriber and half-price to the field; less dysentery and typhoid at every camp',
+  ward: 'treatment free to its benefactor and half-price to the field; less dysentery and typhoid at every camp',
   school: 'no return whatever, this year; in the next, a lad off the school benches worth ten hired mates',
 };
 
 /**
- * The subscription list, the commission and the monthly court, added at the
+ * Public works, the commission and the monthly court, added at the
  * foot of the Chambers menu (§27, §28.1).
  */
 function civicCouncilItems(state: GameState): MenuItem[] {
@@ -474,14 +529,14 @@ function civicCouncilItems(state: GameState): MenuItem[] {
     const done = state.estate.works.some((w) => w.id === id);
     const label =
       id === 'waterRace'
-        ? `Subscribe: a water race to ${CAMP_DEFS[camp as CampId].name} — ${formatMoney(def.cost)}`
-        : `Subscribe: ${WORK_NAMES[id]} — ${formatMoney(def.cost)}`;
+        ? `Fund a water race to ${CAMP_DEFS[camp as CampId].name} — ${formatMoney(def.cost)}`
+        : `Fund ${WORK_NAMES[id]} — ${formatMoney(def.cost)}`;
     if (done && id === 'waterRace' && !state.estate.works.some((w) => w.id === 'waterRace' && w.camp === camp)) {
       continue; // the race is cut, and it is cut to one camp only
     }
     out.push(
-      item(key, label, { type: 'subscribeWork', work: id, camp },
-        done ? 'subscribed, built, and the plaque up' : money < def.cost ? `the estimate is ${formatMoney(def.cost)}` : WORK_NOTES[id],
+      item(key, label, { type: 'fundWork', work: id, camp },
+        done ? 'funded, built, and the plaque up' : money < def.cost ? `the estimate is ${formatMoney(def.cost)}` : WORK_NOTES[id],
         done || money < def.cost),
     );
   }
@@ -511,6 +566,15 @@ function article(rank: SkillRank): string {
   return rank === 'old hand' ? 'an old hand' : rank === 'digger' ? 'a digger' : 'a new chum';
 }
 
+/** An item's name with the article knocked off it, for a list rather than a sentence. */
+function bareItem(name: string): string {
+  return name.replace(/^(a|an|the) /i, '').replace(/, loaded$/, ' (loaded)');
+}
+
+function days(n: number): string {
+  return `${n} day${n === 1 ? '' : 's'}`;
+}
+
 function equipmentLines(state: GameState): string[] {
   const owned = STORE_ORDER.filter((i) => state.items[i] > 0).map(
     (i) => `${ITEM_NAMES[i]}${state.items[i] > 1 ? ` ×${state.items[i]}` : ''}`,
@@ -521,7 +585,6 @@ function equipmentLines(state: GameState): string[] {
   lines.push(owned.length ? `You have ${owned.join(', ')}.` : 'You own nothing but the clothes you stand in.');
   lines.push(`Provisions: ${state.provisionDays} days. Water: ${state.waterDays} days.`);
   if (claims.length) lines.push(`Claims pegged at ${claims.map((c) => CAMP_DEFS[c].name).join(', ')}.`);
-  if (state.shares > 0) lines.push(`${state.shares} share${state.shares === 1 ? '' : 's'} in a Blackcap Ranges company.`);
   if (state.company) {
     lines.push(
       `${state.company.sharesOwned} of the twenty shares in ${state.company.name}, at ${formatMoney(state.company.sharePrice)}.`,
@@ -544,77 +607,125 @@ function companyEntryNote(state: GameState): string {
     : `${met} of ${reqs.length} requirements met — see what the registrar still needs`;
 }
 
-/** The kitty (opened with ESC; the original "@" remains an alias). */
-export function kittyView(state: GameState): ScreenView {
-  const body: string[] = [];
-  body.push(`${formatDate(state.day)} — day ${state.day} of your year, in ${seasonPhrase(state.day)}.`);
-  body.push(`You are at ${locationName(state.location)}.`);
-  body.push('');
-  body.push(`Money in hand: ${formatMoney(state.moneyPence)}`);
-  if (state.bankPence > 0) body.push(`In the Bank of Australasia: ${formatMoney(state.bankPence)}`);
-  body.push(`Gold: ${formatGold(state.goldCentiOz)}`);
-  body.push(
-    `Exchange rate of the day: ${formatMoney(rateAt(state, state.location))} the ounce here` +
-      (state.location === 'fields-town' ? '.' : ` (the bank at Slateford: ${formatMoney(state.bankRate)}).`),
+/**
+ * The menu (opened with ESC; the original "@" remains an alias).
+ *
+ * The matter is grouped into panels of label/value rows so the frame can set
+ * them beside one another and show a man his whole reckoning at one glance,
+ * without a scroll. `body` carries the same thing flattened for anything that
+ * reads the view as prose.
+ */
+export function menuView(state: GameState): ScreenView {
+  const panels: ViewPanel[] = [];
+  const panel = (heading: string): ViewPanel => {
+    const p: ViewPanel = { heading, rows: [] };
+    panels.push(p);
+    return p;
+  };
+  const row = (p: ViewPanel, label: string | undefined, text: string) => p.rows.push({ label, text });
+
+  // The purse ------------------------------------------------------------
+  const purse = panel('PURSE');
+  row(purse, 'Money in hand', formatMoney(state.moneyPence));
+  if (state.bankPence > 0) row(purse, 'In the bank', formatMoney(state.bankPence));
+  row(purse, 'Gold', formatGold(state.goldCentiOz));
+  row(
+    purse,
+    'Exchange rate of the day',
+    `${formatMoney(rateAt(state, state.location))} the ounce here` +
+      (state.location === 'fields-town' ? '' : ` (Slateford: ${formatMoney(state.bankRate)})`),
   );
-  body.push(rateTrendPhrase(state));
-  body.push('');
-  body.push(...equipmentLines(state));
-  body.push('');
-  body.push(`Health: ${healthWord(state.health)}${state.illness ? ` — ${ILLNESS_NAMES[state.illness.id]}` : ''}`);
-  body.push(`Legal record: ${state.outlawed ? 'Proclaimed an outlaw' : titleCase(state.legal)}`);
-  body.push(`Licence: ${licenceWord(state)}`);
-  body.push(
-    `You came out a new chum; at the wash you are ${article(washRank(state))}, and underground ${article(shaftRank(state))}.`,
+  row(purse, undefined, rateTrendPhrase(state));
+
+  // The kit --------------------------------------------------------------
+  // Not the reckoning's prose sentence: a bare list under a label, which is
+  // three lines where the sentence was six.
+  const kit = panel('KIT AND CLAIMS');
+  const owned = STORE_ORDER.filter((i) => state.items[i] > 0).map(
+    (i) => `${bareItem(ITEM_NAMES[i])}${state.items[i] > 1 ? ` ×${state.items[i]}` : ''}`,
   );
-  body.push(
-    `Standing on the field: ${standingNumber(state.standing)}/100 — you are reckoned ${standingPhrase(state.standing)}.`,
-  );
-  body.push(
-    `Standing opens doors: Council work at ${STANDING_COUNCIL_JOB}; a partner or company at ${COMPANY_FLOAT_STANDING}. Bell's prices use days served and your legal record.`,
-  );
-  if (state.notoriety > 0 || state.outlawed) {
-    body.push(`To the traps you are ${notorietyPhrase(state.notoriety)}, and in the bush ${bushArticle(bushRankOf(state))}.`);
-    const reward = rewardFor(state);
-    if (reward > 0) body.push(`There is ${formatMoney(reward)} on your head.`);
-    if (state.outlawed) body.push('You are proclaimed an outlaw. There is no reforming out of this one.');
+  if (state.horse !== 'none') owned.push(state.horse);
+  row(kit, 'Kit', owned.length ? owned.join(', ') : 'nothing but the clothes you stand in');
+  row(kit, 'Stores', `${days(state.provisionDays)} provisions, ${days(state.waterDays)} water`);
+  const pegged = (Object.keys(state.claims) as CampId[]).filter((c) => state.claims[c]);
+  if (pegged.length) row(kit, 'Claims pegged at', pegged.map((c) => CAMP_DEFS[c].name).join(', '));
+  if (state.company) {
+    row(kit, state.company.name, `${state.company.sharesOwned} of the twenty shares, at ${formatMoney(state.company.sharePrice)}`);
   }
-  if (state.hideout) {
-    body.push(
-      `Split Rock Camp, and ${formatMoney(state.hideout.stashPence)} and ${formatGold(state.hideout.stashGold)} under the flat stone.`,
-    );
-  }
-  if (state.gang.length > 0) body.push(`Riding with you: ${state.gang.map((g) => g.name).join(', ')}.`);
-  if (state.employment) body.push(`Last engaged as: ${JOBS[state.employment.job].name}`);
+  if (state.salvage > 0) row(kit, 'Salvage', `${state.salvage} scavenged chest${state.salvage === 1 ? '' : 's'} from the road`);
   if (state.shaft) {
-    body.push(
-      `A shaft at ${CAMP_DEFS[state.shaft.camp].name}, ${state.shaft.depth} feet down` +
-        (state.shaft.bottomed ? ', bottomed on payable wash' : `, bottoming somewhere below`) +
+    row(
+      kit,
+      'Shaft',
+      `${CAMP_DEFS[state.shaft.camp].name}, ${state.shaft.depth} feet down` +
+        (state.shaft.bottomed ? ', bottomed on payable wash' : ', bottoming somewhere below') +
         `${state.shaft.timbered ? ', timbered' : ', untimbered'}${state.shaft.pumped ? ' and pumped' : ''}.`,
     );
   }
 
+  // The man --------------------------------------------------------------
+  const man = panel('CONDITION');
+  row(man, 'Health', `${healthWord(state.health)}${state.illness ? ` — ${ILLNESS_NAMES[state.illness.id]}` : ''}`);
+  row(man, 'Legal record', state.outlawed ? 'Proclaimed an outlaw' : titleCase(state.legal));
+  row(man, 'Licence', licenceWord(state));
+  row(man, 'Hands', `${article(washRank(state))} at the wash, ${article(shaftRank(state))} underground`);
+  if (state.employment) row(man, 'Last engaged as', JOBS[state.employment.job].name);
+
+  // Standing -------------------------------------------------------------
+  const field = panel('STANDING');
+  row(field, 'Standing on the field', `${standingNumber(state.standing)}/100 — reckoned ${standingPhrase(state.standing)}`);
+  row(field, 'Opens doors at', `Council work at ${STANDING_COUNCIL_JOB}; a partner or company at ${COMPANY_FLOAT_STANDING}`);
+  row(field, "Bell's prices", 'follow days served and your legal record');
+
+  // The traps ------------------------------------------------------------
+  if (state.notoriety > 0 || state.outlawed || state.hideout || state.gang.length > 0) {
+    const dark = panel('THE TRAPS');
+    if (state.notoriety > 0 || state.outlawed) {
+      row(dark, 'To the traps', `${notorietyPhrase(state.notoriety)}; in the bush ${bushArticle(bushRankOf(state))}`);
+      const reward = rewardFor(state);
+      if (reward > 0) row(dark, 'On your head', formatMoney(reward));
+      if (state.outlawed) row(dark, undefined, 'Proclaimed an outlaw. There is no reforming out of this one.');
+    }
+    if (state.hideout) {
+      row(
+        dark,
+        'Split Rock Camp',
+        `${formatMoney(state.hideout.stashPence)} and ${formatGold(state.hideout.stashGold)} under the flat stone`,
+      );
+    }
+    if (state.gang.length > 0) row(dark, 'Riding with you', state.gang.map((g) => g.name).join(', '));
+  }
+
+  const body: string[] = [
+    `${formatDate(state.day)} — day ${state.day} of your year, in ${seasonPhrase(state.day)}.`,
+    `You are at ${locationName(state.location)}.`,
+  ];
+  for (const p of panels) {
+    body.push('');
+    body.push(p.heading);
+    for (const r of p.rows) body.push(r.label ? `${r.label}: ${r.text}` : r.text);
+  }
+
   const atBank = state.location === 'fields-town' || state.location === 'suze-port';
+  const atCamp = isCamp(state.location);
   const menu: MenuItem[] = [
-    item('A', atBank ? 'Sell gold to the bank' : 'Gold is sold at a bank in town', atBank ? { type: 'sellGold', where: 'bank', watch: false } : { type: 'continue' }, atBank ? undefined : 'camp storekeepers do not buy gold', state.goldCentiOz <= 0 || !atBank),
+    item('A', atBank ? 'Sell gold to the bank' : atCamp ? 'Sell gold here, watching the scales' : 'Gold is sold at a bank in town', atBank ? { type: 'sellGold', where: 'bank', watch: false } : atCamp ? { type: 'sellGold', where: 'camp', watch: true } : { type: 'continue' }, atBank ? undefined : atCamp ? 'a poorer rate than town, with your eye on the weights' : undefined, state.goldCentiOz <= 0 || (!atBank && !atCamp)),
     item('B', 'Save the game', { type: 'save' }),
     item('C', 'Finish the game', { type: 'finish' }),
     item('0', 'Return to what you were doing', { type: 'continue' }),
   ];
-  return { screen: 'camp', title: 'THE KITTY', body, menu };
+  const subtitle = `${formatDate(state.day)} — day ${state.day}, ${seasonPhrase(state.day)} — at ${locationName(state.location)}`;
+  return { screen: 'camp', title: 'MENU', subtitle, body, panels, menu };
 }
 
+/**
+ * The words that go beneath the sheet. The country itself — the coast, the two
+ * roads, the river, the town and the camps — is on the drawing, named where it
+ * stands; what is left for the prose is only what a man's own year has put
+ * there, kept short enough that map and notes are one page together.
+ */
 export function mapView(state: GameState): ScreenView {
-  const body: string[] = [
-    'Port Gannet lies on the coast. Two tracks run inland to the diggings:',
-    "Mercer's Track, the better and more popular road, and the Razorback Road,",
-    'which is shorter and lonelier and harder on man and beast.',
-    '',
-    'Slateford stands on Slate River, at the head of the tracks. Reedbank Camp',
-    'and Copperhead Gully lie a day out; the Blackcap Ranges two days, in reef country.',
-    '',
-    `The star marks where you are: ${locationName(state.location)}.`,
-  ];
+  const body: string[] = [`The star marks where you are: ${locationName(state.location)}.`];
 
   if (state.rush && state.rush.since <= state.day && state.rush.untilDay >= state.day) {
     const days = state.rush.untilDay - state.day + 1;
@@ -641,15 +752,13 @@ export function mapView(state: GameState): ScreenView {
   }
 
   if (state.hideout) {
-    body.push(
-      'Beyond the Blackcap Ranges, where no surveyor has been and the map has no business going, is Split Rock Camp.',
-    );
+    body.push('Split Rock Camp is off the surveyed country, and in your own hand.');
   }
 
   const reward = rewardFor(state);
   if (reward > 0) {
     body.push(
-      `The notice pinned in the margin is your own: ${formatMoney(reward)} to the man who can take you, and it is pasted up in every township on this sheet.`,
+      `The notice pinned in the margin is your own: ${formatMoney(reward)} to the man who can take you.`,
     );
   }
 
@@ -664,7 +773,8 @@ export function mapView(state: GameState): ScreenView {
 // ---------------------------------------------------------------------------
 
 /** Screens that only make sense with your boots on a camp's dirt. */
-const CAMP_SCREENS = new Set(['camp', 'camp-store', 'camp-mine', 'camp-shares', 'camp-grog']);
+const CAMP_SCREENS = new Set(['camp', 'camp-store', 'camp-mine', 'camp-grog']);
+const COMPANY_SCREENS = new Set(['company', 'company-crews', 'company-ground', 'company-policy', 'company-dividend']);
 const TOWN_SCREENS = new Set([
   'ftown',
   'ftown-bank',
@@ -724,13 +834,10 @@ export function getView(state: GameState): ScreenView {
   if (CAMP_SCREENS.has(state.screen) && state.location === 'secret-mine') {
     return getView({ ...state, screen: 'secret-expedition' });
   }
-  if (state.screen === 'camp-shares' && state.location !== 'deep-mountains') {
-    return getView({ ...state, screen: 'camp' });
-  }
   // The company's books are at the workings and Council; its commercial business
   // is conducted with investors and shipping agents at Port Gannet.
   if (
-    state.screen === 'company' &&
+    COMPANY_SCREENS.has(state.screen) &&
     state.location !== 'deep-mountains' &&
     state.location !== 'fields-town' &&
     state.location !== 'suze-port'
@@ -799,8 +906,16 @@ export function getView(state: GameState): ScreenView {
           item('2', "Bell's Outfitters", { type: 'goto', screen: 'suze-store' }, 'goods are much cheaper here than at the diggings'),
           item('3', 'See about lodgings', { type: 'goto', screen: 'suze-lodgings' }, `at present: ${lodgingWord(state, 'suze-port')}`),
           item('4', 'The horse dealer', { type: 'goto', screen: 'suze-horses' }),
-          item('C', 'A hot meal at the cookshop — 1s', { type: 'buyMeal' }, state.fedToday ? 'you already have a meal waiting today' : 'eaten when the next day is spent', state.fedToday || state.moneyPence < shillings(1)),
-          item('F', 'Fish the harbour for the day', { type: 'fishForFood' }, 'no wage; usually enough food for several days'),
+          item(
+            'C',
+            `A hot meal at the cookshop — ${formatMoney(COOKSHOP_MEAL_PRICE)}`,
+            { type: 'buyMeal' },
+            state.fedToday
+              ? 'you already have a meal waiting today'
+              : 'covers your next day\'s food; buying it takes no time',
+            state.fedToday || state.moneyPence < COOKSHOP_MEAL_PRICE,
+          ),
+          item('F', 'Fish the harbour for the day', { type: 'fishForFood' }, 'no wage; you may catch nothing, but a catch leaves food to store'),
           item('5', state.gazetteReadOn === state.day ? "Read today's Slateford Times again — free" : 'Read The Slateford Times (1d)', { type: 'readGazette' }),
           item('6', "Read The New Chum's Companion", { type: 'readJournal' }, state.items.journal ? undefined : 'you have no copy', state.items.journal < 1),
           item('7', 'Rest a spell', { type: 'rest', days: state.spellDays }, `${state.spellDays} days`),
@@ -812,9 +927,10 @@ export function getView(state: GameState): ScreenView {
           ...(state.company
             ? [item('O', `Attend to ${state.company.name}`, { type: 'goto', screen: 'company' }, 'investors and shipping agents do business at the port')]
             : []),
+          ...hearthHubItems(state),
           banditEntry(state, 'B'),
           item('D', 'Length of a spell of work', { type: 'cycleSpell' }, `${state.spellDays} days`),
-        ],
+        ].filter(isMenuItem),
       };
 
     case 'suze-work':
@@ -830,7 +946,7 @@ export function getView(state: GameState): ScreenView {
           item('2', `${JOBS.town.name} — ${formatMoney(JOBS.town.lo)} to ${formatMoney(JOBS.town.hi)} a day`, { type: 'work', job: 'town', days: state.spellDays }, JOBS.town.blurb),
           item('D', 'Length of a spell of work', { type: 'cycleSpell' }, `${state.spellDays} days`),
           back('suze'),
-        ],
+        ].filter(isMenuItem),
       };
 
     case 'suze-store':
@@ -867,6 +983,8 @@ export function getView(state: GameState): ScreenView {
       };
 
     case 'suze-horses':
+      {
+      const alreadyMounted = state.horse !== 'none';
       return {
         screen: 'suze-horses',
         title: 'THE HORSE DEALER',
@@ -879,8 +997,8 @@ export function getView(state: GameState): ScreenView {
           horseReport(state, 'hack'),
         ],
         menu: [
-          item('1', `The rough-coated bay — ${formatMoney(HORSE_PRICE.brumby)}`, { type: 'buyHorse', kind: 'brumby' }, undefined, state.moneyPence < HORSE_PRICE.brumby),
-          item('2', `The tall chestnut — ${formatMoney(HORSE_PRICE.hack)}`, { type: 'buyHorse', kind: 'hack' }, undefined, state.moneyPence < HORSE_PRICE.hack),
+          item('1', `The rough-coated bay — ${formatMoney(HORSE_PRICE.brumby)}`, { type: 'buyHorse', kind: 'brumby' }, alreadyMounted ? 'you already have a horse, and nowhere to keep a second' : undefined, alreadyMounted || state.moneyPence < HORSE_PRICE.brumby),
+          item('2', `The tall chestnut — ${formatMoney(HORSE_PRICE.hack)}`, { type: 'buyHorse', kind: 'hack' }, alreadyMounted ? 'you already have a horse, and nowhere to keep a second' : undefined, alreadyMounted || state.moneyPence < HORSE_PRICE.hack),
           item('3', 'Inspect the rough-coated bay', { type: 'inspectHorse', kind: 'brumby', method: 'look' }, 'look at teeth, legs and feet; no time or money'),
           item('4', 'Inspect the tall chestnut', { type: 'inspectHorse', kind: 'hack', method: 'look' }, 'look at teeth, legs and feet; no time or money'),
           item('5', 'Pay an independent ostler to judge both — 1s', { type: 'inspectHorse', kind: 'brumby', method: 'ostler' }, 'a plain account of speed, stamina and bush sense', state.moneyPence < shillings(1)),
@@ -888,6 +1006,7 @@ export function getView(state: GameState): ScreenView {
           back('suze'),
         ],
       };
+      }
 
     case 'suze-crime':
       return {
@@ -903,7 +1022,7 @@ export function getView(state: GameState): ScreenView {
           item('2', "Go through a drunk's pockets", { type: 'steal', target: 'drunk' }),
           banditEntry(state, '3'),
           back('suze'),
-        ],
+        ].filter(isMenuItem),
       };
 
     // --- reading -------------------------------------------------------
@@ -916,16 +1035,12 @@ export function getView(state: GameState): ScreenView {
       };
 
     case 'journal': {
-      const menu = JOURNAL_SECTIONS.slice(0, 20).map((sec, i) =>
-        item(MENU_LETTERS[i], sec.title, { type: 'goto', screen: 'journal' }),
-      );
-      menu.push(item('0', 'Close the book', { type: 'continue' }));
       return {
         screen: 'journal',
         title: "THE NEW CHUM'S COMPANION",
         subtitle: 'Nicholas Jacob Rowe, lately returned from the Gold Rushes',
         body: ['Choose a chapter.'],
-        menu,
+        menu: [item('0', 'Close the book', { type: 'continue' })],
       };
     }
 
@@ -993,10 +1108,11 @@ export function getView(state: GameState): ScreenView {
           item('L', 'See about lodgings', { type: 'goto', screen: 'ftown-lodgings' }, `at present: ${lodgingWord(state, 'fields-town')}`),
           item('R', 'Rest a spell', { type: 'rest', days: state.spellDays }, `${state.spellDays} days`),
           item('J', "Read The New Chum's Companion", { type: 'readJournal' }, undefined, state.items.journal < 1),
+          ...hearthHubItems(state),
           estateEntry(state, 'E'),
           banditEntry(state, 'B'),
           item('D', 'Length of a spell of work', { type: 'cycleSpell' }, `${state.spellDays} days`),
-        ],
+        ].filter(isMenuItem),
       };
 
     case 'ftown-lodgings':
@@ -1329,7 +1445,7 @@ export function getView(state: GameState): ScreenView {
           item(String(n++), "Follow the talk of Widow's Reef", { type: 'followRumour' }, `${SECRET_TRAVEL_DAYS} days out, and it may be nothing at all`),
         );
       }
-      menu.push(item(String(n++), 'Back to Port Gannet on foot', { type: 'travel', route: 'trickeys', mode: state.horse !== 'none' ? 'horse' : 'walk' }));
+      menu.push(item(String(n), 'Back to Port Gannet on foot', { type: 'travel', route: 'trickeys', mode: state.horse !== 'none' ? 'horse' : 'walk' }));
       menu.push(back(isCamp(state.location) ? 'camp' : 'ftown'));
       return {
         screen: 'ftown-depart',
@@ -1360,13 +1476,20 @@ export function getView(state: GameState): ScreenView {
           'It is open desert, with no water within forty miles.',
           '',
           clues[Math.min(4, trail)],
-          ...(e?.nuggetFound ? ['', 'The great nugget is yours. Nothing here can equal that moment again.'] : []),
+          ...(e?.nuggetFound && !e.nuggetRecovered
+            ? ['', `The Southern Cross lies exposed in the hole. At ${formatGold(e.nuggetCentiOz ?? 0)}, two men cannot move it.`]
+            : e?.nuggetRecovered
+              ? ['', 'The great nugget is packed on the hired dray. Nothing here can equal that moment again.']
+              : []),
           ...(e?.exhausted && !e.nuggetFound ? ['', 'The trail has failed. More digging here would only spend water and life.'] : []),
         ],
         menu: [
           item('1', 'Search the old workings for the next sign', { type: 'searchSecret', approach: 'search' }, 'a hard day in the desert', !!e?.exhausted || !!e?.nuggetFound),
           item('2', 'Dig the black leader for The Southern Cross', { type: 'searchSecret', approach: 'dig' }, trail >= 4 ? 'the promised bed is found' : 'you have not followed the trail far enough', trail < 4 || !!e?.exhausted || !!e?.nuggetFound),
           item('3', 'Winnow a little dry dirt by hand', { type: 'searchSecret', approach: 'winnow' }, 'a small side chance for ordinary gold, not the purpose of the expedition', !!e?.exhausted),
+          ...(e?.nuggetFound && !e.nuggetRecovered
+            ? [item('R', 'Bring a dray and six men for The Southern Cross — £10', { type: 'recoverNugget' }, 'three days to rig, lift and pack it for the bank', state.moneyPence < pounds(10))]
+            : []),
           item('4', 'Rest for a day', { type: 'rest', days: 1 }, 'save your strength, but water and food still go'),
           item('5', 'Turn back towards Slateford', { type: 'travelTo', place: 'fields-town' }, `${localTravelDays(state, 'fields-town')} days away`),
         ],
@@ -1407,7 +1530,7 @@ export function getView(state: GameState): ScreenView {
       const menu: MenuItem[] = [
         item('1', 'Dig', { type: 'goto', screen: 'camp-mine' }, `spells of ${state.spellDays} days`),
         item('2', 'Peg a claim (twelve feet square)', { type: 'pegClaim' }, claim ? 'already pegged' : 'free, one to a camp', !!claim),
-        item('3', "The camp storekeeper", { type: 'goto', screen: 'camp-store' }, 'food and equipment at camp prices; gold is sold at the bank'),
+        item('3', "The camp storekeeper", { type: 'goto', screen: 'camp-store' }, 'food and equipment at camp prices; he buys gold poorly and may cheat the scales'),
         item('4', `Hire a mate — ${formatMoney(MATE_WAGE)} a day`, { type: 'hireMate', days: state.spellDays }, state.partner ? 'you have a partner already' : state.mateUntilDay >= state.day ? `you have a mate until day ${state.mateUntilDay}` : 'one rocks while the other shovels', state.partner),
         item('5', 'Rest a spell', { type: 'rest', days: state.spellDays }, `${state.spellDays} days`),
         item('6', `A camp "doctor" — ${formatMoney(QUACK_FEE)}`, { type: 'quack' }, 'a butcher by trade; I would rather be treated by a horse-coper', state.moneyPence < QUACK_FEE),
@@ -1431,7 +1554,6 @@ export function getView(state: GameState): ScreenView {
         );
       }
       if (camp === 'deep-mountains') {
-        menu.push(item('9', 'The company office — shares and wages', { type: 'goto', screen: 'camp-shares' }, `shares at ${formatMoney(SHARE_PRICE)}`));
         menu.push(
           item(
             'C',
@@ -1463,8 +1585,10 @@ export function getView(state: GameState): ScreenView {
         menu.push(item('S', "Follow the talk of Widow's Reef", { type: 'followRumour' }, 'it may be a hoax'));
       }
       if (state.items.journal > 0) menu.push(item('J', "Read The New Chum's Companion", { type: 'readJournal' }));
-      menu.push(estateEntry(state, 'E'));
-      menu.push(banditEntry(state, 'B'));
+      const estate = estateEntry(state, 'E');
+      if (estate) menu.push(estate);
+      const bandit = banditEntry(state, 'B');
+      if (bandit) menu.push(bandit);
       menu.push(item('D', 'Length of a spell of work', { type: 'cycleSpell' }, `${state.spellDays} days`));
       return {
         screen: 'camp',
@@ -1525,14 +1649,27 @@ export function getView(state: GameState): ScreenView {
         title: "THE STOREKEEPER'S TENT",
         body: [
           'The tent carries food and equipment at the freight-heavy prices of the fields.',
-          'It does not buy gold. For that you must take your dust to a bank in town.',
+          'He buys gold below the bank rate. Watch his weights, or trust him at your cost.',
         ],
         menu: storeMenu(state, 'camp'),
         aside: storeAside(state),
       };
 
     case 'company':
+    case 'company-crews':
+    case 'company-ground':
+    case 'company-policy':
+    case 'company-dividend':
       return companyView(state);
+
+    case 'hearth':
+      return hearthView(state);
+
+    case 'ball':
+      return ballView(state);
+
+    case 'letters':
+      return lettersView(state);
 
     // --- the civic ladder (§26-§28) ---------------------------------------
     case 'estate':
@@ -1543,36 +1680,6 @@ export function getView(state: GameState): ScreenView {
 
     case 'court':
       return courtView(state);
-
-    case 'camp-shares':
-      return {
-        screen: 'camp-shares',
-        title: 'THE COMPANY OFFICE, BLACKCAP RANGES',
-        body: [
-          'Big mines need many workers and plenty of money. Large companies are taking',
-          'over from diggers as the main extractors of gold. A man may buy a share in one,',
-          'or take their wages, or both.',
-          '',
-          `You hold ${state.shares} of a possible ${MAX_SHARES} shares.`,
-        ],
-        menu: [
-          item('1', `Buy one share — ${formatMoney(SHARE_PRICE)}`, { type: 'buyShares', n: 1 }, 'must be held thirty days to qualify for a year-end dividend', state.shares >= MAX_SHARES || state.moneyPence < SHARE_PRICE),
-          item('2', `Buy three shares — ${formatMoney(SHARE_PRICE * 3)}`, { type: 'buyShares', n: 3 }, 'must be held thirty days to qualify for a year-end dividend', state.shares > 0 || state.moneyPence < SHARE_PRICE * 3),
-          item('3', 'Take a shift on wages', { type: 'mine', method: 'company', days: state.spellDays }),
-          item(
-            '4',
-            state.company
-              ? `Open the books of ${state.company.name}`
-              : canFloat(state)
-                ? 'Float a company of your own'
-                : 'Ask about floating a company of your own',
-            { type: 'goto', screen: 'company' },
-            companyEntryNote(state),
-          ),
-          back('camp'),
-        ],
-      };
-
 
     // --- the dark ladder (§23) --------------------------------------------
     case 'bandit':
@@ -1729,13 +1836,10 @@ export function getView(state: GameState): ScreenView {
         menu: [item('1', 'Begin again', { type: 'newGame' }), item('0', 'Return to the title', { type: 'quitToTitle' })],
       };
 
-    default:
-      return {
-        screen: state.screen,
-        title: locationName(state.location).toUpperCase(),
-        body: [statusLine(state)],
-        menu: [item('0', 'Continue', { type: 'continue' })],
-      };
+    default: {
+      const exhaustive: never = state.screen;
+      return exhaustive;
+    }
   }
 }
 
@@ -2264,7 +2368,7 @@ export function estateView(state: GameState): ScreenView {
   }
   if (e.works.length) {
     body.push('');
-    body.push('SUBSCRIBED AT THE CHAMBERS');
+    body.push('PUBLIC WORKS FUNDED AT THE CHAMBERS');
     for (const w of e.works) body.push(`  ${WORK_NAMES[w.id]}${w.camp ? `, to ${CAMP_DEFS[w.camp].name}` : ''}`);
   }
   if (e.jpSince !== null) {
@@ -2328,7 +2432,7 @@ export function estateView(state: GameState): ScreenView {
     );
   }
   if (inTown) {
-    menu.push(item('W', 'The Council Chambers — the subscription list', { type: 'goto', screen: 'ftown-council' }, 'bridges, races, wards and schools'));
+    menu.push(item('W', 'The Council Chambers — public works', { type: 'goto', screen: 'ftown-council' }, 'bridges, races, wards and schools'));
   }
   menu.push(back(home));
   return {
@@ -2417,6 +2521,112 @@ function shantyRaidView(state: GameState): ScreenView {
   };
 }
 
+function hearthView(state: GameState): ScreenView {
+  const h = state.hearth;
+  const intended = h.intended;
+  const body: string[] = [
+    hearthResumeLine(state) ?? 'There is no household in your ledger yet.',
+  ];
+  if (intended) {
+    body.push(`${intended.name} keeps her work as a ${intended.trade}; her manner is one of ${intended.manner}.`);
+    if (h.rung === 'courting') body.push(`Calls kept at Port Gannet: ${intended.callsKept}.`);
+  }
+  const dated = nextEventLine(state);
+  if (dated) body.push('', dated);
+  if (h.cottage) {
+    body.push('', `Under the cottage floor: ${formatMoney(h.homeStashPence)} and ${formatGold(h.homeStashGold)}.`);
+  }
+
+  const menu: MenuItem[] = [];
+  if (canPayAddresses(state)) {
+    menu.push(item('1', `Ask leave to pay addresses to ${intended!.name}`, { type: 'payAddresses' }, 'she names a window for your first call at Port Gannet'));
+  }
+  if (h.nextEvent) {
+    const e = h.nextEvent;
+    const open = eventOpenHere(state);
+    const label = e.kind === 'call'
+      ? `Keep the call with ${intended?.name ?? 'her'}`
+      : e.kind === 'banns'
+        ? 'Attend the reading of the banns'
+        : e.kind === 'wedding'
+          ? `Hold the wedding — ${formatMoney(WEDDING_COST)}`
+          : e.kind === 'christmas'
+            ? 'Keep Christmas at the hearth'
+            : e.kind === 'birth'
+              ? 'Be at home for the birth'
+              : 'Stay through the sickbed and fetch the doctor';
+    menu.push(item('2', label, { type: e.kind === 'banns' || e.kind === 'wedding' ? 'holdWedding' : 'callAtThePort' }, open ? 'this is the appointed window' : `at Port Gannet, days ${e.openDay}–${e.closeDay}`, !open || (e.kind === 'wedding' && state.moneyPence < WEDDING_COST)));
+  }
+  if (h.rung === 'courting') {
+    menu.push(
+      item('3', `Bring a small useful gift — ${formatMoney(GIFT_SMALL_MAX)}`, { type: 'giveGift', lavish: false }, 'colours the call; it cannot buy consent', state.moneyPence < GIFT_SMALL_MAX),
+      item('4', `Offer a lavish gift — ${formatMoney(GIFT_LAVISH_COST)}`, { type: 'giveGift', lavish: true }, 'generosity once; pressed or offered too early, it reads as purchase', state.moneyPence < GIFT_LAVISH_COST),
+      item('5', 'Ask whether she will have the banns read', { type: 'proposeBanns' }, `${intended?.callsKept ?? 0} of 3 calls kept; her answer weighs your name and conduct, never gifts`, (intended?.callsKept ?? 0) < 3),
+    );
+  }
+  if (h.rung === 'wed' && !h.cottage && state.location === 'suze-port') {
+    menu.push(
+      item('6', `Buy a small cottage — ${formatMoney(COTTAGE_PRICE_SMALL)}`, { type: 'buyCottage', size: 'small' }, 'a safe bed and a floorboard vault', purse(state) < COTTAGE_PRICE_SMALL),
+      item('7', `Buy a large cottage — ${formatMoney(COTTAGE_PRICE_LARGE)}`, { type: 'buyCottage', size: 'large' }, 'the same verbs and safety; the difference is what you choose to call home', purse(state) < COTTAGE_PRICE_LARGE),
+    );
+  }
+  if (hearthVerbsOpen(state) && state.location === 'suze-port') {
+    menu.push(
+      item('A', 'Put £10 beneath the floor', { type: 'homeStash', what: 'money', amount: pounds(10) }, 'theft-proof household storage', state.moneyPence < pounds(10)),
+      item('B', 'Take £10 from beneath the floor', { type: 'homeUnstash', what: 'money', amount: pounds(10) }, undefined, h.homeStashPence <= 0),
+      item('G', 'Put one ounce of gold beneath the floor', { type: 'homeStash', what: 'gold', amount: 100 }, undefined, state.goldCentiOz < 100),
+      item('H', 'Take one ounce of gold from beneath the floor', { type: 'homeUnstash', what: 'gold', amount: 100 }, undefined, h.homeStashGold <= 0),
+    );
+  }
+  if (hearthVerbsOpen(state) && state.location === 'fields-town') {
+    menu.push(item('C', 'Consign scavenged goods through Bell’s Freight — 2s', { type: 'consignGoods' }, 'sold at Port Gannet without the journey', state.salvage <= 0 || state.moneyPence < shillings(2)));
+  }
+  if (intended && (state.location === 'suze-port' || state.location === 'fields-town')) {
+    menu.push(
+      item('R', 'Send £1 home by post-office order', { type: 'sendRemittance', amount: pounds(1) }, 'a pure gift; it changes letters, never consent', purse(state) < pounds(1)),
+      item('S', 'Send £5 home by post-office order', { type: 'sendRemittance', amount: pounds(5) }, 'a pure gift; it changes letters, never consent', purse(state) < pounds(5)),
+    );
+  }
+  if (canReconcile(state)) menu.push(item('K', 'Remain in Port Gannet for a month and seek reconciliation', { type: 'seekReconciliation' }, 'one offer in the game; presence, not payment'));
+  if (lettersWaiting(state) > 0) menu.push(item('L', 'Take up the waiting letters', { type: 'goto', screen: 'letters' }));
+  menu.push(back(homeScreenFor(state)));
+  return { screen: 'hearth', title: 'HEARTH & KIN', subtitle: intended?.name, body, menu };
+}
+
+function ballView(state: GameState): ScreenView {
+  const on = ballTonight(state);
+  return {
+    screen: 'ball',
+    title: 'THE SUBSCRIPTION BALL',
+    subtitle: formatDate(state.day),
+    body: [
+      'The Assembly Room is hung with flags and gum leaves. Storekeepers, nurses,',
+      'clerks and diggers have put off the dust for one evening, though not their opinions.',
+      state.standing < BALL_STANDING ? `At ${Math.floor(state.standing)}/100 standing, no one is ready to make the introduction.` : 'Your name is known well enough to be received.',
+    ],
+    menu: [
+      item('1', `Attend — ${formatMoney(BALL_TICKET)}`, { type: 'attendBall' }, state.hearth.intended ? 'a social evening; no second prospective partner is rolled' : 'an introduction may come of the evening', !on || state.standing < BALL_STANDING || state.moneyPence < BALL_TICKET),
+      back('ftown'),
+    ],
+  };
+}
+
+function lettersView(state: GameState): ScreenView {
+  const waiting = lettersWaiting(state);
+  const body = waiting > 0
+    ? [`${waiting} sealed letter${waiting === 1 ? '' : 's'} wait behind the post-office counter.`]
+    : state.hearth.letters.length
+      ? state.hearth.letters.slice(-8).flatMap((l) => [`${formatDate(l.day)}`, l.text, ''])
+      : ['There is no mail under your name.'];
+  return {
+    screen: 'letters', title: 'MAIL DAY', body,
+    menu: [
+      ...(waiting > 0 ? [item('1', 'Pay 1d and take up the letters', { type: 'readLetters' }, undefined, state.moneyPence < 1)] : []),
+      back(state.hearth.intended ? 'hearth' : homeScreenFor(state)),
+    ],
+  };
+}
+
 /** The company office: the prospectus if there is no company, the books if there is. */
 export function companyView(state: GameState): ScreenView {
   const c = state.company;
@@ -2458,6 +2668,103 @@ export function companyView(state: GameState): ScreenView {
   }
 
   const worth = companyWorth(state);
+
+  if (state.screen === 'company-crews') {
+    const menu: MenuItem[] = [];
+    c.crews.forEach((crew, crewIndex) => {
+      c.leases.forEach((lease, leaseIndex) => {
+        menu.push(
+          item(
+            MENU_LETTERS[menu.length],
+            `No. ${crewIndex + 1} crew: mine ${lease.name}`,
+            { type: 'setCrewTask', index: crewIndex, task: 'mine', lease: leaseIndex },
+            leaseWord(lease),
+            crew.task === 'mine' && crew.lease === leaseIndex,
+          ),
+          item(
+            MENU_LETTERS[menu.length + 1],
+            `No. ${crewIndex + 1} crew: develop ${lease.name}`,
+            { type: 'setCrewTask', index: crewIndex, task: 'develop', lease: leaseIndex },
+            lease.plan ? `${lease.plan}ing is ordered; each crew-week advances it` : 'choose sinking or driving under Manage the mines first',
+            crew.task === 'develop' && crew.lease === leaseIndex,
+          ),
+        );
+      });
+      menu.push(
+        item(
+          MENU_LETTERS[menu.length],
+          `No. ${crewIndex + 1} crew: prospect the ranges`,
+          { type: 'setCrewTask', index: crewIndex, task: 'prospect' },
+          c.leases.length >= 2 ? 'new finds extend the poorest existing mine' : 'look for a second named mine',
+          crew.task === 'prospect',
+        ),
+      );
+    });
+    menu.push(back('company'));
+    return {
+      screen: 'company-crews',
+      title: 'THE CREWS',
+      subtitle: c.name,
+      body: c.crews.length
+        ? ['Assign each crew to a mine, its development, or the country beyond the pegs.']
+        : ['There are no men on the books. Take on crews at the workings in Blackcap Ranges.'],
+      menu,
+    };
+  }
+
+  if (state.screen === 'company-ground') {
+    const body = c.leases.flatMap((lease, i) => [
+      `${i + 1}. ${leaseWord(lease)}.`,
+      `   ${lease.pump ? 'Pumping plant installed' : 'No pumping plant'}; ${lease.timbered ? 'timbered throughout' : 'no standing timber-work'}${lease.plan ? `; ordered to ${lease.plan}` : ''}.`,
+    ]);
+    const menu: MenuItem[] = [];
+    c.leases.forEach((lease, i) => {
+      const prefix = c.leases.length > 1 ? `${i + 1}. ` : '';
+      menu.push(
+        item(MENU_LETTERS[menu.length], `${prefix}Sink ${lease.name} to the next level`, { type: 'setLeasePlan', lease: i, plan: 'sink' }, leaseIsWet(lease) && !lease.pump ? 'install a pumping plant before working below the water' : `${formatMoney(COMPANY_SINK_COST)} in materials each developing crew-week`, lease.plan === 'sink' || (leaseIsWet(lease) && !lease.pump)),
+        item(MENU_LETTERS[menu.length + 1], `${prefix}Drive along the present level`, { type: 'setLeasePlan', lease: i, plan: 'drive' }, leaseIsWet(lease) && !lease.pump ? 'install a pumping plant before working below the water' : `${formatMoney(COMPANY_DRIVE_COST)} and one developing crew-week; a cheaper chance at a fresh face`, lease.level === 0 || lease.plan === 'drive' || (leaseIsWet(lease) && !lease.pump)),
+        item(MENU_LETTERS[menu.length + 2], `${prefix}Install a pumping plant — ${formatMoney(COMPANY_PUMP_PLANT)}`, { type: 'installPlant', lease: i, plant: 'pump' }, 'needed for wet or deep ground; paid from the treasury', lease.pump || c.treasury < COMPANY_PUMP_PLANT),
+        item(MENU_LETTERS[menu.length + 3], `${prefix}Set standing timber-work — ${formatMoney(COMPANY_TIMBER_PLANT)}`, { type: 'installPlant', lease: i, plant: 'timber' }, 'halves the chance of a cave-in; paid from the treasury', lease.timbered || c.treasury < COMPANY_TIMBER_PLANT),
+        item(MENU_LETTERS[menu.length + 4], `${prefix}Abandon ${lease.name}`, { type: 'abandonLease', lease: i }, 'forfeit every level and item of plant in this mine'),
+      );
+    });
+    menu.push(back('company'));
+    return { screen: 'company-ground', title: 'THE MINES', subtitle: c.name, body, menu };
+  }
+
+  if (state.screen === 'company-policy') {
+    return {
+      screen: 'company-policy',
+      title: 'PLANT AND POLICY',
+      subtitle: c.name,
+      body: [
+        `The mine is driven ${c.driving}. ${c.battery ? 'The company owns its stamping battery.' : 'A public battery takes fifteen per cent of every crushing.'}`,
+        `Treasury: ${formatMoney(c.treasury)}.`,
+      ],
+      menu: [
+        item('1', 'Drive cautiously', { type: 'setDriving', rate: 'cautious' }, 'less stone, half the cave-in risk and slower wear', c.driving === 'cautious'),
+        item('2', 'Drive at the ordinary rate', { type: 'setDriving', rate: 'ordinary' }, 'the manager’s usual balance of output and risk', c.driving === 'ordinary'),
+        item('3', 'Drive her hard', { type: 'setDriving', rate: 'hard' }, 'more stone now, twice the cave-in risk and faster exhaustion', c.driving === 'hard'),
+        item('B', `Raise a stamping battery — ${formatMoney(COMPANY_BATTERY_COST)}`, { type: 'buyBattery' }, `${formatMoney(COMPANY_BATTERY_COST)} capital and £3 a week upkeep; crushing fees end`, c.battery || c.treasury < COMPANY_BATTERY_COST),
+        back('company'),
+      ],
+    };
+  }
+
+  if (state.screen === 'company-dividend') {
+    const issued = c.sharesOwned + c.sharesPublic;
+    const dividends: [string, number][] = [['1', shillings(5)], ['2', shillings(10)], ['3', pounds(1)]];
+    return {
+      screen: 'company-dividend',
+      title: 'DECLARE A DIVIDEND',
+      subtitle: `${c.name} · treasury ${formatMoney(c.treasury)}`,
+      body: ['A dividend is paid on every issued share. Your part comes to hand; the public’s leaves the company.'],
+      menu: [
+        ...dividends.map(([key, per]) => item(key, `${formatMoney(per)} the share`, { type: 'declareDividend', perShare: per }, `${formatMoney(per * issued)} from treasury; ${formatMoney(per * c.sharesOwned)} to you`, per * issued > c.treasury)),
+        back('company'),
+      ],
+    };
+  }
 
   // The books are a ledger, not prose, and there are a dozen things a director
   // may do about them. Stacked one above the other they cannot both be read,
@@ -2513,18 +2820,12 @@ export function companyView(state: GameState): ScreenView {
   const menu: MenuItem[] = [];
   if (state.location === 'suze-port') {
     menu.push(item('R', 'Call on investors and agents — 10s, one day', { type: 'companyRelations' }, 'better relations improve public share demand and confidence', state.moneyPence < shillings(10) || (c.relations ?? 0) >= 100));
-    menu.push(item('Q', 'Arrange a four-week supply contract — £4', { type: 'companySupplyContract' }, 'port purchasing trims weekly operating costs by ten per cent', state.moneyPence < pounds(4)));
+    const supplied = (c.supplyContractUntilDay ?? 0) >= state.day;
+    menu.push(item('Q', supplied ? `Supplies contracted through day ${c.supplyContractUntilDay}` : 'Arrange a four-week supply contract — £4', { type: 'companySupplyContract' }, supplied ? 'the present contract must run its course before another is made' : 'costs £4 now; trims crew wages and weekly operating costs by ten per cent for 28 days', supplied || state.moneyPence < pounds(4)));
   }
-  c.crews.forEach((k, i) =>
-    menu.push(
-      item(
-        String(i + 1),
-        `Put the No. ${i + 1} crew to ${k.task === 'mine' ? 'prospecting' : 'the reef'}`,
-        { type: 'setCrewTask', index: i, task: k.task === 'mine' ? 'prospect' : 'mine' },
-        k.task === 'mine' ? 'looking for fresh ground to take up' : 'winning gold off the lease',
-      ),
-    ),
-  );
+  menu.push(item('1', 'Assign the crews', { type: 'goto', screen: 'company-crews' }, 'put each crew to a named mine, development, or prospecting', c.crews.length === 0));
+  menu.push(item('2', 'Manage the mines', { type: 'goto', screen: 'company-ground' }, 'sink deeper, drive a fresh face, install plant, or abandon ground'));
+  menu.push(item('3', 'Plant and driving policy', { type: 'goto', screen: 'company-policy' }, 'risk, output and the company stamping battery'));
   menu.push(
     item(
       'H',
@@ -2539,22 +2840,7 @@ export function companyView(state: GameState): ScreenView {
     ),
   );
   menu.push(item('F', 'Pay off a crew', { type: 'fireCrew' }, undefined, c.crews.length === 0));
-  const dividends: [string, number][] = [
-    ['A', shillings(5)],
-    ['B', shillings(10)],
-    ['C', pounds(1)],
-  ];
-  for (const [key, per] of dividends) {
-    menu.push(
-      item(
-        key,
-        `Declare a dividend of ${formatMoney(per)} the share`,
-        { type: 'declareDividend', perShare: per },
-        `${formatMoney(per * issued)} out of the treasury, ${formatMoney(per * c.sharesOwned)} of it yours`,
-        per * issued > c.treasury,
-      ),
-    );
-  }
+  menu.push(item('D', 'Declare a dividend', { type: 'goto', screen: 'company-dividend' }, 'choose the amount per issued share', issued <= 0));
   menu.push(
     item('S', `Sell one share at ${formatMoney(c.sharePrice)}`, { type: 'sellOwnShares', n: 1 }, 'if there is any appetite for it', c.sharesOwned <= 0),
   );
@@ -2566,7 +2852,7 @@ export function companyView(state: GameState): ScreenView {
       c.sharesPublic + c.sharesUnsold <= 0 || state.moneyPence < c.sharePrice),
   );
   menu.push(
-    item('X', 'Sell out of the company entirely', { type: 'sellOut' }, `${formatMoney(c.sharesOwned * c.sharePrice)} for the lot, and your name off the door`),
+    item('X', 'Sell out of the company entirely', { type: 'sellOut' }, `${formatMoney(worth)} for the scrip and your share of treasury, and your name off the door`),
   );
   menu.push(back(where));
   return {
@@ -2754,13 +3040,25 @@ function estateLedgerLines(state: GameState): string[] {
   const out: string[] = ['', 'THE ESTATE — WHAT YOUR NAME IS ON'];
   for (const d of deeds) out.push(tally('Deed', d));
   for (const w of e.works) {
-    out.push(tally('Subscribed', `${WORK_NAMES[w.id]}${w.camp ? `, to ${CAMP_DEFS[w.camp].name}` : ''}, day ${w.day}`));
+    out.push(tally('Funded', `${WORK_NAMES[w.id]}${w.camp ? `, to ${CAMP_DEFS[w.camp].name}` : ''}, day ${w.day}`));
     out.push(`    ${plaqueLine(state, w.id)}`);
   }
   if (isJP(state)) {
     out.push(tally('Commission', `Justice of the Peace, gazetted day ${e.jpSince}`));
     out.push('    Arrived a new chum; sits on the Slateford bench now.');
   }
+  return out;
+}
+
+function hearthLedgerLines(state: GameState): string[] {
+  const r = hearthReckoning(state);
+  if (!r.intendedName) return [];
+  const out = ['', 'THE HEARTH — WHAT THE BANK DRAFT DOES NOT SAY'];
+  out.push(tally('Household', `${r.intendedName}; ${r.rung}`));
+  out.push(tally('Dated pulls', `${r.eventsKept} kept, ${r.eventsMissed} missed`));
+  out.push(tally('Sent home', formatMoney(r.remittedPence)));
+  if (r.cottage) out.push(tally('Home', `a cottage in Port Gannet${r.childBorn ? ', and a child born there' : ''}`));
+  out.push(`    ${sayFixed(r.finalLetterKey, state.seed ^ state.day)}`);
   return out;
 }
 
@@ -2771,8 +3069,8 @@ export function endView(state: GameState): ScreenView {
   const scrip = companyWorth(state);
   const buried = stashWorth(state);
   const deeds = estateWorth(state);
-  const total =
-    state.moneyPence + state.bankPence + Math.floor((gold * state.bankRate) / 100) + scrip + buried + deeds;
+  const hearth = hearthWorth(state);
+  const total = netWorth(state);
   const body: string[] = [];
   body.push(`After a year on the goldfields — ${formatDate(state.day)}.`);
   body.push('');
@@ -2787,6 +3085,7 @@ export function endView(state: GameState): ScreenView {
   // Deeds at what was paid for them; the public works are worth nothing here
   // and everything below (§26, §28.2).
   if (deeds > 0) body.push(tally('Deeds and premises', formatMoney(deeds)));
+  if (hearth > 0) body.push(tally('Hearth and home', formatMoney(hearth)));
   body.push(tally('IN ALL', formatMoney(total)));
   body.push('');
   const chart = worthChartLines(state);
@@ -2815,6 +3114,7 @@ export function endView(state: GameState): ScreenView {
   }
   body.push(...equipmentLines(state));
   body.push(...estateLedgerLines(state));
+  body.push(...hearthLedgerLines(state));
   body.push(...otherLedgerLines(state));
   body.push('');
   body.push(`Health: ${healthWord(state.health)}. Legal record: ${state.outlawed ? 'Proclaimed an outlaw' : titleCase(state.legal)}.`);

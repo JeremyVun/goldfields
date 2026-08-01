@@ -2,13 +2,14 @@ import {
   CAMP_DEFS,
   COACH_DAYS,
   COACH_FARE,
+  COOKSHOP_MEAL_PRICE,
+  HARBOUR_FISH_CATCH_DAYS,
+  HARBOUR_FISH_FAILURE_CHANCE,
   JOBS,
-  MAX_SHARES,
   NO_WORK_CHANCE,
   PUDDLER_RENT,
   QUACK_FEE,
   REST_RECOVERY,
-  SHARE_PRICE,
   STANDING_COUNCIL_JOB,
   STANDING_WAGE_DAY,
   BUSH_ESCAPE,
@@ -84,10 +85,27 @@ import {
   retainLawyer,
   ruleOn,
   setStorePolicy,
-  subscribeWork,
+  fundWork,
 } from './estate';
-import { maybeRumour, payDividends, salvageValue } from './events';
+import { maybeRumour, salvageValue } from './events';
 import { checkGrave, contract, damage, heal, hospitalStay, illnessVars } from './health';
+import {
+  attendBall,
+  buyCottage,
+  canReconcile,
+  consignGoods,
+  giveGift,
+  hearthHealBonus,
+  holdWedding,
+  homeStash,
+  homeUnstash,
+  keepHearthEvent,
+  payAddresses,
+  proposeBanns,
+  readLetters,
+  reconcile,
+  sendRemittance,
+} from './hearth';
 import { buyLicence, makeRun, offerBribe, toGaol, toTheLogs, worsen } from './law';
 import {
   buyGreens,
@@ -353,6 +371,7 @@ function runRest(state: GameState, rng: RNG, log: Log, days: number): void {
   let left = -1;
   for (let i = 0; i < days; i++) {
     heal(state, rng.int(REST_RECOVERY.lo, REST_RECOVERY.hi));
+    heal(state, hearthHealBonus(state));
     if (state.illness && rng.chance(0.16)) {
       log.say('ill.recover', illnessVars(state.illness.id), 'good');
       state.illness = null;
@@ -619,7 +638,7 @@ function handleClaimJumper(state: GameState, rng: RNG, log: Log, action: Action)
     state.screen = screenForLocation(state.location);
     return;
   }
-  let won = false;
+  let won: boolean;
   if (action.choice === 'council') {
     const chance = claim.registered ? 0.95 : Math.min(0.8, 0.35 + state.standing / 200);
     for (let i = 0; i < 2 && !state.gameOver; i++) endDay(state, rng, log, {});
@@ -653,7 +672,7 @@ function handleClaimJumper(state: GameState, rng: RNG, log: Log, action: Action)
 // The reducer
 // ---------------------------------------------------------------------------
 
-function settle(state: GameState, rng: RNG, log: Log): void {
+function settle(state: GameState, log: Log): void {
   if (state.gameOver) state.pending = null;
   // The camp in the ranges is the one screen that can outlive the place it
   // belongs to: a raid takes it away under the player's feet.
@@ -679,10 +698,6 @@ function settle(state: GameState, rng: RNG, log: Log): void {
   if (state.gameOver === 'finished') {
     if (state.screen !== 'end') {
       state.screen = 'end';
-      // A man who calls it a day still owns his shares, and the company still
-      // owes him whatever it owes him.
-      payDividends(state, rng, log);
-      state.shares = 0;
       recordWorth(state);
     }
     return;
@@ -690,8 +705,6 @@ function settle(state: GameState, rng: RNG, log: Log): void {
   if (state.endOfYear && state.screen !== 'end') {
     state.screen = 'end';
     log.say('end.summary', undefined, 'title');
-    payDividends(state, rng, log);
-    state.shares = 0;
     // The last reading of the year, taken after the dividends are in, so the
     // chart ends where the tally does (§21).
     recordWorth(state);
@@ -705,12 +718,57 @@ export function step(state: GameState, action: Action, rng: RNG): StepResult {
 
   apply(s, action, rng, log);
 
-  settle(s, rng, log);
+  settle(s, log);
   s.rngState = rng.save();
   return { state: s, events: log.events };
 }
 
+function positiveInt(value: number, max = 365): boolean {
+  return Number.isFinite(value) && Number.isInteger(value) && value > 0 && value <= max;
+}
+
+function nonNegativeIndex(value: number): boolean {
+  return Number.isFinite(value) && Number.isInteger(value) && value >= 0;
+}
+
+/** Runtime trust boundary for the exported reducer; TypeScript is not present in saves or callers. */
+function actionPayloadValid(action: Action): boolean {
+  switch (action.type) {
+    case 'work': case 'hospital': case 'mine': case 'hireMate': case 'rentPuddler':
+    case 'rest': case 'guardClaim':
+      return positiveInt(action.days);
+    case 'buyProvisions':
+      return positiveInt(action.weeks, 12);
+    case 'buy':
+      return action.qty === undefined || positiveInt(action.qty, 100);
+    case 'gamble': case 'startGamble':
+      return positiveInt(action.stake, 1_000_000_000);
+    case 'sellOwnShares': case 'buyBackShares':
+      return positiveInt(action.n, 20);
+    case 'declareDividend': case 'sendRemittance':
+      return positiveInt(action.type === 'declareDividend' ? action.perShare : action.amount, 1_000_000_000);
+    case 'setCrewTask':
+      return nonNegativeIndex(action.index) && (action.lease === undefined || nonNegativeIndex(action.lease));
+    case 'setLeasePlan': case 'installPlant': case 'abandonLease':
+      return nonNegativeIndex(action.lease);
+    case 'dismissGangMember':
+      return nonNegativeIndex(action.index);
+    case 'deposit': case 'withdraw': case 'stash': case 'unstash':
+      return action.amount === -1 || positiveInt(action.amount, 1_000_000_000);
+    case 'homeStash': case 'homeUnstash':
+      return positiveInt(action.amount, 1_000_000_000);
+    case 'newGame':
+      return action.seed === undefined || nonNegativeIndex(action.seed);
+    default:
+      return true;
+  }
+}
+
 function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
+  if (!actionPayloadValid(action)) {
+    log.raw('That quantity is not one the clerk can enter in the ledger.', 'bad');
+    return;
+  }
   // Encounters swallow everything until answered.
   if (s.pending && s.screen === 'encounter') {
     if (s.pending.kind === 'claimJumper') {
@@ -827,7 +885,7 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
       return;
 
     case 'save': {
-      const id = String(1000 + Math.floor(rng.next() * 8999));
+      const id = s.gameId ?? action.id ?? String(1000 + Math.floor(rng.next() * 8999));
       s.gameId = id;
       log.raw(
         `Your game is saved under the number ${id}. Write it down; you will need it to take up this game again.`,
@@ -928,19 +986,28 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
     case 'buyMeal':
       if (s.fedToday) {
         log.raw('You have a meal waiting already.', 'neutral');
-      } else if (s.moneyPence < shillings(1)) {
+      } else if (s.moneyPence < COOKSHOP_MEAL_PRICE) {
         log.raw('The cookshop does not give credit.', 'bad');
       } else {
-        s.moneyPence -= shillings(1);
+        s.moneyPence -= COOKSHOP_MEAL_PRICE;
         s.fedToday = true;
         log.raw('Stew, bread and onions: plain, hot and enough for today.', 'good');
       }
       return;
 
     case 'fishForFood': {
-      const caught = rng.int(3, 7);
-      s.provisionDays = Math.min(84, s.provisionDays + caught);
-      log.raw(`A day among the pilings leaves you with ${caught} days' worth of fish to smoke or cook.`, caught >= 5 ? 'good' : 'neutral');
+      const caught = rng.chance(HARBOUR_FISH_FAILURE_CHANCE)
+        ? 0
+        : rng.int(HARBOUR_FISH_CATCH_DAYS.lo, HARBOUR_FISH_CATCH_DAYS.hi);
+      if (caught === 0) {
+        log.raw('A day among the pilings brings no catch at all.', 'bad');
+      } else {
+        s.provisionDays = Math.min(84, s.provisionDays + caught);
+        log.raw(
+          `A day among the pilings brings ${caught} days' worth of fish to eat or smoke.`,
+          'good',
+        );
+      }
       endDay(s, rng, log, { toil: true });
       return;
     }
@@ -1169,24 +1236,49 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
           log.raw('The wind takes the dust and leaves no colour worth keeping.', 'neutral');
         }
       } else {
-        const chance = Math.min(0.9, 0.3 + Math.max(0, e.daysSearched - 5) * 0.15);
+        const digs = Math.max(0, e.daysSearched - 4);
+        // Four clues merely find the leader. It then takes at least three days
+        // of trenching before the legendary stone can be exposed.
+        const chance = digs < 3 ? 0 : Math.min(0.5, 0.1 + (digs - 3) * 0.1);
         if (rng.chance(chance)) {
           const gold = rng.int(60000, 110000);
           e.nuggetFound = true;
-          s.goldCentiOz += gold;
-          s.stats.goldWon += gold;
-          log.raw(`The pick rings on metal. The Southern Cross comes out piece by piece—a single monstrous nugget of ${formatGold(gold)}, too heavy for one man to lift cleanly.`, 'good');
-          addJournal(s, `Found The Southern Cross, a giant nugget of ${formatGold(gold)}, at the secret working.`, 'good');
+          e.nuggetCentiOz = gold;
+          e.nuggetRecovered = false;
+          log.raw(`The pick rings on metal. The Southern Cross lies exposed: a single monstrous nugget of ${formatGold(gold)}, too heavy for two men to shift. It remains in the hole until you bring a dray and enough hands.`, 'good');
+          addJournal(s, `Exposed The Southern Cross, a giant nugget of ${formatGold(gold)}, at the secret working.`, 'good');
         } else {
           log.raw('The leader pinches, turns and disappears. You widen the hole; the promise survives another day.', 'bad');
         }
       }
       damage(s, rng.int(1, 4), 'the desert search');
       if (!s.gameOver) endDay(s, rng, log, { toil: true });
-      if (e.daysSearched >= 10 && !e.nuggetFound) {
+      if (e.daysSearched >= 14 && !e.nuggetFound) {
         e.exhausted = true;
         log.raw('Ten days of signs and holes end in barren stone. The expedition is over; only the return remains.', 'bad');
       }
+      return;
+    }
+
+    case 'recoverNugget': {
+      const e = s.secretExpedition;
+      const weight = e?.nuggetCentiOz ?? 0;
+      if (s.location !== 'secret-mine' || !e?.nuggetFound || e.nuggetRecovered || weight <= 0) return;
+      const cost = pounds(10);
+      if (s.moneyPence < cost) {
+        log.raw('A dray, six men and their water cost ten pounds. Promises will not move the stone.', 'bad');
+        return;
+      }
+      s.moneyPence -= cost;
+      for (let i = 0; i < 3; i++) {
+        endDay(s, rng, log, { toil: true });
+        if (s.gameOver || s.endOfYear) return;
+      }
+      e.nuggetRecovered = true;
+      s.goldCentiOz += weight;
+      s.stats.goldWon += weight;
+      log.raw(`Six men, a block and tackle and a groaning dray bring The Southern Cross out whole. ${formatGold(weight)} is now packed for the bank.`, 'good');
+      addJournal(s, `Recovered The Southern Cross with a hired dray and six men.`, 'good');
       return;
     }
 
@@ -1531,25 +1623,6 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
       log.raw('You leave the hole to fill with water and rubbish, as ten thousand others have been left.', 'neutral');
       return;
 
-    case 'buyShares': {
-      const n = Math.min(action.n, MAX_SHARES - s.shares);
-      const cost = SHARE_PRICE * n;
-      if (n <= 0) {
-        log.raw('The company will not sell you more than three shares.', 'bad');
-        return;
-      }
-      if (s.moneyPence < cost) {
-        log.raw('Five pounds the share, and the clerk will not take less.', 'bad');
-        return;
-      }
-      s.moneyPence -= cost;
-      if (s.shares === 0) s.sharesBoughtOn = s.day;
-      s.shares += n;
-      log.say('shares.buy', { n, amount: formatMoney(cost) }, 'neutral');
-      addJournal(s, `Took up ${n} share${n === 1 ? '' : 's'} in a company mine.`, 'neutral');
-      return;
-    }
-
     case 'rest':
       runTask(s, rng, log, { kind: 'rest', days: action.days });
       return;
@@ -1641,6 +1714,10 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
 
     case 'companySupplyContract':
       if (!s.company || s.location !== 'suze-port') return;
+      if ((s.company.supplyContractUntilDay ?? 0) >= s.day) {
+        log.raw(`The company is already supplied through day ${s.company.supplyContractUntilDay}.`, 'neutral');
+        return;
+      }
       if (s.moneyPence < pounds(4)) {
         log.raw('The shipping agent wants four pounds against the contract.', 'bad');
         return;
@@ -1678,8 +1755,63 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
       return;
     }
 
-    case 'subscribeWork':
-      subscribeWork(s, log, action.work, action.camp);
+    case 'fundWork':
+      fundWork(s, log, action.work, action.camp);
+      return;
+
+    // --- Hearth & kin ---------------------------------------------------
+    case 'attendBall':
+      if (attendBall(s, rng, log)) endDay(s, rng, log, {});
+      return;
+
+    case 'payAddresses':
+      payAddresses(s, log);
+      return;
+
+    case 'callAtThePort':
+      if (keepHearthEvent(s, log)) endDay(s, rng, log, {});
+      return;
+
+    case 'giveGift':
+      giveGift(s, log, action.lavish);
+      return;
+
+    case 'proposeBanns':
+      proposeBanns(s, rng, log);
+      return;
+
+    case 'holdWedding':
+      if (holdWedding(s, log)) endDay(s, rng, log, {});
+      return;
+
+    case 'buyCottage':
+      buyCottage(s, log, action.size);
+      return;
+
+    case 'homeStash':
+      homeStash(s, log, action.what, action.amount);
+      return;
+
+    case 'homeUnstash':
+      homeUnstash(s, log, action.what, action.amount);
+      return;
+
+    case 'consignGoods':
+      consignGoods(s, rng, log);
+      return;
+
+    case 'sendRemittance':
+      sendRemittance(s, log, action.amount);
+      return;
+
+    case 'readLetters':
+      readLetters(s, log);
+      return;
+
+    case 'seekReconciliation':
+      if (!canReconcile(s)) return;
+      passKeptDays(s, rng, log, 30);
+      if (!s.gameOver && !s.endOfYear) reconcile(s, log);
       return;
 
     case 'acceptCommission':
@@ -1823,11 +1955,17 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
     case 'awaitAssizes':
     case 'takePardon':
     case 'watchWeighing':
+    case 'answerClaimJumper':
     case 'attendMeeting':
     case 'joinStockade':
     case 'keepClear':
     case 'sellSupplies':
       return;
+
+    default: {
+      const exhaustive: never = action;
+      return exhaustive;
+    }
   }
 }
 

@@ -27,7 +27,7 @@ const TOUR = [
   { name: '03-intro', keys: ['x9:Space'] },
   { name: '04-port', keys: ['Space'] },
   { name: '05-store', keys: ['2'] },
-  { name: '06-kitty', keys: ['Escape'] },
+  { name: '06-menu', keys: ['Escape'] },
   { name: '07-map', keys: ['Escape', 'm'] },
   { name: '08-mine', keys: ['Escape', '0', 'G'] },
 ];

@@ -87,13 +87,18 @@ Fictional geography (faithful names):
     horse-powered puddling machine, faithful); night-time crime; snakes; flash floods in
     its steep gully.
   - **Blackcap Ranges** — shaft/reef country and **big company mines**; highest potential
-    yields; cave-in and flooding risk; player may buy **shares** in a mining company or
-    work for company wages.
+    yields; cave-in and flooding risk; company wages and, once capitalised, the chance
+    to float and run the player's own mine.
   - **Widow's Reef** — sometimes there are **rumours of a lost reef**.
     Rumours may be genuine (a rich, remote working reachable by a hard journey) or a
     **hoax** (days wasted). At most one genuine chance per year.
-- A **map screen** (M key) drawn in period style showing Port Gannet, the two tracks, Slate
-  River, Slateford and the camps (the original shipped a poster map).
+- A **map screen** (M key): a drawn survey sheet of the period (`src/ui/map.ts`, SVG) —
+  water-lined sea, hachured ranges, a made road in twin lines and bush tracks in dashes,
+  place names in spaced roman capitals, with a title cartouche, a reference table, a scale of
+  miles and a compass rose in the margin. It shows Port Gannet, the two roads, Slate River,
+  Slateford and the camps (the original shipped a poster map). The sheet carries the country's
+  own names; the prose beneath it carries only the player's standing on the field, so that map
+  and notes are one page on any glass.
 
 ## 5. Program/screen structure
 
@@ -149,8 +154,8 @@ Choices, then a day-by-day journey with events:
     cradle unless a barrow is bought). Requires **water bags and provisions** or risk
     thirst/starvation — in summer, travellers **have died of thirst** (faithful):
     running out of water in summer costs severe health loss, possible death.
-  - **Wagon ride** — **£3** per person, gear carried; 20% slower than walking pace is
-    NOT true — wagons move at walking pace but carry everything and halve fatigue;
+  - **Wagon ride** — **10s** per person, gear carried; 20% slower than walking pace is
+    NOT true — wagons move at walking pace, carry everything and clear fatigue;
     bogging risk in winter mud (lose 1–3 days).
   - **Horseback** — fastest (**3 days** either route). Horses at the Port Gannet dealer:
     **brumby £15** (hardy, finds water, won't eat poisonous plants — faithful) or
@@ -216,7 +221,7 @@ location, equipment, and active "rush" news):
 | **Cradle** | cradle, ideally a mate | "easiest and surest way of finding gold, but never in such large quantities as shaft mining" (faithful) — steadier, higher mean; hire a mate for 2s/day or yields halve |
 | **Puddling machine** | rent at Copperhead Gully, 5s/day | good in winter when creeks run; watch the owner or lose a little dirt (faithful) |
 | **Shaft mining** | pick, shovel, rope & bucket; timber supports & pump strongly advised | Blackcap Ranges (and lucky claims elsewhere). Multi-day sinking (bottoming at 20–100 ft, faithful) with nothing until "bottomed", then chance of striking the reef: the big lottery. **Cave-in risk each day** (much reduced by timber supports), **flooding risk in winter** (reduced by pump). Cave-in: injury, possible death, shaft lost. |
-| **Buy shares / company work** | Blackcap Ranges | shares (£5 each, up to 3 — matches the three share certificates shipped with the game) pay dividends at year end scaled to a hidden company-fortune roll; company wages 5s/day, safe but slow |
+| **Company work** | Blackcap Ranges | company wages 5s/day, safe but slow; a proven, capitalised miner can later float and run his own company (§19) |
 
 - **Dryblowing** appears as Journal lore and as the technique at **Widow's Reef**
   (a desert working) if the genuine rumour is followed: no water needed, good yields,
@@ -294,7 +299,7 @@ Simulated over many seeded runs (see §16):
 - A player who never leaves Port Gannet and just works ends the year with roughly
   **£15–£30** — survival, not fortune (mirrors the design intent: wages alone won't do).
 - A cautious licensed panner/cradler at Reedbank Camp typically ends with **£50–£250**.
-- A skilled strategy (cradle + good exchange timing + shaft or shares when capitalised)
+- A skilled strategy (cradle + good exchange timing + a shaft or company when capitalised)
   can reach **£500–£2000**; the shaft/secret-mine lottery allows rare windfalls beyond.
 - An unlicensed, careless, or unlucky player frequently ends the year broke, jailed, or
   dead. Death rate for a reasonable strategy should be **under ~10%**, but visible.
@@ -448,10 +453,10 @@ monster meeting (§20); −10 per rung of legal worsening. Never decays. Gates:
   rather than a second reputation grind beyond partnership, are the main gates.
 - **≥ 60**: Bell knows your name — 10% off store goods (not provisions).
 
-## 19. The company — labourer become capitalist (amends §9 shares row)
+## 19. The company — labourer become capitalist
 
-The existing three-certificate £5 share purchase in the Blackcap Ranges company stays
-as-is (the small-time flutter). This section is the player's *own* company.
+There is no passive outside-company share office. This section is the player's *own*
+company: ground, payroll, public issuance, development and risk under one set of books.
 
 ### 19.1 Floating
 
@@ -675,8 +680,11 @@ trade-off curve rather than forcing it.
 - **Licence at a glance**: at any camp, the status line adds `Licence 12d` (or `NO
   LICENCE`). Starting a mining spell that will outlive the licence warns first:
   "your licence dies on Thursday, mid-spell."
-- **Map**: mark the player, pegged claims, an active rush ("a RUSH at Copperhead
-  Gully"), and the company's workings.
+- **Map**: the player is a star; his pegs, an active rush, the company's workings, his
+  store, race and shanty are written against the camps in his own hand (a second ink, in
+  italic, over the engraving), and a wanted man's reward notice is pinned in the margin.
+  Widow's Reef appears only once heard of, Split Rock Camp only once made — and then off the
+  surveyed country, on a trail of dots.
 - **Camp screens differ**: each camp screen leads with what is *distinct* there
   (freshness word, rush, puddling machine, company office) so moving feels like
   arriving somewhere new.
@@ -690,9 +698,9 @@ New bots in the harness:
 - **rush chaser**: a cradler who re-pegs at whichever camp freshness/rush favours.
   Target: median ≥ 1.25× the static cautious cradler's median (moving must pay).
 - **company magnate**: an aggressive shafter who floats a company once proven and
-  capitalised, hires crews, declares dividends. Target: median **£800–£3500**,
-  p90 ≥ £2000, deaths < 20%. The richest strategy in the game, as it should be —
-  the ones who really made money sold shovels and floated companies.
+  capitalised, hires crews, develops its mines and declares dividends. Its original
+  £800–£3500 target is superseded by the second-year company model in §19.4: year-one
+  median **£400–£700**, still above the aggressive shafter, and deaths below 20%.
 - **stockade note**: bots ignore the stockade (keep clear) except one assertion run
   verifying joining is survivable-but-costly and the aftermath removes hunts.
 
@@ -891,7 +899,7 @@ strike a rule from the world's dice** — visibly, for everyone, with the player
 it. Anything that merely pays income at a rate is the company's job, not this ladder's.
 Sizing law: the sinks together cost ~£900+; a £300–£500 player must *choose* what kind
 of notable to become. Period fidelity holds: publicans, storekeepers who out-earned the
-diggers, subscription-built bridges, hospital benefactors and post-Eureka Local Courts
+diggers, publicly funded bridges, hospital benefactors and post-Eureka Local Courts
 are all sources-adjacent.
 
 ## 26. Property — buying a seat at the table (new)
@@ -951,8 +959,8 @@ Each purchase: journal entry, newspaper story, and the deed named in the kitty.
 
 ## 27. Public works — striking rules from the dice (new)
 
-Subscribed at the **Council Chambers** (the Council puts up a plaque; the Times
-prints the subscription list with the player's name at its head). Pure sinks — no
+Funded at the **Council Chambers** (the Council puts up a plaque; the Times
+prints the public-works list with the player's name at its head). Pure sinks — no
 income, ever. Each grants **+10 standing**, a journal entry, and a permanent,
 field-wide rule change:
 
@@ -960,7 +968,7 @@ field-wide rule change:
 |---|---|---|
 | **Bridge over Slate River** | £120 | winter bogging/flood-crossing events on the Slateford–Reedbank Camp leg **removed for all travel** (player, escort, everyone); that leg costs half a day |
 | **Water race to a chosen camp** | £80 | at that camp: carried water is no longer consumed, summer thirst and dust events halved, **Sandy Blight struck from its event table**, puddling works year-round (§9), camp freshness decay −25% (water washes more ground) |
-| **A ward at Canvas House** | £100 | treatment **free for the subscriber, half-price for the field**; dysentery/typhoid base rates at all camps ×0.8 (the sick are carted out before it spreads) |
+| **A ward at Canvas House** | £100 | treatment **free for its benefactor, half-price for the field**; dysentery/typhoid base rates at all camps ×0.8 (the sick are carted out before it spreads) |
 | **A school at Slateford** | £60 | pure standing (+15 total) and the epilogue's warmest line; year two: one educated youngster turns up as the best mate/crew hire in the game (wage-free mate, loyalty 1.0) |
 
 Works persist into year two. The map (§21) marks them. When a struck event *would*

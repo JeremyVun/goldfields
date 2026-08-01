@@ -25,7 +25,9 @@ import {
   COMPANY_DRIVE_FACE,
   COMPANY_DRIVE_YIELD,
   COMPANY_DRIVING,
+  COMPANY_DEWATER_WEEKS,
   COMPANY_FACE_WEEKS,
+  COMPANY_FLOOD_CHANCE,
   COMPANY_SINK_BASE_WEEKS,
   COMPANY_SINK_COST,
   COMPANY_FLOAT_CAPITAL,
@@ -45,6 +47,8 @@ import {
   COMPANY_PROSPECT_CHANCE,
   COMPANY_PROSPECT_OLD_HAND,
   COMPANY_PUMP_PLANT,
+  COMPANY_PUMP_BREAK,
+  COMPANY_PUMP_REPAIR,
   COMPANY_REGISTRATION_FEE,
   COMPANY_SELLOUT_FLOOR,
   COMPANY_SHARES,
@@ -64,7 +68,11 @@ import { formatGold, formatMoney } from './money';
 import type { Log } from './narrate';
 import type { RNG } from './rng';
 import { addJournal, addStanding, legalRung, shaftRank } from './state';
+import { season } from './time';
 import type { Company, DrivingRate, GameState, Lease, LeasePlan } from './types';
+import { availableFunds, debitFunds } from './wallet';
+
+export { availableFunds as purse } from './wallet';
 
 // ---------------------------------------------------------------------------
 // Naming
@@ -146,10 +154,6 @@ export interface Requirement {
   text: string;
 }
 
-export function purse(state: GameState): number {
-  return state.moneyPence + state.bankPence;
-}
-
 /** What the registrar asks of a man before he will write him up as a company. */
 export function floatRequirements(state: GameState): Requirement[] {
   const claim = state.claims['deep-mountains'];
@@ -167,7 +171,7 @@ export function floatRequirements(state: GameState): Requirement[] {
       text: `ground of your own in the ${CAMP_DEFS['deep-mountains'].name}, bottomed on payable wash`,
     },
     {
-      met: purse(state) >= COMPANY_FLOAT_CAPITAL,
+      met: availableFunds(state) >= COMPANY_FLOAT_CAPITAL,
       text: `${formatMoney(COMPANY_FLOAT_CAPITAL)} in hand and bank; the clerk will not register paupers`,
     },
   ];
@@ -179,11 +183,7 @@ export function canFloat(state: GameState): boolean {
 
 /** Fee, then subscription, taken from the pocket first and the bank after. */
 function drawFrom(state: GameState, amount: number): boolean {
-  if (purse(state) < amount) return false;
-  const fromHand = Math.min(amount, state.moneyPence);
-  state.moneyPence -= fromHand;
-  state.bankPence -= amount - fromHand;
-  return true;
+  return debitFunds(state, amount);
 }
 
 export function subscriptionCost(shares: number): number {
@@ -320,8 +320,7 @@ export function setCrewTask(
 }
 
 // ---------------------------------------------------------------------------
-// Development, plant and policy (§19.4) — skeleton API; bodies owned by the
-// engine work, signatures relied upon by the screens.
+// Development, plant and policy (§19.4).
 // ---------------------------------------------------------------------------
 
 /** What the developing crews are to do with a mine whose face has cut out. */
@@ -329,6 +328,10 @@ export function setLeasePlan(state: GameState, log: Log, lease: number, plan: Le
   const c = state.company;
   const l = c?.leases[lease];
   if (!c || !l || l.level === 0 && plan === 'drive') return false;
+  if (leaseIsWet(l) && !l.pump) {
+    log.raw(`${l.name} cannot be developed below the water until a pumping plant is installed.`, 'bad');
+    return false;
+  }
   if (l.plan === plan) return false;
   l.plan = plan;
   l.progress = 0;
@@ -389,7 +392,10 @@ export function abandonLease(state: GameState, log: Log, lease: number): boolean
   const l = c?.leases[lease];
   if (!c || !l) return false;
   c.leases.splice(lease, 1);
-  for (const crew of c.crews) if (crew.lease === lease) crew.lease = undefined;
+  for (const crew of c.crews) {
+    if (crew.lease === lease) crew.lease = undefined;
+    else if (crew.lease !== undefined && crew.lease > lease) crew.lease -= 1;
+  }
   log.say('company.lease.abandon', { name: l.name }, 'bad');
   addJournal(state, `${c.name} abandoned ${l.name}, and everything sunk in it.`, 'bad');
   return true;
@@ -397,7 +403,7 @@ export function abandonLease(state: GameState, log: Log, lease: number): boolean
 
 /** What the stone at the face is worth today, as a multiplier of an ordinary week. */
 export function leaseValue(lease: Lease): number {
-  if (lease.level === 0 || lease.face <= 0 || lease.flooded) return 0;
+  if (lease.level === 0 || lease.face <= 0 || lease.flooded || (leaseIsWet(lease) && !lease.pump)) return 0;
   return lease.yieldNow / 100;
 }
 
@@ -510,6 +516,34 @@ export function companyWeek(state: GameState, rng: RNG, log: Log): void {
   const drive = COMPANY_DRIVING[c.driving];
   const quitters = new Set<Company['crews'][number]>();
 
+  // Water is a property of each named mine, not a one-off event. A working
+  // pump prevents winter flooding; when it breaks, the treasury repairs it if
+  // it can and otherwise the plant stands idle until the director intervenes.
+  for (const lease of c.leases) {
+    if (lease.pump && rng.chance(COMPANY_PUMP_BREAK)) {
+      const repair = rng.int(COMPANY_PUMP_REPAIR.lo, COMPANY_PUMP_REPAIR.hi);
+      if (c.treasury >= repair) {
+        c.treasury -= repair;
+        upkeep += repair;
+        log.say('company.pump.repaired', { name: lease.name, amount: formatMoney(repair) }, 'neutral');
+      } else {
+        lease.pump = false;
+        log.say('company.pump.broken', { name: lease.name }, 'bad');
+      }
+    }
+    if (
+      season(state.day) === 'winter' &&
+      leaseIsWet(lease) &&
+      !lease.pump &&
+      !lease.flooded &&
+      rng.chance(COMPANY_FLOOD_CHANCE)
+    ) {
+      lease.flooded = true;
+      lease.progress = 0;
+      log.say('company.flood', { name: lease.name }, 'bad');
+    }
+  }
+
   for (const crew of c.crews) {
     if (crew.task === 'prospect') {
       const p =
@@ -557,10 +591,19 @@ export function companyWeek(state: GameState, rng: RNG, log: Log): void {
     }
 
     if (crew.task === 'develop') {
-      // Skeleton behaviour: sinking and driving in their crudest workable form.
-      // The engine work owns the full §19.4 rules (water, gates, dewatering).
       const l = crew.lease !== undefined ? c.leases[crew.lease] : c.leases[0];
-      if (!l || !l.plan) continue;
+      if (!l) continue;
+      if (l.flooded) {
+        if (!l.pump) continue;
+        l.progress += 1;
+        if (l.progress >= COMPANY_DEWATER_WEEKS) {
+          l.progress = 0;
+          l.flooded = false;
+          log.say('company.dewatered', { name: l.name }, 'good');
+        }
+        continue;
+      }
+      if (!l.plan || (leaseIsWet(l) && !l.pump)) continue;
       const cost = l.plan === 'sink' ? COMPANY_SINK_COST : COMPANY_DRIVE_COST;
       if (c.treasury < cost) continue;
       c.treasury -= cost;
@@ -635,7 +678,7 @@ export function companyWeek(state: GameState, rng: RNG, log: Log): void {
   }
   if (quitters.size > 0) {
     c.crews = c.crews.filter((crew) => !quitters.has(crew));
-    for (const _crew of quitters) {
+    for (let i = 0; i < quitters.size; i++) {
       log.say('company.crew.quit', undefined, 'bad');
     }
   }
@@ -725,7 +768,9 @@ export function declareDividend(state: GameState, log: Log, perShare: number): b
 export function sellOut(state: GameState, log: Log): boolean {
   const c = state.company;
   if (!c) return false;
-  const amount = c.sharesOwned * c.sharePrice;
+  const amount = Math.round(
+    c.sharesOwned * c.sharePrice + (c.treasury * c.sharesOwned) / COMPANY_SHARES,
+  );
   state.moneyPence += amount;
   state.soldOut = { name: c.name, amount, day: state.day };
   log.say('company.sellout', { name: c.name, amount: formatMoney(amount) }, 'neutral');

@@ -252,7 +252,6 @@ interface DiggerPlan {
   carryLimit?: number;
   route: 'trickeys' | 'pass';
   hireMate?: boolean;
-  buyShares?: boolean;
   /** Days of licence cover bought in advance; each licence is a point of name. */
   licenceStock?: number;
   /** Money kept out of the bank, for troopers and for a company's wages. */
@@ -317,7 +316,7 @@ function companyBusiness(state: GameState): Action | null {
 const CIVIC_RESERVE = pounds(8);
 /** Past this the field's good opinion is had, and rounds are only rounds. */
 const SHOUT_UNTIL_STANDING = 65;
-/** The subscription list, cheapest first: a man gives what he can spare (§27). */
+/** Public works, cheapest first: a man gives what he can spare (§27). */
 const WORK_ORDER: WorkId[] = ['ward', 'school', 'waterRace', 'bridge'];
 
 /** Generosity counts once in a fortnight; the fortnight is the whole rule (§30.3). */
@@ -347,7 +346,7 @@ function civicAtTown(state: GameState): Action | null {
     const camp = state.estate.store?.camp;
     if (id === 'waterRace' && !camp) continue;
     if (purse(state) < WORK_DEFS[id].cost + pounds(200)) continue;
-    return { type: 'subscribeWork', work: id, camp: id === 'waterRace' ? camp : undefined };
+    return { type: 'fundWork', work: id, camp: id === 'waterRace' ? camp : undefined };
   }
   return null;
 }
@@ -471,9 +470,6 @@ function makeDigger(plan: DiggerPlan): Bot {
         }
         if (state.provisionDays < 25 && state.moneyPence > shillings(30)) {
           return { type: 'buyProvisions', weeks: 4 };
-        }
-        if (plan.buyShares && state.shares < 3 && state.moneyPence > pounds(20)) {
-          return { type: 'buyShares', n: 1 };
         }
         // Keep a fiver about you for troopers; bank the rest.
         if (state.moneyPence > KEEP_FOR_BRIBE + reserve(state) + pounds(1)) {
@@ -614,7 +610,6 @@ export const aggressiveShafter = makeDigger({
   capitalToLeave: shillings(45),
   carryLimit: 1800,
   route: 'trickeys',
-  buyShares: true,
 });
 
 export const licenceDodger = makeDigger({
@@ -685,7 +680,7 @@ const REEF_FALLS = 3;
  */
 function wantsCapital(state: GameState): boolean {
   // Three falls of earth and he has done with holes: the men who kept going
-  // down after that are the ones the subscription lists are got up for.
+  // down after that are the ones public-works lists are got up for.
   if (state.stats.caveIns >= REEF_FALLS) return false;
   return !state.estate.store && purse(state) < STORE_PRICE + STORE_STOCK_PRICE + CIVIC_RESERVE;
 }

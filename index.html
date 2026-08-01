@@ -11,6 +11,16 @@
     />
     <meta name="color-scheme" content="dark" />
     <title>Goldrush</title>
+    <!-- A gold nugget, drawn on a 16x16 grid and scaled by whole numbers only,
+         so the tab strip gets square pixels rather than a blurred photograph of
+         them. Cut out rather than tiled, with an ink keyline to hold its edge
+         on a pale strip and a dark one both; the home-screen icon is the same
+         nugget in a printed block, because iOS renders transparency black. The
+         .ico carries 16/32/48 for the browsers that will not read the .svg.
+         All of them come from `scratch/favicon.mjs`. -->
+    <link rel="icon" href="./favicon.ico" sizes="16x16 32x32 48x48" />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
     <meta
       name="description"
       content="Goldrush — an 1854 Australian gold-rush life simulation."

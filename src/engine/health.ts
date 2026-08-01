@@ -125,8 +125,11 @@ export function sicknessRisk(state: GameState): number {
   const raced = isCamp(state.location) && hasWork(state, 'waterRace', state.location);
 
   if (state.location === 'suze-port' || state.location === 'fields-town') {
+    const atHome = state.location === 'suze-port' && state.hearth.cottage &&
+      (state.hearth.rung === 'wed' || state.hearth.rung === 'settled');
     const lodging = lodgingAt(state);
-    if (lodging === 'rough') risk += 0.014;
+    if (atHome) risk += 0;
+    else if (lodging === 'rough') risk += 0.014;
     else if (lodging === 'stable') risk += 0.008;
     else if (lodging === 'tentground') risk += 0.005;
     else risk += 0.002;
@@ -149,7 +152,7 @@ export function sicknessRisk(state: GameState): number {
 /** Which affliction the field hands out, given season and place. */
 export function rollIllness(state: GameState, rng: RNG): IllnessId {
   const s = season(state.day);
-  // The subscribers' ward carts the sick out before they infect a gully (§27).
+  // The diggers' ward carts the sick out before they infect a gully (§27).
   const ward = hasWork(state, 'ward') ? WARD_DISEASE_FACTOR : 1;
   const raced = isCamp(state.location) && hasWork(state, 'waterRace', state.location);
   const table: [IllnessId, number][] = [
@@ -212,7 +215,7 @@ export function nightlyHealth(state: GameState, rng: RNG, log: Log): void {
   }
 
   // Now and then the player is shown the ward doing what the ward was
-  // subscribed for, since a rule struck from the dice is otherwise invisible.
+  // funded, since a rule struck from the dice is otherwise invisible.
   if (!state.illness && isCamp(state.location) && hasWork(state, 'ward') && rng.chance(0.012)) {
     log.say('works.ward.absence', undefined, 'good');
   }
@@ -253,6 +256,21 @@ export function checkGrave(
   }
 
   const days = rng.int(4, 10);
+  const goesHome = state.hearth.cottage &&
+    (state.hearth.rung === 'wed' || state.hearth.rung === 'settled');
+  if (goesHome) {
+    log.raw(`${state.hearth.intended?.name ?? 'Your people'} has you carried to the cottage at Port Gannet, not to Canvas House.`, 'good');
+    state.location = 'suze-port';
+    state.screen = 'hearth';
+    state.journey = null;
+    advanceKept(days);
+    heal(state, rng.int(28, 44));
+    if (state.illness && rng.chance(0.85)) state.illness = null;
+    state.fatigue = 0;
+    addJournal(state, `Carted home insensible; ${days} days under the cottage roof.`, 'neutral');
+    checkYearEnd(state);
+    return true;
+  }
   const fee = hospitalFee(state) * days;
   const paid = Math.min(fee, state.moneyPence + state.bankPence);
   if (paid > state.moneyPence) {

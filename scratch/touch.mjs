@@ -62,9 +62,9 @@ check(
   'flavour is in the rows, not in the inspector line',
 );
 
-// The kitty and the map, which have no key to press.
-await page.locator('.gf-legend-act', { hasText: 'KITTY' }).tap();
-check((await page.textContent('.gf-overlay-title')) === 'THE KITTY', 'the kitty opens from the foot of the glass');
+// The menu and the map, which have no key to press.
+await page.locator('.gf-legend-act', { hasText: 'MENU' }).tap();
+check((await page.textContent('.gf-overlay-title')) === 'MENU', 'the menu opens from the foot of the glass');
 await page.locator('.gf-overlay-close').tap();
 check((await page.locator('.gf-overlay-panel').count()) === 0, 'and shuts again from the cross');
 
@@ -111,7 +111,7 @@ check(/BRIGGS/.test(await title()), 'and leaves the player at the counter');
 // Putting the game down, and taking it up again by its number — the one place
 // the frame must ask the glass for a keypad of its own.
 await page.locator('.gf-menu-item', { hasText: 'BACK' }).last().tap();
-await page.locator('.gf-legend-act', { hasText: 'KITTY' }).tap();
+await page.locator('.gf-legend-act', { hasText: 'MENU' }).tap();
 await page.locator('.gf-menu-item', { hasText: 'SAVE' }).first().tap();
 await page.waitForTimeout(200);
 const saved = (await page.textContent('.gf-body')).match(/number (\d+)/);

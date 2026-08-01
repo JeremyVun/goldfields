@@ -25,7 +25,12 @@ body[data-gf-theme='paper'] {
   --gf-scrim: rgba(58, 52, 40, 0.55);
   --gf-shade: rgba(32, 28, 18, 0.28);
   --gf-map-bg: rgba(32, 28, 18, 0.05);
-  --gf-marker-bg: rgba(32, 28, 18, 0.18);
+  /* The map is a printed sheet, not a screen: its own paper, its own ink, and
+     the red-brown a man's own pen puts on top of the engraving. */
+  --gf-chart-paper: #f4ecd8;
+  --gf-chart-ink: #2b2418;
+  --gf-chart-sea: rgba(46, 74, 84, 0.08);
+  --gf-chart-hand: #7c1d0e;
   --gf-font: 'Courier New', 'DejaVu Sans Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
 }
 
@@ -46,7 +51,6 @@ body[data-gf-theme='paper'] {
   --gf-fs-status: clamp(11.5px, 1.6vw, 13px);
   --gf-fs-aside: clamp(12px, 1.6vw, 13.5px);
   --gf-fs-input: clamp(15px, 2vw, 17px);
-  --gf-fs-map: clamp(7px, 1vw, 11px);
 
   /* The least a thing may be and still be worth aiming a finger at. Zero on a
      mouse: a pointer hits a 20px row perfectly well, and rows that tall would
@@ -80,7 +84,10 @@ body[data-gf-theme='blue'] {
   --gf-scrim: rgba(6, 6, 40, 0.82);
   --gf-shade: rgba(0, 0, 0, 0.45);
   --gf-map-bg: rgba(0, 0, 0, 0.2);
-  --gf-marker-bg: rgba(255, 228, 92, 0.3);
+  --gf-chart-paper: #0c0c5c;
+  --gf-chart-ink: #a8e8ff;
+  --gf-chart-sea: rgba(168, 232, 255, 0.07);
+  --gf-chart-hand: #ffe45c;
 }
 
 /* Strict black & white: brightness carries the tone. */
@@ -102,7 +109,10 @@ body[data-gf-theme='noir'] {
   --gf-scrim: rgba(0, 0, 0, 0.85);
   --gf-shade: rgba(255, 255, 255, 0.3);
   --gf-map-bg: rgba(255, 255, 255, 0.05);
-  --gf-marker-bg: rgba(255, 255, 255, 0.35);
+  --gf-chart-paper: #0c0c0c;
+  --gf-chart-ink: #c8c8c8;
+  --gf-chart-sea: rgba(255, 255, 255, 0.06);
+  --gf-chart-hand: #ffffff;
 }
 
 /* Where a single hue cannot say good from bad, type must. */
@@ -132,6 +142,40 @@ body {
 
 body {
   overflow: hidden;
+}
+
+/*
+ * The scrollbars are part of the cabinet, not the operating system: a chrome
+ * strip down the side of an ink-on-paper page gives the whole illusion away.
+ * Square, two colours, and drawn from the theme's own ink, so they change with
+ * the theme like everything else.
+ */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--gf-frame-border-light) var(--gf-bg-deep);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--gf-bg-deep);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gf-frame-border-light);
+  border: 2px solid var(--gf-bg-deep);
+  border-radius: 0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gf-frame-border);
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--gf-bg-deep);
 }
 
 #crt {
@@ -260,7 +304,9 @@ body {
 
 .gf-body {
   flex: 1 1 auto;
-  min-height: 0;
+  /* Camp character and warnings remain readable even beside a long action
+     list. The prose scrolls inside this floor; the menu may not erase it. */
+  min-height: 110px;
   overflow-y: auto;
   scrollbar-width: thin;
   margin-bottom: 10px;
@@ -472,7 +518,17 @@ body {
   padding: var(--gf-row-pad-y) 6px;
   min-height: var(--gf-tap);
   cursor: pointer;
+  width: 100%;
+  border: 0;
+  background-color: transparent;
+  color: inherit;
+  font-family: inherit;
+  text-align: left;
+  appearance: none;
   font-size: var(--gf-fs-menu);
+  /* Fixed metrics keep the fallback-font triangle from adding two pixels to
+     whichever column currently holds the marker. */
+  line-height: 1.3;
   font-weight: 700;
   border-radius: 2px;
   /* A choice is a button, not prose: no double-tap zoom, no blue flash, and no
@@ -560,12 +616,16 @@ body {
   flex: 0 0 auto;
   margin: 0 0 6px;
   padding: 4px 6px;
-  min-height: 1.6em;
+  height: calc(2.7em + 8px);
   border-left: 3px solid var(--gf-frame-border);
   color: var(--gf-body-dim);
   font-style: italic;
   font-size: var(--gf-fs-inspector);
   line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .gf-inspector.is-empty {
@@ -708,7 +768,7 @@ body {
 }
 
 /*
- * Where the frame's own doings — the kitty, the map — have no key to be
+ * Where the frame's own doings — the menu, the map — have no key to be
  * pressed, the legend stops being a legend and becomes the buttons themselves.
  * Same row, same words, same place at the foot of the glass.
  */
@@ -718,6 +778,9 @@ body {
   gap: 5px;
   min-height: var(--gf-tap);
   padding: 2px 4px;
+  border: 0;
+  background: transparent;
+  font: inherit;
   border-radius: 2px;
   color: inherit;
   cursor: pointer;
@@ -737,7 +800,7 @@ body {
 }
 
 /* ------------------------------------------------------------------ */
-/* Overlays: the kitty and the map                                     */
+/* Overlays: the menu and the map                                     */
 /* ------------------------------------------------------------------ */
 
 .gf-overlay-layer {
@@ -766,13 +829,28 @@ body {
   color: var(--gf-body);
 }
 
+/* The sheet is given the whole panel and the panel is given the whole glass:
+   head, drawing, notes and the way out share one page, and none of it scrolls. */
 .gf-overlay-panel--map {
-  max-width: 900px;
+  max-width: 1000px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  /* On a tall glass the sheet cannot grow any wider than the panel, so what it
+     cannot use is shared above and below rather than dumped at the foot. */
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Wide enough for two or three columns of reckoning; the grid decides how
+   many it actually takes. */
+.gf-overlay-panel--menu {
+  max-width: 880px;
 }
 
 /*
  * Pinned to the top of the panel while the rest of it scrolls beneath. The
- * kitty runs to a page and a half on a phone, and a way out that has to be
+ * menu runs to a page and a half on a phone, and a way out that has to be
  * scrolled to is not a way out.
  */
 .gf-overlay-head {
@@ -780,7 +858,8 @@ body {
   top: calc(-1 * var(--gf-overlay-pad));
   z-index: 1;
   margin: calc(-1 * var(--gf-overlay-pad)) calc(-1 * var(--gf-overlay-pad)) 0;
-  padding: var(--gf-overlay-pad) var(--gf-overlay-pad) 0;
+  /* The last few pixels keep scrolled matter from kissing the rule. */
+  padding: var(--gf-overlay-pad) var(--gf-overlay-pad) 3px;
   background: var(--gf-bg);
 }
 
@@ -791,6 +870,23 @@ body {
   gap: 12px;
 }
 
+/* The day and the place ride on the title's own line where the width allows
+   and drop beneath it where it does not — either way, no line spent on a
+   heading that a value could have had. */
+.gf-overlay-titlewrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px clamp(10px, 2vw, 18px);
+  min-width: 0;
+}
+
+.gf-overlay-sub {
+  font-size: var(--gf-fs-note);
+  letter-spacing: 0.06em;
+  color: var(--gf-body-dim);
+}
+
 .gf-overlay-close {
   display: flex;
   align-items: center;
@@ -799,6 +895,9 @@ body {
   min-width: var(--gf-tap);
   min-height: var(--gf-tap);
   margin: -4px -6px -4px 0;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
   color: var(--gf-yellow);
   font-size: var(--gf-fs-loud);
   font-weight: 700;
@@ -825,6 +924,51 @@ body {
   margin-top: 10px;
 }
 
+/*
+ * The menu's reckoning, set in headed blocks side by side. A man's whole
+ * standing — purse, kit, condition, name on the field — is meant to be taken
+ * in at one glance, so the blocks flow into as many columns as the glass will
+ * carry rather than down past the bottom of the panel. Nothing here is prose:
+ * a dim label, its value after it, and the tightest leading that stays legible.
+ */
+.gf-panels {
+  /* Columns, not a grid: the blocks are of unequal length, and a grid would
+     leave a hand's breadth of paper empty under the short ones. Flowed and
+     balanced, they pack, and the panel keeps its foot above the fold. */
+  columns: 15rem 3;
+  column-gap: clamp(16px, 3vw, 32px);
+  margin-top: 6px;
+}
+
+.gf-panel {
+  margin: 0 0 8px;
+  break-inside: avoid;
+}
+
+.gf-panel-head {
+  margin: 0 0 3px;
+  padding-bottom: 2px;
+  border-bottom: 1px solid var(--gf-frame-border-light);
+  font-size: var(--gf-fs-note);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gf-body-dim);
+}
+
+.gf-panel-row {
+  margin: 0;
+  font-size: var(--gf-fs-aside);
+  line-height: 1.35;
+  font-weight: 700;
+  overflow-wrap: break-word;
+}
+
+.gf-panel-label {
+  font-weight: 400;
+  color: var(--gf-body-dim);
+}
+
 /* The way out of an overlay, and on a touch screen the only one: pressable,
    and sized to be pressed. */
 .gf-overlay-hint {
@@ -833,6 +977,10 @@ body {
   justify-content: center;
   min-height: var(--gf-tap);
   margin: 12px 0 0;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
   color: var(--gf-body-dim);
   font-size: max(0.85em, var(--gf-fs-note));
   text-align: center;
@@ -850,39 +998,359 @@ body {
   }
 }
 
+/* ------------------------------------------------------------------ */
+/* The map: an engraved sheet, drawn rather than typed                  */
+/* ------------------------------------------------------------------ */
+
 /*
- * The map is drawn to a fixed 116 columns and cannot be reflowed; a phone
- * either shows it whole and illegible or legible and scrolling sideways. It
- * scrolls. Dragging it must not be taken for a press, or the map would shut
- * the moment a player tried to look at the far side of it.
+ * The chart is one drawing on a sheet of 1000 x 660, and it scales whole to
+ * whatever room the panel can spare — a map that shrinks is still a map, and
+ * one that scrolls is a wall chart. It takes what is left when the head, the
+ * notes beneath it and the way out have had their share, and no more.
  */
-.gf-map {
-  margin: 10px 0;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-x pan-y;
-  white-space: pre;
-  font-family: var(--gf-font);
-  font-size: var(--gf-fs-map);
-  line-height: 1.35;
-  color: var(--gf-body);
-  font-weight: 700;
-  background: var(--gf-map-bg);
-  padding: 10px;
-  border: 2px solid var(--gf-frame-border);
+.gf-chart {
+  display: block;
+  /* The sheet keeps its own proportions and takes only the height they call
+     for: given more room than that it would sit in a pool of empty page, and
+     given less it shrinks whole rather than spilling over the foot. */
+  flex: 0 1 auto;
+  width: 100%;
+  aspect-ratio: 1000 / 660;
+  min-height: 0;
+  margin: 8px auto;
+  /* A sheet laid on the table, not printed on it. */
+  filter: drop-shadow(0 2px 5px var(--gf-shade));
+  /* Serif for the engraving; the game's own Courier belongs to the ledger, not
+     to a surveyor's sheet. No webfonts — these are the faces a machine has. */
+  font-family: 'Hoefler Text', Baskerville, 'Palatino Linotype', Palatino, 'Times New Roman', Georgia, serif;
 }
 
-.gf-map-hint {
-  margin: -4px 0 10px;
-  color: var(--gf-body-dim);
-  font-size: var(--gf-fs-note);
+.gf-chart text {
+  fill: var(--gf-chart-ink);
+}
+
+/* The sheet, the sea, and the water-lining that follows the coast out. */
+.gf-c-paper {
+  fill: var(--gf-chart-paper);
+}
+.gf-c-water {
+  fill: var(--gf-chart-sea);
+  stroke: none;
+}
+.gf-c-waterline {
+  fill: none;
+  stroke: var(--gf-chart-ink);
+  stroke-width: 1.1;
+  opacity: 0.4;
+}
+.gf-c-waterline--2 {
+  opacity: 0.28;
+}
+.gf-c-waterline--3 {
+  opacity: 0.19;
+}
+.gf-c-waterline--4 {
+  opacity: 0.12;
+}
+.gf-c-coast {
+  fill: none;
+  stroke: var(--gf-chart-ink);
+  stroke-width: 2.4;
+  stroke-linejoin: round;
+}
+.gf-c-river {
+  fill: none;
+  stroke: var(--gf-chart-ink);
+  stroke-width: 3;
+  stroke-linecap: round;
+  opacity: 0.82;
+}
+.gf-c-creek {
+  fill: none;
+  stroke: var(--gf-chart-ink);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  opacity: 0.7;
+}
+
+/* The engraver's line work: hachures down the ranges, and everything ruled thin. */
+.gf-c-hachure {
+  stroke: var(--gf-chart-ink);
+  stroke-width: 1.1;
+  stroke-linecap: round;
+  opacity: 0.72;
+}
+.gf-c-thin {
+  fill: none;
+  stroke: var(--gf-chart-ink);
+  stroke-width: 1;
+  opacity: 0.8;
+}
+.gf-c-ink {
+  fill: none;
+  stroke: var(--gf-chart-ink);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.gf-c-fill,
+.gf-c-block {
+  fill: var(--gf-chart-ink);
+  stroke: none;
+}
+.gf-c-tent {
+  fill: none;
+  stroke: var(--gf-chart-ink);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+
+/* A made road is twin lines ruled together — drawn here as a broad stroke of
+   ink with a narrower stroke of paper laid back down the middle of it. */
+.gf-c-road {
+  fill: none;
+  stroke: var(--gf-chart-ink);
+  stroke-width: 1.6;
+}
+.gf-c-road--outer {
+  stroke-width: 6;
+}
+.gf-c-road--inner {
+  stroke: var(--gf-chart-paper);
+  stroke-width: 3.2;
+}
+.gf-c-track {
+  fill: none;
+  stroke: var(--gf-chart-ink);
+  stroke-width: 2.1;
+  stroke-linecap: round;
+  stroke-dasharray: 9 6;
+}
+.gf-c-track--road {
+  stroke-width: 2.6;
+  stroke-dasharray: 13 7;
+}
+/* Country no surveyor has ruled: a line of dots, and nothing promised by it. */
+.gf-c-trail {
+  fill: none;
+  stroke: var(--gf-chart-ink);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 0.5 8;
+  opacity: 0.72;
+}
+
+/* The lettering: spaced roman capitals for places, italic for water. */
+/* The engraved names are haloed in paper: a name that falls across hachures or
+   water-lining must still be read, and an engraver would have cleared the
+   ground under it. */
+.gf-c-name,
+.gf-c-road-name,
+.gf-c-water-name,
+.gf-c-note-print {
+  stroke: var(--gf-chart-paper);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+  paint-order: stroke fill;
+}
+
+.gf-c-name {
+  font-size: 17px;
+  letter-spacing: 1.6px;
+}
+.gf-c-name--town {
+  font-size: 19px;
+  letter-spacing: 2.2px;
+}
+.gf-c-road-name {
+  font-size: 13px;
+  letter-spacing: 2.4px;
+  opacity: 0.85;
+}
+.gf-c-water-name {
+  font-size: 15px;
   font-style: italic;
+  letter-spacing: 3px;
+  opacity: 0.72;
+}
+.gf-c-water-name--land {
+  font-size: 13px;
+  letter-spacing: 1.2px;
+}
+.gf-c-note-print {
+  font-size: 12px;
+  font-style: italic;
+  opacity: 0.72;
+}
+.gf-c-title {
+  font-size: 18px;
+  letter-spacing: 2px;
+}
+.gf-c-credit {
+  font-size: 10.5px;
+  font-style: italic;
+  opacity: 0.75;
+}
+.gf-c-small-caps {
+  font-size: 13px;
+  letter-spacing: 3px;
+}
+.gf-c-legend {
+  font-size: 12px;
+}
+.gf-c-tiny {
+  font-size: 10px;
+}
+.gf-c-compass-letter {
+  font-size: 15px;
+  letter-spacing: 1px;
 }
 
-.gf-map-marker {
-  color: var(--gf-yellow);
-  background: var(--gf-marker-bg);
+/* The margin's ruled panels, the neat line round the whole sheet, and the rose. */
+.gf-c-panel {
+  fill: var(--gf-chart-paper);
+  stroke: var(--gf-chart-ink);
+  stroke-width: 2.2;
+}
+.gf-c-panel-inner {
+  fill: none;
+  stroke: var(--gf-chart-ink);
+  stroke-width: 1;
+}
+.gf-c-ring {
+  fill: none;
+  stroke: var(--gf-chart-ink);
+  stroke-width: 1.3;
+}
+.gf-c-neat-outer {
+  fill: none;
+  stroke: var(--gf-chart-ink);
+  stroke-width: 3.2;
+}
+.gf-c-neat-inner {
+  fill: none;
+  stroke: var(--gf-chart-ink);
+  stroke-width: 1.2;
+}
+
+/* What the player's own pen has put on the printed sheet: another ink, another
+   hand, and a halo of paper behind it so it reads over the engraving. */
+.gf-c-hand {
+  font-family: 'Apple Chancery', 'Snell Roundhand', 'Segoe Script', 'Brush Script MT', 'Palatino Linotype', cursive;
+  font-size: 15px;
+  font-style: italic;
+  fill: var(--gf-chart-hand);
+  stroke: var(--gf-chart-paper);
+  stroke-width: 5px;
+  stroke-linejoin: round;
+  paint-order: stroke fill;
+}
+.gf-c-hand--place {
+  font-size: 16px;
+}
+.gf-c-hand-line {
+  fill: none;
+  stroke: var(--gf-chart-hand);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.gf-c-here {
+  fill: var(--gf-chart-hand);
+  stroke: var(--gf-chart-paper);
+  stroke-width: 3.5px;
+  stroke-linejoin: round;
+  paint-order: stroke fill;
+}
+.gf-c-here-legend {
+  fill: var(--gf-chart-hand);
+}
+
+/* The reward notice, pinned over the margin of a wanted man's own sheet. */
+.gf-c-notice-shadow {
+  fill: var(--gf-shade);
+}
+.gf-c-notice-paper {
+  fill: var(--gf-chart-paper);
+  stroke: var(--gf-chart-ink);
+  stroke-width: 2;
+}
+.gf-c-notice-rule {
+  fill: none;
+  stroke: var(--gf-chart-ink);
+  stroke-width: 1;
+}
+.gf-c-notice-sum {
+  font-size: 22px;
+  letter-spacing: 1px;
+}
+.gf-c-notice-head {
+  font-size: 16px;
+  letter-spacing: 4px;
+}
+.gf-c-notice-body {
+  font-size: 10.5px;
+}
+.gf-c-notice-foot {
+  font-size: 9.5px;
+  letter-spacing: 2px;
+}
+.gf-c-pin {
+  fill: var(--gf-chart-hand);
+  stroke: var(--gf-chart-ink);
+  stroke-width: 1;
+}
+
+/*
+ * A phone on its side: 250px of height for everything, and a width it has no
+ * use for. The sheet takes the whole of the height and the notes stand beside
+ * it in a column of their own, rather than the two of them sharing a page that
+ * is only tall enough for one.
+ */
+@media (max-height: 560px) and (min-width: 660px) {
+  .gf-overlay-panel--map {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(170px, 32%);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 0 14px;
+  }
+  .gf-overlay-panel--map .gf-overlay-head {
+    grid-column: 1 / -1;
+  }
+  .gf-overlay-panel--map .gf-chart {
+    grid-row: 2;
+    grid-column: 1;
+    /* The cell rules the size here; the drawing centres itself inside it. */
+    aspect-ratio: auto;
+    width: 100%;
+    height: 100%;
+    margin: 4px 0;
+  }
+  .gf-overlay-panel--map .gf-map-prose {
+    grid-row: 2;
+    grid-column: 2;
+    align-self: center;
+    max-height: 100%;
+  }
+  .gf-overlay-panel--map .gf-overlay-hint {
+    grid-column: 1 / -1;
+  }
+}
+
+/* The digger's own notes, set beneath the sheet: short lines, tightly set, so
+   that map and notes together are one page and never a scroll. */
+.gf-map-prose {
+  flex: 0 0 auto;
+  min-height: 0;
+  max-height: 42%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.gf-map-prose .gf-para {
+  margin: 0 0 3px;
+  font-size: var(--gf-fs-inspector);
+  line-height: 1.35;
 }
 
 /* ------------------------------------------------------------------ */
@@ -964,9 +1432,29 @@ body {
     --gf-fs-status: 12.5px;
     --gf-fs-aside: 13.5px;
     --gf-fs-input: 17px;
-    /* The map is 116 columns of fixed drawing: legible and scrolled sideways
-       beats whole and unreadable. */
-    --gf-fs-map: 10px;
+  }
+
+  /* The whole sheet is on the glass at a third of the size a desk would give
+     it: the lettering is set larger here so that the names can still be read.
+     The drawing's own lines are unchanged — it is the type that suffers. */
+  .gf-c-name {
+    font-size: 23px;
+  }
+  .gf-c-name--town {
+    font-size: 25px;
+  }
+  .gf-c-road-name {
+    font-size: 17px;
+  }
+  .gf-c-water-name {
+    font-size: 19px;
+  }
+  .gf-c-hand {
+    font-size: 19px;
+  }
+  .gf-c-note-print,
+  .gf-c-legend {
+    font-size: 15px;
   }
 }
 
@@ -1088,6 +1576,7 @@ body {
   }
   .gf-body {
     margin-bottom: 6px;
+    min-height: 64px;
   }
   .gf-menu {
     max-height: 76%;

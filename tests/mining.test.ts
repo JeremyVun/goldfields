@@ -2,12 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   CAMP_DEFS,
   MATE_WAGE,
-  MAX_SHARES,
   PUDDLER_RENT,
   SHAFT_DEPTH,
-  SHARE_PRICE,
 } from '../src/engine/constants';
-import { payDividends } from '../src/engine/events';
 import { pounds, shillings } from '../src/engine/money';
 import {
   checkMethod,
@@ -20,7 +17,6 @@ import {
 import { Log } from '../src/engine/narrate';
 import { makeRng } from '../src/engine/rng';
 import { createInitialState } from '../src/engine/state';
-import { step } from '../src/engine/reduce';
 import type { CampId, Claim, GameState, MiningMethod } from '../src/engine/types';
 
 /** Ordinary, unworked ground, so that yields are not confounded by quality. */
@@ -316,32 +312,6 @@ describe('mates, machines and companies', () => {
     expect(res.stop).toBe('cannotPay');
   });
 
-  it('sells at most three shares, at five pounds each', () => {
-    const state = createInitialState(2);
-    state.location = 'deep-mountains';
-    state.moneyPence = pounds(100);
-    const rng = makeRng(2);
-    let s = step(state, { type: 'buyShares', n: 3 }, rng).state;
-    expect(s.shares).toBe(MAX_SHARES);
-    expect(s.moneyPence).toBe(pounds(100) - SHARE_PRICE * 3);
-    s = step(s, { type: 'buyShares', n: 1 }, rng).state;
-    expect(s.shares).toBe(MAX_SHARES);
-  });
-
-  it('dividends are a lottery on the company’s fortunes', () => {
-    let paid = 0;
-    let nothing = 0;
-    for (let seed = 0; seed < 200; seed++) {
-      const state = createInitialState(seed);
-      state.shares = 3;
-      const rng = makeRng(seed);
-      payDividends(state, rng, new Log(rng));
-      if (state.bankPence > 0) paid++;
-      else nothing++;
-    }
-    expect(paid).toBeGreaterThan(50);
-    expect(nothing).toBeGreaterThan(10);
-  });
 });
 
 describe('the desert working', () => {

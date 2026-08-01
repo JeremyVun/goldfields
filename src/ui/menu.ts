@@ -1,6 +1,6 @@
 /**
  * A small keyboard-and-mouse menu widget, reused for the normal screen menu,
- * the kitty overlay, and the journal's chapter list. Every menu item is both
+ * the menu overlay, and the journal's chapter list. Every menu item is both
  * pressable by its key and clickable/tappable.
  *
  * A menu that will not fit in one column is laid across two, and the left and
@@ -50,9 +50,14 @@ export class MenuController {
       const classes = ['gf-menu-item'];
       if (item.disabled) classes.push('is-disabled');
       if (i === this.highlight) classes.push('is-highlight');
-      const row = el('div', {
+      const row = el('button', {
         className: classes.join(' '),
-        attrs: { role: 'button', tabindex: '-1' },
+        attrs: {
+          type: 'button',
+          tabindex: i === this.highlight && !item.disabled ? '0' : '-1',
+          ...(item.disabled ? { disabled: 'true', 'aria-disabled': 'true' } : {}),
+          ...(i === this.highlight ? { 'aria-current': 'true' } : {}),
+        },
       });
       const marker = el('span', { className: 'gf-menu-marker', text: i === this.highlight ? '▸' : ' ' });
       const key = el('span', { className: 'gf-menu-key', text: keyLabel(item.key, isTouch()) });
@@ -98,13 +103,9 @@ export class MenuController {
       return;
     }
 
-    // Two columns are given their head, so if they still overrun the frame
-    // they would be clipped and the last choices lost. Better an honest single
-    // column the player can scroll than a choice they cannot reach at all.
-    const pane = c.parentElement;
-    if (pane && c.getBoundingClientRect().bottom > pane.getBoundingClientRect().bottom + 1) {
-      c.classList.remove('gf-menu--dense');
-    }
+    // With auto height, column-count balances into exactly two columns. Do not
+    // reverse the decision from a transient flex measurement: doing so made
+    // the same menu alternate between one and two columns while it was used.
   }
 
   /** True when the menu is currently laid across columns. */
@@ -221,10 +222,15 @@ export class MenuController {
     this.highlight = i;
     this.rows.forEach((row, idx) => {
       row.classList.toggle('is-highlight', idx === this.highlight);
+      row.setAttribute('tabindex', idx === this.highlight && !this.items[idx].disabled ? '0' : '-1');
+      if (idx === this.highlight) row.setAttribute('aria-current', 'true');
+      else row.removeAttribute('aria-current');
       const marker = row.querySelector('.gf-menu-marker');
       if (marker) marker.textContent = idx === this.highlight ? '▸' : ' ';
     });
-    if (opts.scroll !== false) this.rows[this.highlight]?.scrollIntoView({ block: 'nearest' });
+    if (opts.scroll !== false && !this.isDense) {
+      this.rows[this.highlight]?.scrollIntoView({ block: 'nearest' });
+    }
     this.announce();
   }
 

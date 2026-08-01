@@ -1,13 +1,23 @@
 import { describe, expect, it } from 'vitest';
 import { allKeys, hasKey } from '../src/content/say';
-import { JOURNAL_SECTIONS, GAZETTE_ADS, GAZETTE_STORIES, CAMP_TALK } from '../src/content/library';
+import { GAZETTE_ADS, GAZETTE_STORIES, CAMP_TALK } from '../src/content/library';
+import { JOURNAL_SECTIONS } from '../src/content/journal';
 import { STARTING_MONEY } from '../src/engine/constants';
-import { getView, kittyView, mapView } from '../src/engine/menus';
+import { getView, menuView, mapView } from '../src/engine/menus';
 import { pounds, shillings } from '../src/engine/money';
 import { gazetteFor } from '../src/engine/news';
 import { makeRng } from '../src/engine/rng';
 import { step } from '../src/engine/reduce';
-import { deserialise, loadGame, memoryStore, saveGame, serialise } from '../src/engine/save';
+import {
+  allocateSaveId,
+  deserialise,
+  loadGame,
+  memoryStore,
+  saveGame,
+  serialise,
+  tryLoadGame,
+  trySaveGame,
+} from '../src/engine/save';
 import { createInitialState, healthWord, isCamp, netWorth, statusLine } from '../src/engine/state';
 import type { Action, GameState, ScreenView } from '../src/engine/types';
 
@@ -111,7 +121,7 @@ describe('the reducer', () => {
   it('walks the title -> intro -> Port Gannet opening', () => {
     let state = createInitialState(3);
     expect(state.screen).toBe('title');
-    let out = step(state, { type: 'newGame' }, makeRng(3));
+    const out = step(state, { type: 'newGame' }, makeRng(3));
     state = out.state;
     expect(state.screen).toBe('intro');
     expect(out.events.length).toBeGreaterThanOrEqual(2);
@@ -163,7 +173,7 @@ describe('the reducer', () => {
     state.day = 365;
     state.provisionDays = 40;
     state.location = 'suze-port';
-    let out = step(state, { type: 'work', job: 'wharf', days: 3 }, makeRng(8));
+    const out = step(state, { type: 'work', job: 'wharf', days: 3 }, makeRng(8));
     state = out.state;
     expect(state.endOfYear).toBe(true);
     expect(state.screen).toBe('end');
@@ -273,6 +283,20 @@ describe('saving and loading', () => {
     expect(out.events[0].text.toLowerCase()).toContain('write it down');
   });
 
+  it('keeps the same game number on later saves', () => {
+    const first = step(createInitialState(210), { type: 'save' }, makeRng(210));
+    const second = step(first.state, { type: 'save' }, makeRng(211));
+    expect(second.state.gameId).toBe(first.state.gameId);
+  });
+
+  it('allocates around occupied numbers instead of overwriting them', () => {
+    const store = memoryStore();
+    for (let id = 1000; id < 9999; id++) store.setItem(`goldrush.game.${id}`, '{}');
+    store.removeItem('goldrush.game.4321');
+    const allocated = allocateSaveId(store);
+    expect(allocated).toEqual({ ok: true, value: '4321' });
+  });
+
   it('round-trips a game through a store', () => {
     const store = memoryStore();
     const state = createInitialState(22);
@@ -294,6 +318,40 @@ describe('saving and loading', () => {
     expect(loadGame('9999', memoryStore())).toBeNull();
     expect(deserialise('not json')).toBeNull();
     expect(deserialise('{"nonsense":true}')).toBeNull();
+  });
+
+  it('reports blocked writes and reads without claiming success', () => {
+    const throwing = {
+      getItem: () => { throw Object.assign(new Error('blocked'), { name: 'SecurityError' }); },
+      setItem: () => { throw Object.assign(new Error('full'), { name: 'QuotaExceededError' }); },
+      removeItem: () => {},
+    };
+    const identified = createInitialState(1);
+    identified.gameId = '1234';
+    expect(trySaveGame(identified, throwing)).toMatchObject({ ok: false, error: { kind: 'quota' } });
+    expect(tryLoadGame('1234', throwing)).toMatchObject({ ok: false, error: { kind: 'unavailable' } });
+  });
+
+  it('rejects future, non-finite, unknown-location and oversized saves', () => {
+    const base = JSON.parse(serialise(createInitialState(1)));
+    expect(deserialise(JSON.stringify({ ...base, v: 999 }))).toBeNull();
+    expect(deserialise(JSON.stringify({ ...base, moneyPence: -1 }))).toBeNull();
+    expect(deserialise(JSON.stringify({ ...base, location: 'nowhere' }))).toBeNull();
+    expect(deserialise(JSON.stringify({ ...base, screen: 'not-a-screen' }))).toBeNull();
+    expect(deserialise(JSON.stringify({ ...base, legal: 'emperor' }))).toBeNull();
+    expect(deserialise(JSON.stringify({ ...base, lodging: 'palace' }))).toBeNull();
+    expect(deserialise(JSON.stringify({ ...base, health: 101 }))).toBeNull();
+    expect(deserialise(JSON.stringify({ ...base, items: { ...base.items, pan: -1 } }))).toBeNull();
+    expect(deserialise(JSON.stringify({
+      ...base,
+      estate: { ...base.estate, store: { camp: 'nowhere', policy: 'fair', openedOn: 1 } },
+    }))).toBeNull();
+    expect(deserialise(JSON.stringify({
+      ...base,
+      hearth: { ...base.hearth, nextEvent: { kind: 'coronation', openDay: 2, closeDay: 3, announced: true } },
+    }))).toBeNull();
+    expect(deserialise(JSON.stringify({ ...base, journal: Array.from({ length: 1_001 }, (_, day) => ({ day, text: 'x', tone: 'neutral' })) }))?.journal).toHaveLength(400);
+    expect(deserialise(' '.repeat(2_000_001))).toBeNull();
   });
 
   it('resumes exactly where it left off, and plays on identically', () => {
@@ -322,6 +380,25 @@ describe('saving and loading', () => {
   });
 });
 
+describe('the reducer quantity boundary', () => {
+  it('rejects negative, fractional and non-finite quantities without mutation', () => {
+    const state = createInitialState(220);
+    state.location = 'snakey-gully';
+    state.moneyPence = pounds(10);
+    const before = serialise(state);
+    for (const action of [
+      { type: 'rentPuddler', days: -7 },
+      { type: 'rest', days: 1.5 },
+      { type: 'work', job: 'wharf', days: Number.NaN },
+      { type: 'homeStash', what: 'money', amount: -1 },
+    ] as Action[]) {
+      const out = step(state, action, makeRng(220));
+      expect(serialise(out.state)).toBe(before);
+      expect(out.events[0]?.text).toMatch(/quantity/i);
+    }
+  });
+});
+
 // ---------------------------------------------------------------------------
 // Views
 // ---------------------------------------------------------------------------
@@ -336,7 +413,7 @@ describe('screens and menus', () => {
     const state = createInitialState(41);
     state.goldCentiOz = 120;
     state.items.pan = 1;
-    const view = kittyView(state);
+    const view = menuView(state);
     const text = view.body.join('\n');
     expect(text).toMatch(/Money in hand/);
     expect(text).toMatch(/Gold: 1\.20 oz/);
@@ -359,15 +436,17 @@ describe('screens and menus', () => {
     state.goldCentiOz = 120;
     // Day 37 is the 6th of February: the tail of the first summer.
     expect(statusLine(state)).toBe(
-      'Day 37 · late summer · £2 4s · 1.20 oz · Health: Hearty · Law: Honest · Fatigue: Fresh',
+      'Day 37 · late summer · £2 4s · 1.20 oz · Hearty · Honest · Fresh',
     );
   });
 
-  it('the map names the tracks, the town, the river and the camps', () => {
+  // The country itself is named on the drawing now, not in the prose beneath
+  // it (see ux.test.ts); what the words under the sheet must still carry is
+  // the player's own standing on the field.
+  it('the map screen says where the player stands and what ground he holds', () => {
     const text = mapView(createInitialState(1)).body.join(' ');
-    for (const place of ["Mercer's Track", 'Razorback Road', 'Slateford', 'Slate River', 'Reedbank Camp', 'Copperhead Gully', 'Blackcap Ranges', 'Port Gannet']) {
-      expect(text).toContain(place);
-    }
+    expect(text).toContain('The star marks where you are: Port Gannet.');
+    expect(text).toContain('pegs in no ground anywhere');
   });
 
   it('gives every menu unique keys wherever the player stands', () => {
@@ -406,7 +485,6 @@ describe('screens and menus', () => {
       'camp',
       'camp-store',
       'camp-mine',
-      'camp-shares',
       'company',
       'end',
       'obituary',
@@ -441,7 +519,7 @@ describe('screens and menus', () => {
     const store = getView(state);
     expect(store.menu.find((m) => /timber supports/i.test(m.label))?.key).toBe('I');
     expect(store.menu.some((m) => m.key === 'M')).toBe(false);
-    expect(store.aside?.rows.find((row) => row.label === 'Gold buyer')?.value).toBe('the bank only');
+    expect(store.aside?.rows.find((row) => row.label === 'Gold buyer')?.value).toBe('the bank pays best');
     expect(store.menu.some((m) => m.action.type === 'sellGold')).toBe(false);
 
     state.screen = 'journal';

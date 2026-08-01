@@ -2,7 +2,7 @@ import { describe, it } from 'vitest';
 import { makeRng } from '../src/engine/rng';
 import { createInitialState } from '../src/engine/state';
 import { step } from '../src/engine/reduce';
-import { getView, kittyView } from '../src/engine/menus';
+import { getView, menuView } from '../src/engine/menus';
 import { formatMoney, formatGold, pounds, shillings, oz } from '../src/engine/money';
 import { rateAt, storeRate } from '../src/engine/market';
 import { season, formatDate } from '../src/engine/time';
@@ -75,7 +75,7 @@ describe('systems audit', () => {
       const v = getView({ ...s0, screen: scr, location: scr === 'ftown-bank' ? 'fields-town' : 'damp-camp' });
       console.log(`  ${scr}:`, v.menu.filter((m) => m.action.type === 'sellGold').map((m) => `${m.label} (watch=${(m.action as any).watch}) note=${m.note}`).join(' | '));
     }
-    console.log('  kitty:', kittyView(s0).menu.filter((m) => m.action.type === 'sellGold').map((m) => `${m.label} watch=${(m.action as any).watch}`).join(' | '));
+    console.log('  kitty:', menuView(s0).menu.filter((m) => m.action.type === 'sellGold').map((m) => `${m.label} watch=${(m.action as any).watch}`).join(' | '));
   });
 
   it('claim jumping takes ground and the shaft with it', () => {

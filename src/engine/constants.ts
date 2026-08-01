@@ -19,6 +19,9 @@ export const LICENCE_DAYS = 30; // (faithful)
 export const JOURNAL_PRICE_SUZE = pence(6); // (faithful: "Price — Six pence")
 export const JOURNAL_PRICE_FIELDS = shillings(1);
 export const GAZETTE_PRICE = pence(1);
+export const COOKSHOP_MEAL_PRICE = pence(6);
+export const HARBOUR_FISH_FAILURE_CHANCE = 0.2;
+export const HARBOUR_FISH_CATCH_DAYS = { lo: 3, hi: 5 };
 
 // ---------------------------------------------------------------------------
 // Store prices
@@ -299,8 +302,6 @@ export const CAVEIN_DEATH = 0.05;
 export const CAVEIN_INJURY_HEALTH = { lo: 12, hi: 45 };
 export const FLOOD_CHANCE_WINTER = { unpumped: 0.13, pumped: 0.03 };
 
-export const SHARE_PRICE = pounds(5);
-export const MAX_SHARES = 3; // three share certificates shipped with the game (faithful)
 export const DIVIDEND_MULT = { lo: 0, hi: 4.5 };
 
 export const CLAIM_JUMP_CHANCE = 0.05;
@@ -551,7 +552,7 @@ export const ROUTES = {
   },
 } as const;
 
-export const WAGON_FARE = shillings(12);
+export const WAGON_FARE = shillings(10);
 export const COACH_FARE = pounds(2); // Cobb & Co. to Port Gannet (faithful)
 export const COACH_DAYS = 2;
 
@@ -575,7 +576,7 @@ export const GRAVE_HEALTH = 20;
 
 export const RUSH_CHANCE_PER_DAY = 0.014;
 export const RUSH_DAYS = { lo: 10, hi: 28 };
-export const RUSH_FACTOR = { lo: 1.5, hi: 2.6 };
+export const RUSH_FACTOR = { lo: 2.5, hi: 4.0 };
 export const HUNT_WARNING_CHANCE = 0.02;
 export const SECRET_RUMOUR_CHANCE = 0.012;
 export const SECRET_GENUINE_CHANCE = 0.4;

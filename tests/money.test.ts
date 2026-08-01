@@ -56,6 +56,11 @@ describe('pre-decimal currency', () => {
     expect(parseMoney('3')).toBe(pounds(3));
     expect(parseMoney('  ')).toBeNull();
     expect(parseMoney('gold')).toBeNull();
+    expect(parseMoney('£3 12s 6d rubbish')).toBeNull();
+    expect(parseMoney('£1 2£')).toBeNull();
+    expect(parseMoney('20s')).toBeNull();
+    expect(parseMoney('12d')).toBeNull();
+    expect(parseMoney('-£1')).toBeNull();
   });
 
   it('round-trips every value up to five pounds', () => {

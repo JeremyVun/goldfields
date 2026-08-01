@@ -34,13 +34,11 @@ export function applyTheme(id: string): void {
 }
 
 export function loadTheme(): void {
-  let id: string | null = null;
   try {
-    id = localStorage.getItem(THEME_KEY) ?? localStorage.getItem(LEGACY_THEME_KEY);
+    applyTheme(localStorage.getItem(THEME_KEY) ?? localStorage.getItem(LEGACY_THEME_KEY) ?? 'paper');
   } catch {
-    id = null;
+    applyTheme('paper');
   }
-  applyTheme(id ?? 'paper');
 }
 
 export function cycleTheme(): Theme {

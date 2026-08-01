@@ -108,7 +108,7 @@ export function beginJourney(
 }
 
 /**
- * Whether this leg is the one the subscribers bridged: Slateford to Damp
+ * Whether this leg is the one the public works bridged: Slateford to Damp
  * Camp, over the Slate River, where the ford used to swallow wheels (§27).
  */
 export function bridged(state: GameState, from: LocationId, to: LocationId): boolean {
@@ -220,6 +220,9 @@ export function arrive(state: GameState, log: Log): void {
   if (!j) return;
   state.location = j.to;
   state.journey = null;
+  // Several days riding rather than humping a swag are a proper rest. Make
+  // the benefit unambiguous even for a traveller who boarded exhausted.
+  if (j.mode === 'wagon') state.fatigue = 0;
   if (j.to === 'fields-town') {
     log.say('travel.arrive.ftown', undefined, 'good');
     addJournal(state, 'Came down into Slateford at last.', 'good');

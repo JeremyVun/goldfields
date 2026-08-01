@@ -150,13 +150,12 @@ describe('balance additions (§22)', () => {
     expect(s.deathRate).toBeLessThan(0.1);
   });
 
-  it('the company magnate is the richest strategy in the game (£800-£3500)', () => {
+  it('the company magnate meets the amended year-one target (£400-£700)', () => {
     const s = summarise(companyMagnate, runBot(companyMagnate, RUNS, 607));
     summaries.push(s);
     console.log(report(s));
-    expect(s.median).toBeGreaterThanOrEqual(pounds(800));
-    expect(s.median).toBeLessThanOrEqual(pounds(3500));
-    expect(s.p90).toBeGreaterThanOrEqual(pounds(2000));
+    expect(s.median).toBeGreaterThanOrEqual(pounds(400));
+    expect(s.median).toBeLessThanOrEqual(pounds(700));
     // The ones who really made money floated companies — and some of them died.
     expect(s.deathRate).toBeLessThan(0.2);
     expect(s.floatRate).toBeGreaterThan(0.5);
@@ -344,8 +343,8 @@ function tally(log: Log): Record<string, number> {
  * — the best of the safe strategies — first holds the £158 the store and its
  * opening stock cost in only a third of his years, and never before day 274.
  * A cautious cradler's *whole year* comes to about £90. So the notable earns
- * his capital where the game says capital is earned (§14: "shaft or shares
- * when capitalised"), with his shaft properly slabbed and propped, and quits
+ * his capital where the game says capital is earned (§14: a capitalised
+ * shaft), with his shaft properly slabbed and propped, and quits
  * the reef the day the counter is paid for. That is what keeps his deaths
  * under §29's 8% — measured 6.5% over 3,200 seeded years, and nobody in the
  * cohort dies after the store is bought.

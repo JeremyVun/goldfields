@@ -121,7 +121,7 @@ export type BushRank = 'new chum' | 'flash cove' | 'captain';
 // The civic ladder (§26-§31)
 // ---------------------------------------------------------------------------
 
-/** A public work subscribed at the Council Chambers (§27). */
+/** A public work funded at the Council Chambers (§27). */
 export type WorkId = 'bridge' | 'waterRace' | 'ward' | 'school';
 
 export interface PublicWork {
@@ -255,6 +255,8 @@ export interface Intended {
   callsKept: number;
   /** Lavish gifts pressed on her; it is the pattern that cools, never the price. */
   lavishGifts: number;
+  /** Lavishness offered too early or pressed twice; consent sees conduct, never spend. */
+  lavishMissteps?: number;
   /** Day of the last gift of any size, for the pattern's arithmetic (§32.1). */
   lastGiftOn: number;
 }
@@ -455,7 +457,10 @@ export interface SecretExpedition {
   /** Steps followed towards the legendary nugget, 0-4. */
   trail: number;
   daysSearched: number;
+  /** Weight of The Southern Cross once exposed; it remains in the earth until recovered. */
+  nuggetCentiOz?: number;
   nuggetFound: boolean;
+  nuggetRecovered?: boolean;
   exhausted: boolean;
 }
 
@@ -520,8 +525,11 @@ export type Screen =
   | 'store-sell'
   | 'camp-mine'
   | 'camp-grog'
-  | 'camp-shares'
   | 'company'
+  | 'company-crews'
+  | 'company-ground'
+  | 'company-policy'
+  | 'company-dividend'
   | 'estate'
   | 'court'
   | 'press'
@@ -531,7 +539,6 @@ export type Screen =
   | 'gang'
   | 'stash'
   | 'encounter'
-  | 'narration'
   | 'end'
   | 'obituary';
 
@@ -695,9 +702,6 @@ export interface GameState {
   outlawEnd: OutlawEnd | null;
 
   employment: Employment | null;
-  shares: number;
-  /** First day the current outside-company holding was taken up. */
-  sharesBoughtOn: number;
 
   /** The player's own company, once floated (§19). */
   company: Company | null;
@@ -771,7 +775,7 @@ export interface MenuItem {
   disabled?: boolean;
 }
 
-/** A standing tally shown beside a screen, so the kitty need not be opened. */
+/** A standing tally shown beside a screen, so the menu need not be opened. */
 export interface AsidePanel {
   title: string;
   rows: AsideRow[];
@@ -785,11 +789,23 @@ export interface AsideRow {
   heading?: boolean;
 }
 
+/**
+ * A headed block of label/value rows. A view that has panels is offering the
+ * frame a way to set the same matter side by side instead of down the page;
+ * `body` always carries the flattened reading for anything that wants prose.
+ */
+export interface ViewPanel {
+  heading: string;
+  rows: { label?: string; text: string }[];
+}
+
 export interface ScreenView {
   screen: Screen;
   title: string;
   subtitle?: string;
   body: string[];
+  /** Set beside one another where the frame has the width for it. */
+  panels?: ViewPanel[];
   menu: MenuItem[];
   /** Ask for free text (game ID, wager). */
   input?: { prompt: string; kind: 'gameId' | 'wager' | 'amount' };
@@ -845,7 +861,6 @@ export type Action =
   | { type: 'takePartner' }
   | { type: 'dissolvePartnership' }
   | { type: 'rentPuddler'; days: number }
-  | { type: 'buyShares'; n: number }
   | { type: 'floatCompany'; shares: number }
   | { type: 'hireCrew' }
   | { type: 'fireCrew' }
@@ -869,6 +884,7 @@ export type Action =
   | { type: 'rest'; days: number }
   | { type: 'followRumour' }
   | { type: 'searchSecret'; approach: 'search' | 'winnow' | 'dig' }
+  | { type: 'recoverNugget' }
   | { type: 'timberShaft' }
   | { type: 'registerClaim'; camp: CampId }
   | { type: 'guardClaim'; camp: CampId; days: number }
@@ -884,7 +900,7 @@ export type Action =
   | { type: 'setStorePolicy'; policy: StorePolicy }
   | { type: 'buyGazetteShare' }
   | { type: 'placeStory'; kind: StoryKind; camp?: CampId }
-  | { type: 'subscribeWork'; work: WorkId; camp?: CampId }
+  | { type: 'fundWork'; work: WorkId; camp?: CampId }
   | { type: 'acceptCommission' }
   | { type: 'holdCourt' }
   | { type: 'rule'; ruling: 'leniency' | 'severity' }
@@ -925,7 +941,7 @@ export type Action =
   | { type: 'flee' }
   | { type: 'nextYear' }
   | { type: 'finish' }
-  | { type: 'save' }
+  | { type: 'save'; id?: string }
   | { type: 'cycleSpell' }
   | { type: 'quitToTitle' };
 

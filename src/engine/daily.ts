@@ -4,6 +4,7 @@ import { banditDayTick, banditWeek } from './bandit';
 import { companyWeek } from './company';
 import { estateDay, estateWeek } from './estate';
 import { hearthDay } from './hearth';
+import { sleepsAtHearth } from './hearth';
 import { CAMP_DEFS, LODGING, STARVATION_HEALTH, THIRST_HEALTH_OTHER, THIRST_HEALTH_SUMMER } from './constants';
 import { damage, nightlyHealth, warnIfGrave } from './health';
 import { cleanDayTick, toTheLogs } from './law';
@@ -29,6 +30,7 @@ export interface DayCtx {
 
 function payLodging(state: GameState, log: Log): boolean {
   if (state.location !== 'suze-port' && state.location !== 'fields-town') return false;
+  if (sleepsAtHearth(state)) return true;
   const slateford = state.location === 'fields-town';
   const lodging = lodgingAt(state);
   const setLodging = (kind: GameState['lodging']): void => {
@@ -162,7 +164,7 @@ export function endDay(state: GameState, rng: RNG, log: Log, ctx: DayCtx = {}): 
     } else if (state.location === 'secret-mine') {
       // The expedition is not a camp: no storekeepers, thieves, troopers or camp incidents.
     } else if (isCamp(state.location)) nightAtCamp(state, rng, log);
-    else nightInTown(state, rng, log);
+    else if (!sleepsAtHearth(state)) nightInTown(state, rng, log);
     if (state.gameOver) return;
   }
 

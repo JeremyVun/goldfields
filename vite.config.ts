@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   base: './',
@@ -8,8 +8,20 @@ export default defineConfig({
     assetsInlineLimit: 0,
   },
   test: {
-    include: ['tests/**/*.test.ts'],
+    // .mjs as well as .ts: a couple of suites inspect shipped files on disk,
+    // which the project's TypeScript has no node types for and wants none.
+    include: ['tests/**/*.test.{ts,mjs}'],
     environment: 'node',
     testTimeout: 120000,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json-summary'],
+      thresholds: {
+        statements: 78,
+        branches: 70,
+        functions: 82,
+        lines: 80,
+      },
+    },
   },
-} as any);
+});

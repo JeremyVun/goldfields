@@ -216,17 +216,16 @@ describe('heat — the push, never the loop (§23.3)', () => {
 // ---------------------------------------------------------------------------
 
 describe('entry and the point of no return (§23.1)', () => {
-  it('shows the crime verbs greyed with a note before minor criminal', () => {
+  it('keeps the criminal hub out of sight until minor criminal', () => {
     const state = fresh();
     state.screen = 'suze';
     const shown = getView(state).menu.find((m) => m.action.type === 'goto' && m.action.screen === 'bandit');
-    expect(shown).toBeDefined();
-    expect(shown?.disabled).toBe(true);
-    expect(shown?.note?.length).toBeGreaterThan(10);
+    expect(shown).toBeUndefined();
     expect(crimeVisible(state)).toBe(false);
 
     state.legal = 'minor criminal';
     const open = getView(state).menu.find((m) => m.action.type === 'goto' && m.action.screen === 'bandit');
+    expect(open).toBeDefined();
     expect(open?.disabled).toBeFalsy();
   });
 

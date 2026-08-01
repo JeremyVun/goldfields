@@ -1,22 +1,27 @@
 import { makeRng, randomSeed, type RNG } from '../engine/rng';
 import { createInitialState, statusLine } from '../engine/state';
 import { step } from '../engine/reduce';
-import { getView, kittyView, mapView, MENU_LETTERS } from '../engine/menus';
-import { saveGame, loadGame, lastGameId, defaultStore } from '../engine/save';
-import { JOURNAL_SECTIONS } from '../content/library';
-import type { Action, AsidePanel, GameState, NarrationEvent } from '../engine/types';
+import { getView, menuView, mapView, MENU_LETTERS } from '../engine/menus';
+import {
+  allocateSaveId,
+  defaultStore,
+  tryLastGameId,
+  tryLoadGame,
+  trySaveGame,
+} from '../engine/save';
+import type { Action, AsidePanel, GameState, NarrationEvent, ViewPanel } from '../engine/types';
+import type { JournalSection } from '../content/journal';
 
 import { el, clear } from './dom';
 import { MenuController, type UIMenuItem } from './menu';
 import { pageEvents } from './narration';
-import { buildMap } from './map';
 import { forTouch, isTouch, onInputModeChange } from './phrasing';
 import { cycleTheme, currentTheme, loadTheme } from './theme';
 
 /**
  * One entry in the quiet legend at the foot of the glass. Where it carries an
  * `act` it is not merely a legend but the control itself — which is the only
- * way the kitty and the map can be reached at all on a screen with no keys.
+ * way the menu and the map can be reached at all on a screen with no keys.
  */
 interface LegendPart {
   keys: string;
@@ -34,7 +39,7 @@ function setInspectorText(elem: HTMLElement, note: string | null): void {
   elem.classList.toggle('is-empty', !note);
 }
 
-type Overlay = 'kitty' | 'map' | null;
+type Overlay = 'menu' | 'map' | null;
 
 interface JournalState {
   mode: 'list' | 'read';
@@ -71,10 +76,20 @@ export class App {
   private overlay: Overlay = null;
 
   private journalState: JournalState | null = null;
+  private journalSections: JournalSection[] | null = null;
+  private mapBuilder: typeof import('./map').buildMap | null = null;
 
   private textInput = false;
   private inputBuffer = '';
   private inputError: string | null = null;
+
+  private readonly onKeyDown = (e: KeyboardEvent): void => this.handleKeyDown(e);
+  private readonly onViewportChange = (): void => this.fitMenu();
+  private readonly onInputMode = (): void => this.render();
+  private readonly onOverlayBackdrop = (e: MouseEvent): void => {
+    if (e.target === this.overlayEl) this.closeOverlay();
+  };
+  private readonly stopInputModeWatch: () => void;
 
   /** Where the frame stood when the player last acted, so that returning to
    *  the same screen (after a purchase, say) does not throw them to the top. */
@@ -121,24 +136,36 @@ export class App {
 
     this.root.append(this.frame, this.statusEl, this.overlayEl);
 
-    this.root.addEventListener('keydown', (e) => this.handleKeyDown(e));
+    this.root.addEventListener('keydown', this.onKeyDown);
     // How many columns a menu needs depends on the room there is for it.
-    window.addEventListener('resize', () => this.fitMenu());
-    window.addEventListener('orientationchange', () => this.fitMenu());
+    window.addEventListener('resize', this.onViewportChange);
+    window.addEventListener('orientationchange', this.onViewportChange);
     // A soft keypad rising over the glass shortens it without a resize event
     // of the ordinary kind.
-    window.visualViewport?.addEventListener('resize', () => this.fitMenu());
+    window.visualViewport?.addEventListener('resize', this.onViewportChange);
     // A keyboard folded on or off a tablet changes how the frame must speak:
-    // whether the flavour belongs in the rows, and whether the kitty and the
+    // whether the flavour belongs in the rows, and whether the menu and the
     // map need buttons of their own.
-    onInputModeChange(() => this.render());
-    this.overlayEl.addEventListener('click', (e) => {
-      if (e.target === this.overlayEl) this.closeOverlay();
-    });
+    this.stopInputModeWatch = onInputModeChange(this.onInputMode);
+    this.overlayEl.addEventListener('click', this.onOverlayBackdrop);
   }
 
   start(): void {
+    // A door for the screenshot harnesses in scratch/, and only in dev: they
+    // need to photograph screens that would take an hour of play to reach.
+    if (import.meta.env.DEV) window.__gf = { app: this, createInitialState };
     this.render();
+  }
+
+  /** Release the global listeners so an embedded or tested cabinet can be remounted safely. */
+  destroy(): void {
+    this.root.removeEventListener('keydown', this.onKeyDown);
+    window.removeEventListener('resize', this.onViewportChange);
+    window.removeEventListener('orientationchange', this.onViewportChange);
+    window.visualViewport?.removeEventListener('resize', this.onViewportChange);
+    this.stopInputModeWatch();
+    this.overlayEl.removeEventListener('click', this.onOverlayBackdrop);
+    if (window.__gf?.app === this) delete window.__gf;
   }
 
   // -------------------------------------------------------------------
@@ -149,7 +176,7 @@ export class App {
     this.savedScroll = { screen: this.state.screen, top: this.bodyEl.scrollTop };
     if (opts?.fromOverlay) this.closeOverlay();
 
-    // The kitty opens at any time, narration or no. If the player acts from it
+    // The menu opens at any time, narration or no. If the player acts from it
     // while a tale is still being told, the state that tale produced must be
     // committed first — otherwise a whole spell of digging is thrown away and
     // the action is applied to the state as it stood before it.
@@ -157,14 +184,27 @@ export class App {
 
     // A fresh game must get a fresh seed, or "begin again" would replay the
     // very same year, move for move.
-    const normalised: Action =
+    let normalised: Action =
       action.type === 'newGame' ? { type: 'newGame', seed: randomSeed() } : action;
+    const store = defaultStore();
+    if (normalised.type === 'save' && !this.state.gameId) {
+      const allocated = allocateSaveId(store);
+      if (!allocated.ok) {
+        this.showStorageFailure(allocated.error.message);
+        return;
+      }
+      normalised = { type: 'save', id: allocated.value };
+    }
 
     try {
       const result = step(this.state, normalised, this.rng);
 
       if (normalised.type === 'save') {
-        saveGame(result.state, defaultStore());
+        const saved = trySaveGame(result.state, store);
+        if (!saved.ok) {
+          this.showStorageFailure(saved.error.message);
+          return;
+        }
       }
 
       if (result.events.length > 0) {
@@ -192,6 +232,17 @@ export class App {
       this.narrationIndex = 0;
       this.renderNarration();
     }
+  }
+
+  private showStorageFailure(message: string): void {
+    this.pendingState = null;
+    this.narrationPages = [[{
+      id: 'storage-failure',
+      text: `The game was not saved. ${message}`,
+      tone: 'bad',
+    }]];
+    this.narrationIndex = 0;
+    this.renderNarration();
   }
 
   /** Commit any narration still being paged through, and drop the pages. */
@@ -239,7 +290,7 @@ export class App {
       this.closeOverlay();
       return;
     }
-    if (this.overlay === 'kitty') {
+    if (this.overlay === 'menu') {
       if (e.key === '@' || e.key === '0' || e.key === 'Escape') {
         e.preventDefault();
         this.closeOverlay();
@@ -251,13 +302,13 @@ export class App {
 
     if (e.key === 'Escape' && !this.textInput) {
       e.preventDefault();
-      this.openOverlay('kitty');
+      this.openOverlay('menu');
       return;
     }
     // Keep the original key as a quiet compatibility alias.
     if (e.key === '@') {
       e.preventDefault();
-      this.openOverlay('kitty');
+      this.openOverlay('menu');
       return;
     }
     if ((e.key === 'm' || e.key === 'M') && !this.textInput) {
@@ -336,13 +387,13 @@ export class App {
       if (wasTyping) this.focusInputField();
       return;
     }
-    const loaded = loadGame(id, defaultStore());
-    if (loaded) {
+    const loaded = tryLoadGame(id, defaultStore());
+    if (loaded.ok) {
       this.inputBuffer = '';
       this.inputError = null;
-      this.dispatch({ type: 'resume', state: loaded });
+      this.dispatch({ type: 'resume', state: loaded.value });
     } else {
-      this.inputError = 'No such game.';
+      this.inputError = loaded.error.message;
       this.render();
       if (wasTyping) this.focusInputField();
     }
@@ -354,10 +405,10 @@ export class App {
   }
 
   // -------------------------------------------------------------------
-  // Overlays: the kitty and the map
+  // Overlays: the menu and the map
   // -------------------------------------------------------------------
 
-  private openOverlay(kind: 'kitty' | 'map'): void {
+  private openOverlay(kind: 'menu' | 'map'): void {
     this.overlay = kind;
     this.renderOverlay();
   }
@@ -366,8 +417,12 @@ export class App {
     if (!this.overlay) return;
     this.overlay = null;
     this.overlayMenu = null;
+    this.frame.inert = false;
+    this.statusEl.inert = false;
     clear(this.overlayEl);
     this.overlayEl.style.display = 'none';
+    this.overlayEl.removeAttribute('role');
+    this.overlayEl.removeAttribute('aria-modal');
     this.root.focus({ preventScroll: true });
   }
 
@@ -378,9 +433,15 @@ export class App {
       return;
     }
     this.overlayEl.style.display = '';
-    if (this.overlay === 'kitty') this.renderKittyOverlay();
+    this.overlayEl.setAttribute('role', 'dialog');
+    this.overlayEl.setAttribute('aria-modal', 'true');
+    this.overlayEl.setAttribute('aria-label', this.overlay === 'menu' ? 'Game menu' : 'Map of the goldfields');
+    this.frame.inert = true;
+    this.statusEl.inert = true;
+    if (this.overlay === 'menu') this.renderMenuOverlay();
     else this.renderMapOverlay();
-    this.root.focus({ preventScroll: true });
+    const focusTarget = this.overlayEl.querySelector('[tabindex="0"], button');
+    if (focusTarget instanceof HTMLElement) focusTarget.focus({ preventScroll: true });
   }
 
   /** The freshest state there is — including one still being narrated. */
@@ -390,18 +451,25 @@ export class App {
 
   /**
    * The head of an overlay: its title, its rule, and — where there is no ESC
-   * to press — a way out that stays in sight. The kitty is a long page on a
+   * to press — a way out that stays in sight. The menu is a long page on a
    * phone, and a way out that must be scrolled to is no way out at all, so the
    * head is pinned to the top of the panel as it scrolls beneath.
    */
-  private overlayHead(title: string): HTMLElement {
-    const row = el('div', { className: 'gf-overlay-titlerow' }, [
+  private overlayHead(title: string, subtitle?: string): HTMLElement {
+    // The day and the place sit on the title's own line where there is room
+    // for them: a heading is a whole line spent either way, and the menu can
+    // spare none.
+    const titleWrap = el('div', { className: 'gf-overlay-titlewrap' }, [
       el('h2', { className: 'gf-overlay-title', text: title }),
     ]);
+    if (subtitle) {
+      titleWrap.appendChild(el('span', { className: 'gf-overlay-sub', text: this.say(subtitle) }));
+    }
+    const row = el('div', { className: 'gf-overlay-titlerow' }, [titleWrap]);
     if (isTouch()) {
-      const close = el('span', {
+      const close = el('button', {
         className: 'gf-overlay-close',
-        attrs: { role: 'button', tabindex: '-1', 'aria-label': 'close' },
+        attrs: { type: 'button', 'aria-label': 'close' },
         text: '✕',
       });
       close.addEventListener('click', () => this.closeOverlay());
@@ -414,32 +482,49 @@ export class App {
   }
 
   /**
+   * A view's panels set side by side: headed blocks of label and value, laid
+   * into as many columns as the glass will take. The whole reckoning is meant
+   * to be read at one glance, so nothing here is a paragraph — a label in the
+   * dim ink, its value after it, and the block flows to the next column rather
+   * than down past the bottom of the panel.
+   */
+  private menuPanelGrid(panels: ViewPanel[]): HTMLElement {
+    const grid = el('div', { className: 'gf-panels' });
+    for (const p of panels) {
+      const block = el('section', { className: 'gf-panel' }, [
+        el('h3', { className: 'gf-panel-head', text: p.heading }),
+      ]);
+      for (const r of p.rows) {
+        const line = el('p', { className: 'gf-panel-row' });
+        if (r.label) line.appendChild(el('span', { className: 'gf-panel-label', text: `${this.say(r.label)}: ` }));
+        line.appendChild(el('span', { className: 'gf-panel-value', text: this.say(r.text) }));
+        block.appendChild(line);
+      }
+      grid.appendChild(block);
+    }
+    return grid;
+  }
+
+  /**
    * The line at the foot of an overlay saying how to be rid of it — and, on a
    * screen with no ESC to press, the thing that is pressed instead.
    */
   private closeControl(text: string): HTMLElement {
-    const hint = el('p', {
+    const hint = el('button', {
       className: 'gf-overlay-hint',
-      attrs: { role: 'button', tabindex: '-1' },
+      attrs: { type: 'button' },
       text,
     });
     hint.addEventListener('click', () => this.closeOverlay());
     return hint;
   }
 
-  private renderKittyOverlay(): void {
-    const view = kittyView(this.liveState);
-    const panel = el('div', { className: 'gf-overlay-panel' });
-    panel.appendChild(this.overlayHead(view.title));
+  private renderMenuOverlay(): void {
+    const view = menuView(this.liveState);
+    const panel = el('div', { className: 'gf-overlay-panel gf-overlay-panel--menu' });
+    panel.appendChild(this.overlayHead(view.title, view.subtitle));
 
-    const body = el('div', { className: 'gf-overlay-body' });
-    for (const line of view.body) {
-      body.appendChild(el('p', {
-          className: line ? 'gf-para gf-para--line' : 'gf-para gf-para--blank',
-          text: this.say(line) || ' ',
-        }));
-    }
-    panel.appendChild(body);
+    panel.appendChild(this.menuPanelGrid(view.panels ?? []));
 
     const menuEl = el('nav', { className: 'gf-menu' });
     const items: UIMenuItem[] = view.menu.map((m) => ({
@@ -448,7 +533,10 @@ export class App {
       note: m.note,
       disabled: m.disabled,
       alert: m.alert,
-      onSelect: () => this.dispatch(m.action, { fromOverlay: true }),
+      onSelect: () => {
+        if (m.key === '0' && m.action.type === 'continue') this.closeOverlay();
+        else this.dispatch(m.action, { fromOverlay: true });
+      },
     }));
     items.splice(items.length - 1, 0, this.themeMenuItem('D', () => this.renderOverlay()));
     const inspector = el('p', { className: 'gf-inspector', attrs: { 'aria-live': 'polite' } });
@@ -460,67 +548,48 @@ export class App {
     panel.appendChild(menuEl);
     this.overlayMenu.fitColumns(Number.MAX_SAFE_INTEGER);
 
-    panel.appendChild(this.closeControl(isTouch() ? 'Touch here to close the kitty.' : 'Press ESC or 0 to close the kitty.'));
+    panel.appendChild(this.closeControl(isTouch() ? 'Touch here to close the menu.' : 'Press ESC or 0 to close the menu.'));
     this.overlayEl.appendChild(panel);
   }
 
+  /**
+   * The map: one drawn sheet, scaled whole to whatever room the glass can
+   * spare, with the digger's own notes set beneath it. Head, drawing, notes
+   * and the way out share a single page, and none of it is scrolled to.
+   */
   private renderMapOverlay(): void {
-    const { lines, markerRow, markerCol } = buildMap(this.liveState);
     const panel = el('div', { className: 'gf-overlay-panel gf-overlay-panel--map' });
     panel.appendChild(this.overlayHead('A MAP OF THE GOLDFIELDS'));
 
-    const pre = el('pre', { className: 'gf-map' });
-    const frag = document.createDocumentFragment();
-    lines.forEach((line, r) => {
-      if (r === markerRow && markerCol >= 0 && markerCol < line.length) {
-        const before = line.slice(0, markerCol);
-        const markChar = line[markerCol] || '*';
-        const after = line.slice(markerCol + 1);
-        frag.appendChild(document.createTextNode(before));
-        frag.appendChild(el('span', { className: 'gf-map-marker gf-blink', text: markChar }));
-        frag.appendChild(document.createTextNode(after + '\n'));
-      } else {
-        frag.appendChild(document.createTextNode(line + '\n'));
-      }
-    });
-    pre.appendChild(frag);
-    panel.appendChild(pre);
+    if (!this.mapBuilder) {
+      panel.appendChild(el('p', { className: 'gf-para', text: 'Unfolding the surveyor’s sheet…' }));
+      this.overlayEl.appendChild(panel);
+      void import('./map').then(({ buildMap }) => {
+        this.mapBuilder = buildMap;
+        if (this.overlay === 'map') this.renderOverlay();
+      });
+      return;
+    }
 
-    const body = el('div', { className: 'gf-overlay-body' });
-    const mv = mapView(this.liveState);
-    for (const line of mv.body) {
-      body.appendChild(el('p', { className: 'gf-para', text: line || ' ' }));
+    // The chart comes over as markup rather than a tree of nodes; every word
+    // printed on it is escaped where it is drawn.
+    const holder = el('div');
+    holder.innerHTML = this.mapBuilder(this.liveState).svg;
+    const chart = holder.firstElementChild;
+    if (chart) panel.appendChild(chart);
+
+    const body = el('div', { className: 'gf-overlay-body gf-map-prose' });
+    for (const line of mapView(this.liveState).body) {
+      body.appendChild(el('p', { className: 'gf-para', text: line || ' ' }));
     }
     panel.appendChild(body);
     panel.appendChild(
       this.closeControl(
-        isTouch()
-          ? 'Drag the map to see the whole of it. Touch here to close it.'
-          : 'Press any key, or click, to close the map.',
+        isTouch() ? 'Touch here to put the map away.' : 'Press any key, or click, to close the map.',
       ),
     );
-    // Everywhere but the drawing itself: a finger dragging the map sideways to
-    // see the far side of it is not asking for the map to be put away.
-    panel.addEventListener('click', (e) => {
-      if (e.target instanceof Node && pre.contains(e.target)) return;
-      this.closeOverlay();
-    });
+    panel.addEventListener('click', () => this.closeOverlay());
     this.overlayEl.appendChild(panel);
-
-    // A hundred and sixteen columns will not fit on a phone, and the half of
-    // the field a player wants first is the half he is standing in. Once the
-    // drawing is in the document, wind it along to put him in the middle of it.
-    if (pre.scrollWidth > pre.clientWidth) {
-      // Say so where it can be seen — under the drawing, not at the foot of a
-      // page the player would have to scroll to reach.
-      pre.after(
-        el('p', { className: 'gf-map-hint', text: 'The field runs on past the edge — drag the map sideways.' }),
-      );
-      const marker = pre.querySelector('.gf-map-marker');
-      if (marker instanceof HTMLElement) {
-        pre.scrollLeft = marker.offsetLeft - pre.clientWidth / 2;
-      }
-    }
   }
 
   // -------------------------------------------------------------------
@@ -659,17 +728,26 @@ export class App {
     }
 
     if (view.screen === 'title') {
-      const id = lastGameId(defaultStore());
-      if (id) {
-        const loaded = loadGame(id, defaultStore());
-        if (loaded) {
+      const last = tryLastGameId(defaultStore());
+      if (last.ok && last.value) {
+        const id = last.value;
+        const loaded = tryLoadGame(id, defaultStore());
+        if (loaded.ok) {
           items.push({
             key: 'C',
             label: `Continue last game — No. ${id}`,
             note: 'take up where you left off',
-            onSelect: () => this.dispatch({ type: 'resume', state: loaded }),
+            onSelect: () => this.dispatch({ type: 'resume', state: loaded.value }),
           });
         }
+      } else if (!last.ok) {
+        items.push({
+          key: 'C',
+          label: 'Saved games unavailable in this window',
+          note: last.error.message,
+          disabled: true,
+          onSelect: () => {},
+        });
       }
       items.push(this.themeMenuItem('T', () => this.render()));
     }
@@ -820,10 +898,10 @@ export class App {
         return;
       }
       const button = el(
-        'span',
+        'button',
         {
           className: 'gf-legend-act',
-          attrs: { role: 'button', tabindex: '-1', 'aria-label': part.what },
+          attrs: { type: 'button', 'aria-label': part.what },
         },
         words,
       );
@@ -851,12 +929,12 @@ export class App {
     if (this.bodyEl.scrollHeight > this.bodyEl.clientHeight + 1) {
       parts.push({ keys: 'PgUp/PgDn', what: 'read' });
     }
-    // No kitty and no map before a man has set foot on the field, or after the
+    // No menu and no map before a man has set foot on the field, or after the
     // reckoning has closed the books on him.
     const afoot = !['title', 'resume', 'intro', 'end'].includes(this.state.screen);
     if (afoot) {
       parts.push(
-        { keys: 'Esc', what: 'kitty', act: () => this.openOverlay('kitty') },
+        { keys: 'Esc', what: 'menu', act: () => this.openOverlay('menu') },
         { keys: 'M', what: 'map', act: () => this.openOverlay('map') },
       );
     }
@@ -870,8 +948,12 @@ export class App {
    * rest. The menu never shrinks; the prose gives way and scrolls.
    */
   private fitMenu(): void {
-    const MIN_PROSE = 110;
-    const reserve = Math.min(this.bodyEl.scrollHeight + 10, MIN_PROSE);
+    // On a full-height screen, camp character gets roughly two-fifths of the
+    // working pane before a long action list is split into columns. On a short
+    // glass the reserve scales down, but never to the near-hidden strip that
+    // made the prose unreadable in the Blackcap Ranges.
+    const proseReserve = Math.max(90, Math.min(240, this.mainEl.clientHeight * 0.42));
+    const reserve = Math.min(this.bodyEl.scrollHeight + 10, proseReserve);
     const budget =
       this.mainEl.clientHeight -
       this.inspectorEl.offsetHeight -
@@ -900,6 +982,22 @@ export class App {
   private renderJournal(): void {
     const js = this.journalState ?? (this.journalState = { mode: 'list', sectionIndex: 0, pageIndex: 0 });
 
+    if (!this.journalSections) {
+      this.titleEl.textContent = "THE NEW CHUM'S COMPANION";
+      this.subtitleEl.textContent = 'Opening the book…';
+      this.subtitleEl.style.display = '';
+      clear(this.bodyEl);
+      this.bodyEl.appendChild(el('p', { className: 'gf-para', text: 'The pages are being cut.' }));
+      clear(this.menuEl);
+      this.activeMenu = null;
+      void import('../content/journal').then(({ JOURNAL_SECTIONS }) => {
+        this.journalSections = JOURNAL_SECTIONS;
+        if (this.state.screen === 'journal') this.render();
+      });
+      return;
+    }
+    const sections = this.journalSections;
+
     this.bodyEl.scrollTop = 0;
     this.inputEl.style.display = 'none';
     clear(this.inputEl);
@@ -914,7 +1012,7 @@ export class App {
       clear(this.bodyEl);
       this.bodyEl.appendChild(el('p', { className: 'gf-para', text: 'Choose a chapter.' }));
 
-      const items: UIMenuItem[] = JOURNAL_SECTIONS.map((sec, i) => ({
+      const items: UIMenuItem[] = sections.map((sec, i) => ({
         key: MENU_LETTERS[i] ?? String(i),
         label: sec.title,
         onSelect: () => {
@@ -937,7 +1035,7 @@ export class App {
       this.fitMenu();
       this.renderLegend(this.screenLegend());
     } else {
-      const sec = JOURNAL_SECTIONS[js.sectionIndex];
+      const sec = sections[js.sectionIndex];
       const isLast = js.pageIndex >= sec.body.length - 1;
 
       this.titleEl.textContent = sec.title.toUpperCase();
@@ -970,7 +1068,8 @@ export class App {
   private advanceJournalPage(): void {
     const js = this.journalState;
     if (!js) return;
-    const sec = JOURNAL_SECTIONS[js.sectionIndex];
+    const sec = this.journalSections?.[js.sectionIndex];
+    if (!sec) return;
     if (js.pageIndex + 1 < sec.body.length) {
       this.journalState = { ...js, pageIndex: js.pageIndex + 1 };
     } else {

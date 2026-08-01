@@ -307,7 +307,7 @@ export function lurk(state: GameState, rng: RNG, log: Log, route: Route): LurkOu
   // word already bought and standing by — your own shanty's men, or a friend
   // at the bar — is spent here if it has not been spent elsewhere (§28.3,
   // §30.2). One warning the week, whichever friend gives it.
-  let patrol = lurkPatrolChance(state, route);
+  const patrol = lurkPatrolChance(state, route);
   if (rng.chance(patrol)) {
     const wordInHand = state.estate.warnedUntilDay >= state.day;
     if ((fieldSympathy(state) || wordInHand) && state.day - state.warnedOn >= 7) {
@@ -1067,7 +1067,6 @@ export function buyPassage(
   // Only what he carried up the gangway, and what is under the stone, is his.
   state.bankPence = 0;
   state.company = null;
-  state.shares = 0;
   state.claims = emptyClaims();
   state.gameOver = 'finished';
   return true;

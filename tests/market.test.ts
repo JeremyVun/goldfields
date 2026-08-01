@@ -141,6 +141,10 @@ describe('buying', () => {
     expect(state.horse).toBe('brumby');
     expect(state.moneyPence).toBe(pounds(15));
     expect(buyHorse(state, rng, log, 'hack')).toBe(false); // £25 and only £15 left
+    state.moneyPence = pounds(100);
+    expect(buyHorse(state, rng, log, 'hack')).toBe(false);
+    expect(state.horse).toBe('brumby');
+    expect(state.moneyPence).toBe(pounds(100));
   });
 });
 
@@ -189,7 +193,7 @@ describe('selling gold', () => {
     expect(state.moneyPence).toBeGreaterThan(0);
   });
 
-  it('only banks buy gold, at honest scales', () => {
+  it('banks pay best while camp buyers offer convenience and risky scales', () => {
     const bankState = createInitialState(20);
     bankState.location = 'fields-town';
     bankState.goldCentiOz = 1000;
@@ -200,8 +204,10 @@ describe('selling gold', () => {
     campState.location = 'damp-camp';
     campState.goldCentiOz = 1000;
     const rngB = makeRng(21);
-    expect(sellGold(campState, rngB, new Log(rngB), 'camp', false)).toBe(0);
-    expect(campState.goldCentiOz).toBe(1000);
+    const campTake = sellGold(campState, rngB, new Log(rngB), 'camp', false);
+    expect(campTake).toBeGreaterThan(0);
+    expect(campTake).toBeLessThan(10 * bankState.bankRate);
+    expect(campState.goldCentiOz).toBe(0);
   });
 
   it('selling nothing is harmless', () => {

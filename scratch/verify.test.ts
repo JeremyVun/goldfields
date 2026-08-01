@@ -18,10 +18,10 @@ const run = (s: GameState, a: Action, seed = 1) => {
 describe('verify fixes', () => {
   it('secret mine is five days each way', () => {
     const at = fresh(1, { location: 'secret-mine' });
-    console.log('from the secret mine to Fields Town:', localTravelDays(at, 'fields-town'), 'days');
-    console.log('from the secret mine to Damp Camp :', localTravelDays(at, 'damp-camp'), 'days');
+    console.log('from the secret mine to Slateford:', localTravelDays(at, 'fields-town'), 'days');
+    console.log('from the secret mine to Reedbank Camp:', localTravelDays(at, 'damp-camp'), 'days');
     const ft = fresh(1, { location: 'fields-town' });
-    console.log('from Fields Town to the secret mine:', localTravelDays(ft, 'secret-mine'), 'days');
+    console.log('from Slateford to the secret mine:', localTravelDays(ft, 'secret-mine'), 'days');
     const s = fresh(1, { location: 'secret-mine', screen: 'camp', provisionDays: 40, waterDays: 40 });
     for (const seed of [2, 5, 9]) {
       const r = run(s, { type: 'travelTo', place: 'fields-town' }, seed);

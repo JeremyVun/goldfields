@@ -5,7 +5,7 @@ import { Log } from '../src/engine/narrate';
 import { makeRng } from '../src/engine/rng';
 import { createInitialState } from '../src/engine/state';
 import { step } from '../src/engine/reduce';
-import { beginJourney, localTravelDays, planJourney, travelOneDay } from '../src/engine/travel';
+import { arrive, beginJourney, localTravelDays, planJourney, travelOneDay } from '../src/engine/travel';
 import type { GameState } from '../src/engine/types';
 
 function traveller(seed = 8): GameState {
@@ -47,17 +47,27 @@ describe('the two roads', () => {
     expect(plan.problems.join(' ')).toMatch(/thirst/i);
   });
 
-  it('a wagon costs twelve shillings, beats walking, and carries everything', () => {
-    expect(WAGON_FARE).toBe(shillings(12));
+  it('a wagon costs ten shillings exactly, beats walking, and carries everything', () => {
+    expect(WAGON_FARE).toBe(shillings(10));
     const state = traveller();
     state.items.cradle = 1;
     const log = new Log(makeRng(1));
     expect(beginJourney(state, log, 'trickeys', 'wagon', 'fields-town')).toBe(true);
-    expect(state.moneyPence).toBe(pounds(20) - shillings(12));
+    expect(state.moneyPence).toBe(pounds(20) - shillings(10));
     expect(state.items.cradle).toBe(1);
     expect(planJourney(traveller(), 'trickeys', 'wagon').days).toBeLessThan(
       planJourney(traveller(), 'trickeys', 'walk').days,
     );
+  });
+
+  it('leaves even an exhausted wagon passenger fresh on arrival', () => {
+    const state = traveller();
+    const log = new Log(makeRng(1));
+    state.fatigue = 21;
+    beginJourney(state, log, 'trickeys', 'wagon', 'fields-town');
+    arrive(state, log);
+    expect(state.location).toBe('fields-town');
+    expect(state.fatigue).toBe(0);
   });
 
   it('a walker must leave the cradle by the road unless he has a barrow', () => {

@@ -4,7 +4,7 @@
  * The company (§19) makes a digger a capitalist and the ranges (§23) make him a
  * captain, but the world goes on acting upon him either way. What is bought
  * here is not a yield: it is a rule struck out of the world's dice, with the
- * subscriber's name at the head of the list. Digger, then man of property,
+ * benefactor's name at the head of the list. Digger, then man of property,
  * then notable of the fields.
  */
 
@@ -81,22 +81,15 @@ import type {
   StoryKind,
   WorkId,
 } from './types';
+import { availableFunds, debitFunds } from './wallet';
 
 // ---------------------------------------------------------------------------
 // Money at the counter
 // ---------------------------------------------------------------------------
 
-export function purse(state: GameState): number {
-  return state.moneyPence + state.bankPence;
-}
-
 /** Deeds are paid for out of the pocket first and the bank after. */
 function drawFrom(state: GameState, amount: number): boolean {
-  if (purse(state) < amount) return false;
-  const fromHand = Math.min(amount, state.moneyPence);
-  state.moneyPence -= fromHand;
-  state.bankPence -= amount - fromHand;
-  return true;
+  return debitFunds(state, amount);
 }
 
 /**
@@ -152,7 +145,7 @@ export function shamrockRequirements(state: GameState): Requirement[] {
       text: `standing of ${SHAMROCK_STANDING}/100 on the field (you have ${Math.floor(state.standing)}/100)`,
     },
     { met: respectable(state), text: 'a character the Licensing Bench will pass' },
-    { met: purse(state) >= SHAMROCK_PRICE, text: `${formatMoney(SHAMROCK_PRICE)} in hand and bank` },
+    { met: availableFunds(state) >= SHAMROCK_PRICE, text: `${formatMoney(SHAMROCK_PRICE)} in hand and bank` },
   ];
 }
 
@@ -183,7 +176,7 @@ export function storeRequirements(state: GameState, camp: CampId): Requirement[]
     },
     { met: respectable(state), text: 'a character Bell will give credit to' },
     {
-      met: purse(state) >= STORE_PRICE + STORE_STOCK_PRICE,
+      met: availableFunds(state) >= STORE_PRICE + STORE_STOCK_PRICE,
       text: `${formatMoney(STORE_PRICE)} for the tent and licence and ${formatMoney(STORE_STOCK_PRICE)} for the opening stock`,
     },
   ];
@@ -233,7 +226,7 @@ export function gazetteRequirements(state: GameState): Requirement[] {
       text: `standing of ${GAZETTE_STANDING}/100 (you have ${Math.floor(state.standing)}/100); a paper is known by its proprietors`,
     },
     { met: respectable(state), text: 'a name the paper may print as its own' },
-    { met: purse(state) >= GAZETTE_SHARE_PRICE, text: `${formatMoney(GAZETTE_SHARE_PRICE)} for the half-share` },
+    { met: availableFunds(state) >= GAZETTE_SHARE_PRICE, text: `${formatMoney(GAZETTE_SHARE_PRICE)} for the half-share` },
   ];
 }
 
@@ -405,24 +398,24 @@ export function plaqueLine(state: GameState, id: WorkId): string {
   const race = state.estate.works.find((w) => w.id === 'waterRace');
   switch (id) {
     case 'bridge':
-      return 'THE SLATE RIVER BRIDGE — erected by public subscription, 1854, the list headed by a digger of this field.';
+      return 'THE SLATE RIVER BRIDGE — funded by the people of the fields, 1854, the list headed by a digger of this field.';
     case 'waterRace':
-      return `THE WATER RACE TO ${(race?.camp ? CAMP_DEFS[race.camp].name : 'THE DIGGINGS').toUpperCase()} — cut by subscription, 1854. Water where there was dust.`;
+      return `THE WATER RACE TO ${(race?.camp ? CAMP_DEFS[race.camp].name : 'THE DIGGINGS').toUpperCase()} — publicly funded, 1854. Water where there was dust.`;
     case 'ward':
-      return 'THE SUBSCRIBERS\' WARD, CANVAS HOUSE — for the sick of the diggings, without distinction of purse.';
+      return 'THE DIGGERS\' WARD, CANVAS HOUSE — for the sick of the diggings, without distinction of purse.';
     default:
       return 'THE SLATEFORD SCHOOL — that the children of this place may be something other than diggers.';
   }
 }
 
-export function subscribeWork(state: GameState, log: Log, id: WorkId, camp?: CampId): boolean {
+export function fundWork(state: GameState, log: Log, id: WorkId, camp?: CampId): boolean {
   const def = WORK_DEFS[id];
   if (hasWork(state, id)) {
-    log.raw('That work is subscribed and finished. The Council does not take the money twice.', 'neutral');
+    log.raw('That work is funded and finished. The Council does not take the money twice.', 'neutral');
     return false;
   }
   if (state.location !== 'fields-town') {
-    log.raw('Subscriptions are taken at the Council Chambers, and nowhere else.', 'bad');
+    log.raw('Public works are funded at the Council Chambers, and nowhere else.', 'bad');
     return false;
   }
   if (!respectable(state)) {
@@ -433,7 +426,7 @@ export function subscribeWork(state: GameState, log: Log, id: WorkId, camp?: Cam
     log.raw('A race must be cut to somewhere. Name the camp.', 'bad');
     return false;
   }
-  if (purse(state) < def.cost) {
+  if (availableFunds(state) < def.cost) {
     log.say('estate.refused', { want: `${formatMoney(def.cost)}, being the whole of the estimate` }, 'bad');
     return false;
   }
@@ -442,7 +435,7 @@ export function subscribeWork(state: GameState, log: Log, id: WorkId, camp?: Cam
   addStanding(state, def.standing);
   const vars = { camp: camp ? CAMP_DEFS[camp].name : '', amount: formatMoney(def.cost) };
   log.say(`estate.work.${id}`, vars, 'good');
-  addJournal(state, `Subscribed ${formatMoney(def.cost)} to ${WORK_NAMES[id]}.`, 'good');
+  addJournal(state, `Funded ${WORK_NAMES[id]} with ${formatMoney(def.cost)}.`, 'good');
   return true;
 }
 
@@ -463,9 +456,9 @@ export function commissionRequirements(state: GameState): Requirement[] {
     { met: state.legal === 'honest' && !state.outlawed, text: 'a clean sheet: the Bench is not given to men with records' },
     {
       met: property >= 1 || state.estate.works.length >= 2,
-      text: 'a property in the district, or two public works subscribed',
+      text: 'a property in the district, or two public works funded',
     },
-    { met: purse(state) >= JP_FEE, text: `${formatMoney(JP_FEE)} subscribed to the Court fund` },
+    { met: availableFunds(state) >= JP_FEE, text: `${formatMoney(JP_FEE)} for the Court fund` },
   ];
 }
 
@@ -788,7 +781,7 @@ export function estateWeek(state: GameState, rng: RNG, log: Log): void {
 }
 
 // ---------------------------------------------------------------------------
-// What the kitty and the reckoning say of it
+// What the menu and the reckoning say of it
 // ---------------------------------------------------------------------------
 
 /** The deeds, in the words the strongbox would use. */

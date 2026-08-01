@@ -5,7 +5,7 @@ export * from './rng';
 export * from './state';
 export * from './constants';
 export { step, finalWorth, screenForLocation } from './reduce';
-export { getView, kittyView, mapView, endView } from './menus';
+export { getView, menuView, mapView, endView } from './menus';
 export { gazetteFor, campTalk } from './news';
 export * from './hearth';
 export {

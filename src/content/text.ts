@@ -2050,8 +2050,8 @@ export const TEXT: Record<string, string[]> = {
   // ───────────────────────── PUBLIC WORKS ─────────────────────────
 
   'estate.work.bridge': [
-    'The subscription list goes up at the Chambers with your name at the head of it and {amount} against it, and by the end of the month there are piles driven in the Slate River and a bridge of ironbark over it. The Reedbank Camp road is a road now, in winter as in summer, for you and for every bullocky and every man on foot who will never know who paid for it.',
-    '{amount} to the bridge fund, and the Council writes to thank you in the manner of men who intend to ask again. The thing goes up in six weeks: ironbark, a hand-rail, and a plank with the subscribers on it. The old ford took a dray and two bullocks last winter and will not take another.',
+    'The public-works list goes up at the Chambers with your name at the head of it and {amount} against it, and by the end of the month there are piles driven in the Slate River and a bridge of ironbark over it. The Reedbank Camp road is a road now, in winter as in summer, for you and for every bullocky and every man on foot who will never know who paid for it.',
+    '{amount} to the bridge fund, and the Council writes to thank you in the manner of men who intend to ask again. The thing goes up in six weeks: ironbark, a hand-rail, and a plank naming those who paid for it. The old ford took a dray and two bullocks last winter and will not take another.',
   ],
   'estate.work.waterRace': [
     'The race to {camp} is cut for {amount}: three miles of it, a fall of a foot in eighty, and water where there has never been water in February. The puddlers may work the year round now, and men who were washing their dirt in the same bucket for a week have a running head to do it in.',
@@ -2059,7 +2059,7 @@ export const TEXT: Record<string, string[]> = {
   ],
   'estate.work.ward': [
     'Canvas House gets a ward of its own for {amount} — twelve beds, a stove, a floor that is not the ground, and a standing order that no man is turned away for want of ten shillings. The doctor, who has buried more diggers than he cares to count and most of them of the dysentery, shakes your hand for rather too long.',
-    'The subscribers\' ward goes up in canvas and slab beside the hospital tents, {amount} of it yours: beds off the ground, clean water carted daily, and the sick carted in before they can infect a whole gully. The plaque is small. The thing itself is not.',
+    'The diggers\' ward goes up in canvas and slab beside the hospital tents, {amount} of it yours: beds off the ground, clean water carted daily, and the sick carted in before they can infect a whole gully. The plaque is small. The thing itself is not.',
   ],
   'estate.work.school': [
     'A school, then: one room, a stove, forty slates and a master at £80 the year, for {amount} down. There are children on this field who have never sat under a roof in their lives and can tell you the price of gold to the pennyweight. From Monday they will be learning something else.',
@@ -2075,11 +2075,11 @@ export const TEXT: Record<string, string[]> = {
   ],
   'works.ward.absence': [
     'A man goes down with the dysentery in the next tent and is carted to Canvas House the same afternoon instead of lying there three days infecting a gully. The ward is doing quietly what the ward was built for.',
-    'There is fever in the camp and it does not spread as fever used to spread here. The sick are taken out early to the subscribers\' ward, and the difference does not make a paragraph in any newspaper.',
+    'There is fever in the camp and it does not spread as fever used to spread here. The sick are taken out early to the diggers\' ward, and the difference does not make a paragraph in any newspaper.',
   ],
   'works.ward.free': [
-    '{days} days in the subscribers\' ward, and not a penny asked at the door: the man who endowed it is not charged to lie in it. There is a certain amount of standing about by the nurses, and one of them tells you what the beds cost, which you know.',
-    'They put you in the ward you paid for, {days} days of it, free — and the doctor observes drily that this is the first time in his experience the arrangement has worked out to the subscriber\'s advantage.',
+    '{days} days in the diggers\' ward, and not a penny asked at the door: the man who endowed it is not charged to lie in it. There is a certain amount of standing about by the nurses, and one of them tells you what the beds cost, which you know.',
+    'They put you in the ward you paid for, {days} days of it, free — and the doctor observes drily that this is the first time in his experience the arrangement has worked out to the benefactor\'s advantage.',
   ],
   'works.school.lad': [
     'A youngster of about seventeen presents himself at the tent — one of the first through the Slateford school, and he can read, cipher, and keep a tally without cheating himself or you. He will not hear of wages until he has learned the trade. He is the best mate you have had on this field, and the school cost you sixty pounds.',
@@ -2090,7 +2090,7 @@ export const TEXT: Record<string, string[]> = {
 
   'estate.jp.gazetted': [
     'It costs {amount} to the Court fund and a morning of standing about in the Chambers, and at the end of it your name is in the Government Gazette as a Justice of the Peace for the district. You arrived on this field with a tin dish and no notion which end of a cradle went in the water.',
-    'The commission is read out, the {amount} subscribed to the Court fund is entered in the book, and you take the oath before a clerk who yawns. J.P. after a man\'s name is only three letters. It means the Crown has decided to be represented, in this place, by you.',
+    'The commission is read out, your {amount} contribution to the Court fund is entered in the book, and you take the oath before a clerk who yawns. J.P. after a man\'s name is only three letters. It means the Crown has decided to be represented, in this place, by you.',
   ],
   'estate.jp.forfeit': [
     'A magistrate convicted is a magistrate no longer. The commission is revoked by return of post, the Times has it on the front page under a heading it clearly enjoyed setting, and men who drank your health in the spring cross the street now.',
@@ -2223,10 +2223,10 @@ export const TEXT: Record<string, string[]> = {
 
   'epilogue.notable.bench': [
     'You came out a new chum with a tin dish and a Journal you had read twice, and you sit on the Slateford bench now. The town is what it is partly because you were in it: there are things standing in that valley that would not be standing, and men going about their business who would otherwise be in the logs or the ground.',
-    'A Justice of the Peace for the district — which is not a fortune, and cannot be banked, and is the only thing in this colony that a man cannot buy with gold alone. They will put your name on the list of subscribers at the front of the Chambers, and it will still be legible in fifty years, which is longer than the gold lasted.',
+    'A Justice of the Peace for the district — which is not a fortune, and cannot be banked, and is the only thing in this colony that a man cannot buy with gold alone. They will put your name on the roll at the front of the Chambers, and it will still be legible in fifty years, which is longer than the gold lasted.',
   ],
   'epilogue.notable.town': [
     'What you leave is not in the bank. It is a bridge, a race, a ward and a schoolroom, and eleven thousand men who never knew your name using them every day of their lives.',
-    'The tents will go, and the gold will go, and the creek will run over the tailings until nobody remembers there was a rush here. The things you subscribed for will be here, being used by people who never heard of the diggings.',
+    'The tents will go, and the gold will go, and the creek will run over the tailings until nobody remembers there was a rush here. The things you funded will be here, being used by people who never heard of the diggings.',
   ],
 };

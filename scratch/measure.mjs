@@ -23,7 +23,7 @@ const STOPS = [
   { name: 'title', keys: [] },
   { name: 'port', keys: ['1', 'x9:Space', 'Space'] },
   { name: 'store', keys: ['2'] },
-  { name: 'kitty', keys: ['Escape'] },
+  { name: 'menu', keys: ['Escape'] },
   { name: 'map', keys: ['Escape', 'm'] },
 ];
 

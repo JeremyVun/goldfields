@@ -5,7 +5,7 @@
 import { makeRng, type RNG } from '../src/engine/rng';
 import { createInitialState } from '../src/engine/state';
 import { step } from '../src/engine/reduce';
-import { getView, kittyView } from '../src/engine/menus';
+import { getView, menuView } from '../src/engine/menus';
 import type { Action, GameState, MenuItem, NarrationEvent } from '../src/engine/types';
 
 export interface Player {
@@ -68,7 +68,7 @@ export function has(p: Player, needle: string): MenuItem | undefined {
 }
 
 export function kittyPress(p: Player, key: string): NarrationEvent[] {
-  const v = kittyView(p.state);
+  const v = menuView(p.state);
   const m = v.menu.find((x) => x.key.toUpperCase() === key.toUpperCase());
   if (!m) throw new Error(`kitty has no key ${key}`);
   if (m.disabled) throw new Error(`kitty key ${key} disabled`);

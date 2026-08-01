@@ -44,9 +44,13 @@ export function isTouch(): boolean {
 }
 
 /** Tells `cb` whenever the glass gains or loses a pointer that can hover. */
-export function onInputModeChange(cb: () => void): void {
-  if (typeof window === 'undefined' || !window.matchMedia) return;
+export function onInputModeChange(cb: () => void): () => void {
+  if (typeof window === 'undefined' || !window.matchMedia) return () => {};
   const mq = window.matchMedia('(hover: none)');
   if (mq.addEventListener) mq.addEventListener('change', cb);
   else mq.addListener(cb); // Safari before 14
+  return () => {
+    if (mq.removeEventListener) mq.removeEventListener('change', cb);
+    else mq.removeListener(cb);
+  };
 }

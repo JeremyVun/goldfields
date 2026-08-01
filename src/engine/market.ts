@@ -90,7 +90,7 @@ export function rateTrend(state: GameState): RateTrend {
   return 'steady';
 }
 
-/** The sentence the kitty, the bank and the Times all put it in. */
+/** The sentence the menu, the bank and the Times all put it in. */
 export function rateTrendPhrase(state: GameState): string {
   const then = rateWeekAgo(state);
   switch (rateTrend(state)) {
@@ -375,6 +375,10 @@ export function buyGreens(state: GameState, log: Log): boolean {
 }
 
 export function buyHorse(state: GameState, rng: RNG, log: Log, kind: 'brumby' | 'hack'): boolean {
+  if (state.horse !== 'none') {
+    log.raw('One horse is as many as you can keep on the road. The dealer offers no trade-in.', 'neutral');
+    return false;
+  }
   const price = HORSE_PRICE[kind];
   if (state.moneyPence < price) {
     log.raw('The dealer looks you over, and looks away.', 'bad');
@@ -410,10 +414,6 @@ export function sellGold(
 ): number {
   if (state.goldCentiOz <= 0) {
     log.raw('You have no gold to weigh.', 'neutral');
-    return 0;
-  }
-  if (where !== 'bank') {
-    log.raw('Only the bank buys gold. The storekeeper points you towards its scales.', 'neutral');
     return 0;
   }
   // The banks will not weigh a wanted man's gold; there is a notice of him

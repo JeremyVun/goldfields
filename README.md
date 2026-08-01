@@ -16,7 +16,7 @@ success. At the year's end it simply reckons up what you have and what became of
 
 ## Running it
 
-Requires Node 18 or later. No runtime dependencies; nothing is fetched from the network while
+Requires Node 22 or later. No runtime dependencies; nothing is fetched from the network while
 you play.
 
 ```bash
@@ -43,12 +43,12 @@ failure.
 | `HOME` `END` | jump the highlight to the first or last item |
 | `RETURN` | choose the highlighted item |
 | `SPACE` | advance a page of narration ("press the SPACE BAR"), and start the game from the title screen |
-| `ESC` | open **the kitty** — your money, gold, the exchange rate of the day, your kit, health, legal standing and licence. From here you may exchange gold, save the game, or finish it. Press `ESC` or `0` to close. |
+| `ESC` | open **the menu** — your money, gold, the exchange rate of the day, your kit, health, legal standing and licence. From here you may exchange gold, save the game, or finish it. Press `ESC` or `0` to close. |
 | `M` | open the **map** of the goldfields, marked with where you stand, where your pegs are, where a rush is on and where your company's workings lie. Any key closes it. |
 | `0` | back / leave the current counter |
 
 **The colour of the glass.** The game ships as ink on paper; the title screen (`T`)
-and the kitty (`ESC`, then `D`) cycle the schemes: ink on paper, black & white, or the deep blue
+and the menu (`ESC`, then `D`) cycle the schemes: ink on paper, black & white, or the deep blue
 glass. Your choice is remembered between sittings.
 
 ### By hand, on a phone or a tablet
@@ -59,15 +59,17 @@ The game is playable with no keyboard at all, and rearranges itself when it find
 - **The flavour of a choice moves into the row.** On a desk it sits on the highlight line above
   the menu, put there by the marker; a finger cannot put the marker anywhere without also taking
   the choice, so on a touch screen each row carries its own line of flavour instead.
-- **The kitty and the map become buttons** — `[ KITTY ]` `[ MAP ]` at the foot of the glass,
+- **The menu and the map become buttons** — `[ MENU ]` `[ MAP ]` at the foot of the glass,
   where the legend of keys sits on a desk. An overlay gains a `✕` pinned to its top.
-- **The map** is 116 columns of fixed drawing and will not reflow, so on a narrow glass it is
-  kept legible and scrolls sideways, wound along to where you stand. Dragging it does not shut it.
+- **The map** is one drawn sheet — an engraved 1854 survey chart in SVG (`src/ui/map.ts`) —
+  and it scales whole to whatever room the glass can spare, so the sheet and the notes beneath
+  it are always a single page with nothing to scroll. On a phone laid on its side the notes
+  stand in a column beside the sheet rather than under it.
 - **The handful of lines that name a key** — "press the SPACE BAR", "press RETURN" — are said
   differently where there is no such key (`src/ui/phrasing.ts`, `tests/responsive.test.ts`).
   Entering a saved game's number raises the numeric keypad and is sent with **Take it up**.
 
-Menu items can also be clicked or tapped. A one-line summary of the kitty sits at the foot of
+Menu items can also be clicked or tapped. A one-line summary of the menu sits at the foot of
 every screen:
 
 ```
@@ -79,7 +81,7 @@ that is the only place anybody asks.
 
 ### Saving
 
-Open the kitty with `ESC` and choose **Save the game**. You are given a **game number**. Write it
+Open the menu with `ESC` and choose **Save the game**. You are given a **game number**. Write it
 down — it is the only way back. To resume, choose **Take up a saved game** on the title screen
 and type the number. (There is also a "continue last game" convenience on the title screen.)
 Saves live in your browser's `localStorage`.
@@ -157,7 +159,7 @@ climb off it.
   shillings a night at the inn down to nothing at all in the open, a bank, the horse dealer,
   *The Slateford Times* and *The New Chum's Companion* (sixpence).
 - **The roads** — Mercer's Track (longer, better, crowded, safer) and the Razorback Road (shorter,
-  rougher, lonelier, and far more bushrangers). Walk, ride a wagon for £3, or take a horse.
+  rougher, lonelier, and far more bushrangers). Walk, ride a wagon for 10s, or take a horse.
 - **Slateford** — the Bank of Australasia, Bell's Outfitters, the Council Chambers (licences and
   claims), Canvas House (the hospital), the Crown & Cradle and its two-up school, Cobb & Co.
   back to the port, and work as an orderly, a store clerk, a barman, a market gardener for
@@ -181,7 +183,7 @@ src/
     time.ts          the 1854 calendar and southern-hemisphere seasons
     types.ts         GameState, Action, ScreenView and the rest of the contract
     constants.ts     every tuning knob in the game, in one file
-    state.ts         initial state, derived descriptions, the kitty status line
+    state.ts         initial state, derived descriptions, the menu status line
     daily.ts         the per-day upkeep loop every multi-day action runs through
     health.ts        afflictions, risk, Canvas House
     law.ts           licences, digger hunts, bribes, the logs, the magistrate
@@ -200,6 +202,7 @@ src/
     library.ts       The New Chum's Companion, newspaper stories, advertisements and camp talk
     say.ts           variant selection and placeholder substitution
   ui/                plain-DOM rendering, keyboard handling, the retro presentation
+public/              the icon set, copied into the build untouched
 tests/               Vitest: unit tests plus the strategy-bot balance harness
 ```
 
@@ -208,13 +211,23 @@ narration events the action produced; it never mutates its argument and never to
 All randomness goes through an injectable seeded RNG whose state is stored in the game state,
 which is why a resumed save plays out exactly as the original would have.
 
+The icon is drawn as pixel art on a 16×16 grid — a gold nugget in the paper theme's own ink,
+cut out of its background and keylined so that it holds its edge on a pale tab strip and a dark
+one alike — and `node scratch/favicon.mjs` renders `public/` from it: an SVG, a 16/32/48 `.ico`,
+and a 180px icon for a home screen, every one of them scaled by whole numbers so the pixels stay
+square. The home-screen icon is the one exception to the transparency, and gets the nugget in a
+printed block instead: iOS composites a home screen icon on nothing, and renders a see-through
+pixel black. Like the game, it has no dependencies; the PNG and ICO containers are written out
+by hand over `node:zlib`. `node scratch/favicon.mjs --proof` writes proofs to `scratch/shots`
+for judging the drawing by eye — zoomed, at true size, and laid over four tab-strip colours.
+
 ### Tests
 
 ```bash
 npm test
 ```
 
-281 tests. Unit tests cover £sd arithmetic (including a round-trip over every value up to five
+The suite covers £sd arithmetic (including a round-trip over every value up to five
 pounds and a check that no rendering ever produces "20s" or "12d"), the calendar and seasons,
 the licence and law ladder, health and afflictions, prices and exchange rates, travel, mining
 yields, claim quality and depletion, skill and standing, the company's books, the December

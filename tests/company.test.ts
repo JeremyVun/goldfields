@@ -14,6 +14,7 @@ import {
   COMPANY_SHARE_PRICE,
 } from '../src/engine/constants';
 import {
+  abandonLease,
   buyBackShares,
   canFloat,
   companyWeek,
@@ -22,10 +23,12 @@ import {
   floatCompany,
   floatRequirements,
   hireCrew,
+  installPlant,
   leaseWord,
   sellOut,
   sellOwnShares,
   setCrewTask,
+  setLeasePlan,
   subscriptionCost,
   uptakeChance,
 } from '../src/engine/company';
@@ -36,7 +39,7 @@ import { step } from '../src/engine/reduce';
 import { makeRng, type RNG } from '../src/engine/rng';
 import { deserialise, serialise } from '../src/engine/save';
 import { companyWorth, createInitialState, netWorth } from '../src/engine/state';
-import type { GameState } from '../src/engine/types';
+import type { GameState, Lease } from '../src/engine/types';
 
 /** A man with proved ground, a name, and a hundred pounds behind him. */
 function promoter(seed = 5): { state: GameState; rng: RNG; log: Log } {
@@ -55,6 +58,22 @@ function floated(seed = 5, shares = 12): { state: GameState; rng: RNG; log: Log 
   const ctx = promoter(seed);
   floatCompany(ctx.state, ctx.rng, ctx.log, shares);
   return ctx;
+}
+
+function leaseAt(yieldNow: number): Lease {
+  return {
+    name: 'the Test Mine',
+    reef: yieldNow,
+    level: 1,
+    face: 5,
+    yieldNow,
+    wet: false,
+    pump: false,
+    timbered: false,
+    flooded: false,
+    progress: 0,
+    plan: null,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -123,14 +142,15 @@ describe('floating a company', () => {
     expect(state.company).toBeNull();
   });
 
-  it('turns the proved claim into the company’s first lease, quality and all', () => {
+  it('turns the proved claim into the company’s first named, bottomed mine', () => {
     const { state } = floated();
     expect(state.claims['deep-mountains']).toBeNull();
     const c = state.company!;
     expect(c.leases).toHaveLength(1);
-    expect(c.leases[0].quality).toBe(140);
-    // Deeper ground: the digger's days upon it count for half.
-    expect(c.leases[0].workedDays).toBe(3);
+    expect(c.leases[0].reef).toBe(140);
+    expect(c.leases[0].name.length).toBeGreaterThan(4);
+    expect(c.leases[0].level).toBe(1);
+    expect(c.leases[0].face).toBeGreaterThanOrEqual(4);
   });
 
   it('draws the outlay from the bank when the pocket will not cover it', () => {
@@ -191,9 +211,10 @@ describe('the public appetite for scrip', () => {
 // ---------------------------------------------------------------------------
 
 describe('a week at the workings', () => {
-  it('wins money into the treasury and wears the lease at half a digger’s rate', () => {
+  it('wins money into the treasury and works out the current face', () => {
     const { state, rng, log } = floated(21);
     const c = state.company!;
+    c.leases[0].wet = false;
     c.crews = [{ task: 'mine' }];
     const before = c.treasury;
     let won = 0;
@@ -202,8 +223,7 @@ describe('a week at the workings', () => {
       companyWeek(state, rng, log);
       won += c.treasury - t;
     }
-    expect(c.leases[0].workedDays).toBeGreaterThan(3);
-    expect(c.leases[0].workedDays).toBeLessThanOrEqual(3 + 8 * 3.5);
+    expect(c.leases[0].face).toBe(0);
     // Over eight weeks a crew on good ground more than pays its own wages.
     expect(c.treasury).toBeGreaterThan(0);
     expect(won).not.toBe(0);
@@ -215,8 +235,7 @@ describe('a week at the workings', () => {
     const c = state.company!;
     c.crews = [{ task: 'mine' }];
     c.treasury = 0;
-    c.leases[0].quality = 25;
-    c.leases[0].workedDays = 49;
+    c.leases[0].flooded = true;
     state.moneyPence = pounds(10);
     companyWeek(state, rng, log);
     expect(state.moneyPence).toBeLessThan(pounds(10));
@@ -229,8 +248,7 @@ describe('a week at the workings', () => {
     const c = state.company!;
     c.crews = [{ task: 'mine' }, { task: 'mine' }];
     c.treasury = 0;
-    c.leases[0].quality = 25;
-    c.leases[0].workedDays = 50;
+    c.leases[0].flooded = true;
     state.moneyPence = shillings(2);
     state.standing = 70;
     const price = c.sharePrice;
@@ -279,18 +297,19 @@ describe('a week at the workings', () => {
     c.treasury = pounds(500);
     for (let i = 0; i < 10; i++) companyWeek(state, lucky, log);
     expect(c.leases.length).toBe(COMPANY_MAX_LEASES);
-    for (const l of c.leases) expect(l.proven).toBe(true);
+    expect(c.leases.slice(1).every((l) => l.level === 0)).toBe(true);
+    expect(new Set(c.leases.map((l) => l.name)).size).toBe(COMPANY_MAX_LEASES);
   });
 
-  it('reports the ground in words, never in numbers', () => {
+  it('reports each mine and its stone without exposing assay values', () => {
     const { state } = floated();
     const words = [
-      leaseWord({ quality: 30, workedDays: 0, proven: true }),
-      leaseWord({ quality: 140, workedDays: 20, proven: true }),
-      leaseWord({ quality: 260, workedDays: 55, proven: true }),
+      leaseWord(leaseAt(30)),
+      leaseWord(leaseAt(140)),
+      leaseWord(leaseAt(260)),
     ];
     for (const w of words) {
-      expect(w).not.toMatch(/\d/);
+      expect(w).not.toMatch(/\b(?:30|140|260)\b/);
       expect(w.length).toBeGreaterThan(6);
     }
     expect(words[0]).not.toBe(words[1]);
@@ -401,6 +420,7 @@ describe('dealing in your own scrip', () => {
     const { state, log } = floated(93, 8);
     const price = state.company!.sharePrice;
     const name = state.company!.name;
+    const treasuryShare = Math.round((state.company!.treasury * 3) / 20);
     state.moneyPence = 0;
     const eager = makeRng(5);
     eager.chance = () => true;
@@ -408,17 +428,18 @@ describe('dealing in your own scrip', () => {
     expect(state.company).toBeNull();
     expect(state.soldOut?.name).toBe(name);
     // Five sold, and the remaining three bought out with them.
-    expect(state.moneyPence).toBe(8 * price);
-    expect(state.soldOut?.amount).toBe(3 * price);
+    expect(state.moneyPence).toBe(8 * price + treasuryShare);
+    expect(state.soldOut?.amount).toBe(3 * price + treasuryShare);
   });
 
   it('sells out on demand, and the company leaves the state entirely', () => {
     const { state, log } = floated(94, 16);
     state.moneyPence = 0;
     const price = state.company!.sharePrice;
+    const treasuryShare = Math.round((state.company!.treasury * 16) / 20);
     expect(sellOut(state, log)).toBe(true);
     expect(state.company).toBeNull();
-    expect(state.moneyPence).toBe(16 * price);
+    expect(state.moneyPence).toBe(16 * price + treasuryShare);
     expect(state.journal.some((j) => j.text.includes('Sold out'))).toBe(true);
   });
 
@@ -436,6 +457,68 @@ describe('dealing in your own scrip', () => {
     expect(state.moneyPence).toBe(0);
     expect(buyBackShares(state, log, 1)).toBe(false);
     expect(state.moneyPence).toBe(0);
+  });
+});
+
+describe('named mines, water and development', () => {
+  it('remaps every later crew assignment when an earlier lease is abandoned', () => {
+    const { state, log } = floated(96);
+    state.company!.leases.push({ ...leaseAt(90), name: 'the Second Mine' });
+    state.company!.crews = [
+      { task: 'mine', lease: 0 },
+      { task: 'develop', lease: 1 },
+      { task: 'mine', lease: 1 },
+    ];
+    expect(abandonLease(state, log, 0)).toBe(true);
+    expect(state.company!.leases.map((lease) => lease.name)).toEqual(['the Second Mine']);
+    expect(state.company!.crews.map((crew) => crew.lease)).toEqual([undefined, 0, 0]);
+  });
+
+  it('requires pumping plant before wet ground can be developed', () => {
+    const { state, log } = floated(97);
+    const lease = state.company!.leases[0];
+    lease.wet = true;
+    lease.pump = false;
+    expect(setLeasePlan(state, log, 0, 'sink')).toBe(false);
+    const before = state.company!.treasury;
+    expect(installPlant(state, log, 0, 'pump')).toBe(true);
+    expect(state.company!.treasury).toBeLessThan(before);
+    expect(setLeasePlan(state, log, 0, 'sink')).toBe(true);
+  });
+
+  it('floods unpumped wet ground in winter and dewaters it in two crew-weeks', () => {
+    const { state, rng, log } = floated(98);
+    state.day = 180;
+    const lease = state.company!.leases[0];
+    lease.wet = true;
+    lease.pump = false;
+    rng.chance = () => true;
+    companyWeek(state, rng, log);
+    expect(lease.flooded).toBe(true);
+
+    lease.pump = true;
+    state.company!.crews = [{ task: 'develop', lease: 0 }];
+    rng.chance = () => false;
+    companyWeek(state, rng, log);
+    expect(lease.flooded).toBe(true);
+    companyWeek(state, rng, log);
+    expect(lease.flooded).toBe(false);
+  });
+
+  it('exposes crews, ground, policy and dividends as separate company submenus', () => {
+    const { state } = floated(99);
+    state.company!.crews = [{ task: 'mine', lease: 0 }];
+    state.company!.treasury = pounds(100);
+    state.screen = 'company';
+    const companyMenu = getView(state).menu;
+    const actions = companyMenu.map((entry) => entry.action.type);
+    expect(actions).toEqual(expect.arrayContaining(['goto']));
+    expect(companyMenu.filter((entry) => entry.action.type === 'goto' && entry.action.screen === 'company-dividend')).toHaveLength(1);
+    for (const screen of ['company-crews', 'company-ground', 'company-policy', 'company-dividend'] as const) {
+      state.screen = screen;
+      expect(getView(state).screen).toBe(screen);
+      expect(getView(state).menu.length).toBeGreaterThan(1);
+    }
   });
 });
 
@@ -501,9 +584,6 @@ describe('the company in the kitty', () => {
     expect(campEntry?.label).toMatch(/Ask about floating/);
     expect(campEntry?.disabled).not.toBe(true);
 
-    state.screen = 'camp-shares';
-    expect(getView(state).menu.find((m) => m.key === '4')?.label).toMatch(/Ask about floating/);
-
     state.screen = 'company';
     const checklist = getView(state).body.join('\n');
     expect(checklist).toMatch(/standing of 30\/100/);
@@ -524,7 +604,7 @@ describe('the company in the kitty', () => {
     const back = deserialise(serialise(state)) as GameState;
     expect(back.company?.name).toBe(state.company!.name);
     expect(back.company?.crews).toEqual([{ task: 'prospect' }]);
-    expect(back.company?.leases[0].quality).toBe(140);
+    expect(back.company?.leases[0].reef).toBe(140);
     expect(back.company?.sharePrice).toBe(state.company!.sharePrice);
 
     const old = deserialise(JSON.stringify({ v: 2, seed: 1, day: 40, moneyPence: 500 })) as GameState;

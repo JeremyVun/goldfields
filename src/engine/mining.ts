@@ -412,7 +412,7 @@ export function mineOneDay(
     }
   }
 
-  let gold = 0;
+  let gold: number;
 
   if (method === 'shaft') {
     if (!state.claims[camp]) return { stop: 'noClaim', gold: 0 };
@@ -620,7 +620,7 @@ export function hireMate(state: GameState, log: Log, days: number): boolean {
     log.raw('Your partner would think little of you paying wages to a third man.', 'neutral');
     return false;
   }
-  // Year two, and the school you subscribed for sends its first youngster out
+  // Year two, and the school you funded sends its first youngster out
   // to the diggings. He will not hear of wages (§27).
   const lad = hasWork(state, 'school') && state.yearsPlayed > 1;
   if (lad) {

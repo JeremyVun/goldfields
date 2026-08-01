@@ -2,7 +2,7 @@ import { describe, it } from 'vitest';
 import { makeRng } from '../src/engine/rng';
 import { createInitialState } from '../src/engine/state';
 import { step } from '../src/engine/reduce';
-import { getView, kittyView } from '../src/engine/menus';
+import { getView, menuView } from '../src/engine/menus';
 import { formatMoney, pounds, oz } from '../src/engine/money';
 import type { Action, GameState } from '../src/engine/types';
 
@@ -51,9 +51,9 @@ describe('edge cases', () => {
 
   it('EDGE 4: finishing from the kitty and share dividends', () => {
     const s = fresh(1, { location: 'deep-mountains', screen: 'camp', shares: 3, moneyPence: pounds(2), day: 200, provisionDays: 20 });
-    console.log('kitty options:', kittyView(s).menu.map((m) => `${m.key}=${m.label}`).join(' | '));
+    console.log('kitty options:', menuView(s).menu.map((m) => `${m.key}=${m.label}`).join(' | '));
     const r = run(s, { type: 'finish' }, 1);
-    console.log('finish: gameOver', r.state.gameOver, 'screen', r.state.screen, 'shares', r.state.shares, 'bank', formatMoney(r.state.bankPence));
+    console.log('finish: gameOver', r.state.gameOver, 'screen', r.state.screen, 'bank', formatMoney(r.state.bankPence));
     console.log('  narration:', r.text.join(' / ') || '(none)');
     console.log('  >>> three £5 shares simply vanish, no dividend paid');
     const v = getView(r.state);
@@ -61,16 +61,16 @@ describe('edge cases', () => {
     // compare with the natural year end
     const s2 = fresh(1, { location: 'deep-mountains', screen: 'camp', shares: 3, day: 365, provisionDays: 20, moneyPence: pounds(2) });
     const r2 = run(s2, { type: 'rest', days: 2 }, 1);
-    console.log('natural year end with 3 shares: bank', formatMoney(r2.state.bankPence), 'shares', r2.state.shares);
+    console.log('natural year end: bank', formatMoney(r2.state.bankPence));
     console.log('  ', r2.text.filter((t) => /company|dividend|share/i.test(t)).join(' / '));
   });
 
   it('EDGE 5: "Move on" from a camp offers the camp you are already standing in', () => {
     const s = fresh(1, { location: 'damp-camp', screen: 'ftown-depart', provisionDays: 20 });
     const v = getView(s);
-    console.log('at Damp Camp, "Out to the diggings" offers:', v.menu.map((m) => `${m.key}=${m.label}`).join(' | '));
+    console.log('at Reedbank Camp, "Out to the diggings" offers:', v.menu.map((m) => `${m.key}=${m.label}`).join(' | '));
     const r = run(s, { type: 'travelTo', place: 'damp-camp' }, 1);
-    console.log('  travelling to Damp Camp from Damp Camp: day', s.day, '->', r.state.day, 'loc', r.state.location);
+    console.log('  travelling to Reedbank Camp from Reedbank Camp: day', s.day, '->', r.state.day, 'loc', r.state.location);
     console.log('  >>> a day thrown away going nowhere');
     console.log('menu key numbering (no secret rumour):', v.menu.map((m) => m.key).join(','));
     const s2 = { ...s, secret: { heard: true, genuine: false, chased: false, fromCamp: 'damp-camp' as const, heardOn: 1 } };
@@ -93,7 +93,7 @@ describe('edge cases', () => {
         const dry = run(peg.state, { type: 'mine', method: 'dryblow', days: 10 }, 7);
         console.log('  10 days dryblowing:', 'gold', dry.state.goldCentiOz / 100, 'oz', 'hp', dry.state.health, 'water', dry.state.waterDays, 'day', dry.state.day);
         const back = run(dry.state, { type: 'travelTo', place: 'fields-town' }, 8);
-        console.log('  >>> journey home to Fields Town took', back.state.day - dry.state.day, 'days (the way out was 5)');
+        console.log('  >>> journey home to Slateford took', back.state.day - dry.state.day, 'days (the way out was 5)');
         break;
       }
     }
@@ -125,7 +125,6 @@ describe('edge cases', () => {
       { type: 'sellGold', where: 'bank', watch: true },
       { type: 'deposit', amount: -1 },
       { type: 'withdraw', amount: -1 },
-      { type: 'buyShares', n: 1 },
       { type: 'abandonShaft' },
       { type: 'timberShaft' },
       { type: 'followRumour' },

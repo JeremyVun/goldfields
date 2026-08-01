@@ -1,7 +1,7 @@
 import { describe, it } from 'vitest';
 import { formatMoney, formatGold } from '../src/engine/money';
 import { inAftermath, isLicensed, statusLine } from '../src/engine/state';
-import { kittyView, getView } from '../src/engine/menus';
+import { menuView, getView } from '../src/engine/menus';
 import { serialise, deserialise } from '../src/engine/save';
 import { step } from '../src/engine/reduce';
 import { makeRng } from '../src/engine/rng';
@@ -60,7 +60,7 @@ describe('directed playthroughs', () => {
     buy(p, "Four weeks' provisions");
     press(p, '0');
     console.log('setting out (water bags bought but NOT filled):', snap(p));
-    pressLabel(p, 'Set out'); pressLabel(p, "Trickey's");
+    pressLabel(p, 'Set out'); pressLabel(p, "Mercer's Track");
     console.log('travel-mode warnings:', view(p).body.filter((b) => b.startsWith('—')));
     const evs = pressLabel(p, 'Walk');
     console.log('--- the road ---');
@@ -68,7 +68,7 @@ describe('directed playthroughs', () => {
     console.log('arrived:', snap(p));
   });
 
-  it('an honest cradler works a full year at Damp Camp', () => {
+  it('an honest cradler works a full year at Reedbank Camp', () => {
     const p = newPlayer(4242);
     begin(p, 4242);
     // A new chum must eat before anything else.
@@ -85,7 +85,7 @@ describe('directed playthroughs', () => {
     press(p, '0');
     console.log('kitted out:', snap(p), JSON.stringify(p.state.items));
 
-    pressLabel(p, 'Set out'); pressLabel(p, "Trickey's"); pressLabel(p, 'Walk');
+    pressLabel(p, 'Set out'); pressLabel(p, "Mercer's Track"); pressLabel(p, 'Walk');
     clearEncounters(p);
     console.log('arrived at the fields:', snap(p));
 
@@ -104,13 +104,13 @@ describe('directed playthroughs', () => {
         if (s.moneyPence < 360 && s.bankPence > 0) { press(p, '1'); pressLabel(p, 'Withdraw'); press(p, '0'); continue; }
         if (s.moneyPence < 360 && s.goldCentiOz === 0) { press(p, '4'); pressLabel(p, 'Lin Wu'); home(p); continue; }
         if (s.provisionDays < 24) { press(p, '2'); if (!buy(p, "Four weeks'")) { press(p, '0'); press(p, '4'); pressLabel(p, 'Lin Wu'); home(p); continue; } buy(p, "Greens from Lin Wu"); press(p, '0'); continue; }
-        if (s.health < 55) { pressLabel(p, 'Calico House'); if (!buy(p, 'Three days under care')) buy(p, 'Rest instead'); press(p, '0'); continue; }
-        press(p, '8'); pressLabel(p, 'Damp Camp'); continue;
+        if (s.health < 55) { pressLabel(p, 'Canvas House'); if (!buy(p, 'Three days under care')) buy(p, 'Rest instead'); press(p, '0'); continue; }
+        press(p, '8'); pressLabel(p, 'Reedbank Camp'); continue;
       }
       if (s.location === 'damp-camp') {
         if (s.health < 42) { pressLabel(p, 'Rest a spell'); continue; }
         if (!s.claims['damp-camp']) { pressLabel(p, 'Peg a claim'); continue; }
-        if (!isLicensed(s) || s.provisionDays < 8 || s.goldCentiOz > 250) { pressLabel(p, 'Back to Fields Town'); continue; }
+        if (!isLicensed(s) || s.provisionDays < 8 || s.goldCentiOz > 250) { pressLabel(p, 'Back to Slateford'); continue; }
         if (s.mateUntilDay < s.day && s.moneyPence > 600) { pressLabel(p, 'Hire a mate'); continue; }
         press(p, '1');
         if (!buy(p, 'Work the cradle')) { buy(p, 'Pan the creek') || buy(p, 'Fossick'); }
@@ -145,10 +145,10 @@ describe('directed playthroughs', () => {
     for (const w of ['A tin pan', 'A pick', 'A shovel', 'A tent', 'Water bags']) buy(p, w);
     buy(p, "Four weeks' provisions"); buy(p, 'Fill the water bags');
     press(p, '0');
-    pressLabel(p, 'Set out'); pressLabel(p, 'Pass Road'); pressLabel(p, 'Walk');
+    pressLabel(p, 'Set out'); pressLabel(p, 'Razorback Road'); pressLabel(p, 'Walk');
     clearEncounters(p);
     home(p);
-    pressLabel(p, 'Out to the diggings'); pressLabel(p, 'Snakey Gully');
+    pressLabel(p, 'Out to the diggings'); pressLabel(p, 'Copperhead Gully');
     clearEncounters(p);
 
     const outcomes: string[] = [];
@@ -168,13 +168,13 @@ describe('directed playthroughs', () => {
       home(p);
       const s = p.state;
       if (s.location === 'fields-town') {
-        if (s.health < 45) { pressLabel(p, 'Calico House'); if (!buy(p, 'Seven days')) buy(p, 'Rest instead'); press(p, '0'); continue; }
+        if (s.health < 45) { pressLabel(p, 'Canvas House'); if (!buy(p, 'Seven days')) buy(p, 'Rest instead'); press(p, '0'); continue; }
         if (s.provisionDays < 10) { press(p, '2'); buy(p, "Four weeks'"); press(p, '0'); continue; }
-        press(p, '8'); pressLabel(p, 'Snakey Gully'); continue;
+        press(p, '8'); pressLabel(p, 'Copperhead Gully'); continue;
       }
       if (s.location === 'snakey-gully') {
         if (s.health < 42) { pressLabel(p, 'Rest a spell'); continue; }
-        if (s.provisionDays < 6) { pressLabel(p, 'Back to Fields Town'); continue; }
+        if (s.provisionDays < 6) { pressLabel(p, 'Back to Slateford'); continue; }
         if (!s.claims['snakey-gully']) { pressLabel(p, 'Peg a claim'); continue; }
         press(p, '1'); buy(p, 'Pan the creek') || buy(p, 'Fossick');
         continue;
@@ -188,7 +188,7 @@ describe('directed playthroughs', () => {
     console.log('invariants:', invariants(p, 'dodger'));
   });
 
-  it('a shafter at Deep Mountains meets cave-ins, timber, pump and shares', () => {
+  it('a shafter at Blackcap Ranges meets cave-ins, timber and water', () => {
     const p = newPlayer(2024);
     begin(p, 2024);
     stake(p, 90000);
@@ -196,21 +196,15 @@ describe('directed playthroughs', () => {
     for (const w of ['A pick', 'A shovel', 'Rope and bucket', 'A tent', 'A blanket', 'Water bags', 'A wheelbarrow']) buy(p, w);
     buy(p, "Four weeks' provisions"); buy(p, 'Fill the water bags');
     press(p, '0');
-    pressLabel(p, 'Set out'); pressLabel(p, "Trickey's"); pressLabel(p, 'Walk');
+    pressLabel(p, 'Set out'); pressLabel(p, "Mercer's Track"); pressLabel(p, 'Walk');
     clearEncounters(p);
     home(p);
     press(p, '3'); buy(p, "miner's licence"); press(p, '0');
     press(p, '2'); buy(p, 'Timber supports'); buy(p, 'Timber supports'); buy(p, 'A pump'); press(p, '0');
-    pressLabel(p, 'Out to the diggings'); pressLabel(p, 'Deep Mountains');
+    pressLabel(p, 'Out to the diggings'); pressLabel(p, 'Blackcap Ranges');
     clearEncounters(p);
-    console.log('at Deep Mountains:', snap(p), 'timber', p.state.items.timber, 'pump', p.state.items.pump);
+    console.log('at Blackcap Ranges:', snap(p), 'timber', p.state.items.timber, 'pump', p.state.items.pump);
     pressLabel(p, 'Peg a claim');
-    pressLabel(p, 'The company office');
-    console.log('shares menu:', view(p).menu.map((m) => `${m.key}=${m.label}${m.disabled ? '[off]' : ''}`).join(' | '));
-    pressLabel(p, 'Buy three shares');
-    console.log('shares now:', p.state.shares, ' menu:', view(p).menu.map((m) => `${m.label}${m.disabled ? '[off]' : ''}`).join(' | '));
-    press(p, '0');
-
     const notes: string[] = [];
     let guard = 0;
     while (!p.state.gameOver && !p.state.endOfYear && guard++ < 900) {
@@ -221,7 +215,7 @@ describe('directed playthroughs', () => {
       const s = p.state;
       if (s.location === 'fields-town') {
         if (s.goldCentiOz > 0) { press(p, '1'); pressLabel(p, 'Sell all'); buy(p, 'Deposit'); press(p, '0'); continue; }
-        if (s.health < 55) { pressLabel(p, 'Calico House'); if (!buy(p, 'Seven days')) buy(p, 'Rest instead'); press(p, '0'); continue; }
+        if (s.health < 55) { pressLabel(p, 'Canvas House'); if (!buy(p, 'Seven days')) buy(p, 'Rest instead'); press(p, '0'); continue; }
         if (wantsLicence(s, 2)) { press(p, '3'); if (!buy(p, "miner's")) { press(p, '0'); press(p, '1'); pressLabel(p, 'Withdraw'); press(p, '0'); continue; } press(p, '0'); continue; }
         if (s.provisionDays < 24 || s.items.timber < 1) {
           press(p, '2');
@@ -229,15 +223,15 @@ describe('directed playthroughs', () => {
           if (s.items.timber < 1) buy(p, 'Timber supports');
           press(p, '0'); continue;
         }
-        press(p, '8'); pressLabel(p, 'Deep Mountains'); continue;
+        press(p, '8'); pressLabel(p, 'Blackcap Ranges'); continue;
       }
       if (s.location === 'deep-mountains') {
         if (s.health < 45) { pressLabel(p, 'Rest a spell'); continue; }
-        if (!isLicensed(s) || s.provisionDays < 6 || s.goldCentiOz > 150 || s.items.timber < 1) { pressLabel(p, 'Back to Fields Town'); continue; }
+        if (!isLicensed(s) || s.provisionDays < 6 || s.goldCentiOz > 150 || s.items.timber < 1) { pressLabel(p, 'Back to Slateford'); continue; }
         if (!s.claims['deep-mountains']) { pressLabel(p, 'Peg a claim'); continue; }
         if (has(p, 'Timber the shaft')) { notes.push(`d${s.day} timbering at ${s.shaft?.depth}ft`); pressLabel(p, 'Timber the shaft'); continue; }
         press(p, '1');
-        if (!buy(p, 'Sink and work a shaft')) { notes.push(`d${s.day} shaft blocked: ${has(p, 'Sink and work')?.note}`); press(p, '0'); pressLabel(p, 'Back to Fields Town'); continue; }
+        if (!buy(p, 'Sink and work a shaft')) { notes.push(`d${s.day} shaft blocked: ${has(p, 'Sink and work')?.note}`); press(p, '0'); pressLabel(p, 'Back to Slateford'); continue; }
         continue;
       }
       const first = v.menu.find((m) => !m.disabled)!;
@@ -245,7 +239,7 @@ describe('directed playthroughs', () => {
     }
     console.log('--- shafter ---');
     for (const n of notes.slice(0, 25)) console.log('  ' + n);
-    console.log('final:', snap(p), 'caveIns', p.state.stats.caveIns, 'shafts', p.state.stats.shaftsSunk, 'shares', p.state.shares);
+    console.log('final:', snap(p), 'caveIns', p.state.stats.caveIns, 'shafts', p.state.stats.shaftsSunk);
     console.log('shaft/company journal:', p.state.journal.filter((j) => /shaft|company|dividend|Bottom|fell/i.test(j.text)).map((j) => `d${j.day} ${j.text}`).join('\n  '));
     const ev = getView(p.state);
     console.log(`--- ${ev.title} ---`);
@@ -259,7 +253,7 @@ describe('directed playthroughs', () => {
     press(p, '2'); buy(p, "Four weeks' provisions"); press(p, '0');
     for (let i = 0; i < 3; i++) { home(p); press(p, '1'); pressLabel(p, 'wharves'); }
     home(p);
-    const kv = kittyView(p.state);
+    const kv = menuView(p.state);
     console.log('kitty menu:', kv.menu.map((m) => `${m.key}=${m.label}${m.disabled ? '[off]' : ''}`).join(' | '));
     console.log('kitty body:'); for (const l of kv.body) console.log('  ' + l);
     const evs = dispatch(p, kv.menu.find((m) => m.action.type === 'save')!.action);

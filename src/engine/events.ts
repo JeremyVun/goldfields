@@ -251,25 +251,6 @@ export function claimJumpCheck(state: GameState, rng: RNG, log: Log, camp: CampI
   addJournal(state, `Claim-jumpers took the ground at ${CAMP_DEFS[camp].name}.`, 'bad');
 }
 
-/** Year-end dividend on mining company shares. */
-export function payDividends(state: GameState, rng: RNG, log: Log): void {
-  if (state.shares <= 0) return;
-  if (state.sharesBoughtOn > 0 && state.day - state.sharesBoughtOn < 30) {
-    log.raw('The year-end dividend is for shares held a full month. Your new scrip is carried into the next account.', 'neutral');
-    return;
-  }
-  const fortune = rng.next();
-  const mult = fortune < 0.28 ? 0 : rng.range(0.4, 4.5);
-  const amount = Math.round(state.shares * pounds(5) * mult);
-  if (amount <= 0) {
-    log.say('shares.nothing', undefined, 'bad');
-    return;
-  }
-  state.bankPence += amount;
-  log.say('shares.dividend', { amount: formatMoney(amount) }, 'good');
-  addJournal(state, `The company paid a dividend of ${formatMoney(amount)}.`, 'good');
-}
-
 /** Value of the chests of finery scavenged along the track. */
 export function salvageValue(state: GameState, rng: RNG): number {
   let total = 0;

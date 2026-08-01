@@ -211,8 +211,6 @@ export function createInitialState(seed: number): GameState {
     outlawEnd: null,
 
     employment: null,
-    shares: 0,
-    sharesBoughtOn: 0,
 
     company: null,
     soldOut: null,
@@ -548,11 +546,11 @@ export function licenceStatus(state: GameState): string {
   return 'NO LICENCE';
 }
 
-/** The one-line kitty summary that sits at the foot of every screen (faithful). */
+/** The one-line menu summary that sits at the foot of every screen (faithful). */
 export function statusLine(state: GameState): string {
-  // Terse, and one line at eighty columns (§3). A proclaimed man's legal rung
-  // and his price go in the one field, and no outlaw is troubling the Camp
-  // about a licence, so that field goes with him.
+  // Terse and kept to one visual line by the responsive status bar. A
+  // proclaimed man's legal rung and his price go in one field, and no outlaw
+  // is troubling the Camp about a licence, so that field goes with him.
   const reward = rewardFor(state);
   const legal = state.outlawed
     ? 'OUTLAWED'
@@ -569,9 +567,9 @@ export function statusLine(state: GameState): string {
     seasonShort(state.day),
     formatMoney(state.moneyPence),
     formatGold(state.goldCentiOz),
-    `Health: ${healthWord(state.health)}`,
-    `Law: ${reward > 0 ? `${legal} ${formatMoney(reward)}` : legal}`,
-    `Fatigue: ${fatigueWord(state.fatigue)}`,
+    healthWord(state.health),
+    reward > 0 ? `${legal} ${formatMoney(reward)}` : legal,
+    fatigueWord(state.fatigue),
   ];
   if (isCamp(state.location) && !state.outlawed) bits.push(licenceStatus(state));
   return bits.join(' · ');

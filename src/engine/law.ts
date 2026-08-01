@@ -176,7 +176,7 @@ export function offerBribe(state: GameState, rng: RNG, log: Log): 'released' | '
 
 /** Bolt for the scrub. */
 export function makeRun(state: GameState, rng: RNG, log: Log): 'escaped' | 'logs' {
-  const p = 0.4 + (state.health > 70 ? 0.12 : -0.1) - (state.horse === 'none' ? 0 : -0.08);
+  const p = 0.4 + (state.health > 70 ? 0.12 : -0.1) + (state.horse === 'none' ? 0 : 0.08);
   if (rng.chance(Math.max(0.08, p))) {
     log.raw(
       'You go over the mullock heaps and into the scrub with a trooper roaring behind you. He gives it up before you do.',

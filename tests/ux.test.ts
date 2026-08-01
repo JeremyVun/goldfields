@@ -17,7 +17,7 @@ import { endDay } from '../src/engine/daily';
 import {
   endView,
   getView,
-  kittyView,
+  menuView,
   mapView,
   sparkline,
   worthChartLines,
@@ -115,7 +115,6 @@ describe('the ledger of what a man is worth (§21)', () => {
     const state = fresh(21);
     state.day = 365;
     state.moneyPence = pounds(40);
-    state.shares = 3;
     const out = step(state, { type: 'rest', days: 3 }, makeRng(21)).state;
     expect(out.screen).toBe('end');
     const history = out.worthHistory;
@@ -185,7 +184,7 @@ describe('the trend of the gold rate (§21)', () => {
     const state = fresh();
     state.rateTrail = [800, 810, 820, 830, 840, 850, 860, 900];
     state.bankRate = 900;
-    expect(kittyView(state).body.join('\n')).toMatch(/Gold is rising this week/);
+    expect(menuView(state).body.join('\n')).toMatch(/Gold is rising this week/);
 
     const bank = getView({ ...state, screen: 'ftown-bank', location: 'fields-town' });
     expect(bank.body.join('\n')).toMatch(/Gold is rising this week/);
@@ -282,15 +281,40 @@ describe('a licence that dies mid-spell (§21)', () => {
 // The map
 // ---------------------------------------------------------------------------
 
-describe('the map, marked up (§21)', () => {
-  it('marks the player where he stands', () => {
+describe('the sheet, marked up (§21)', () => {
+  it('names the country on the drawing itself, and puts the star where the player stands', () => {
     const state = digger('snakey-gully', 40);
-    const { lines, markerRow, markerCol } = buildMap(state);
-    expect(lines[markerRow][markerCol]).toBe('*');
-    expect(lines[markerRow]).toContain('COPPERHEAD GULLY');
+    const { svg, words } = buildMap(state);
+    // Everything a player must be able to find is engraved on the sheet, not
+    // left to the prose beneath it.
+    for (const place of [
+      'PORT GANNET',
+      'SLATEFORD',
+      'REEDBANK CAMP',
+      'COPPERHEAD GULLY',
+      'BLACKCAP RANGES',
+      "MERCER'S TRACK",
+      'RAZORBACK ROAD',
+      'SLATE RIVER',
+    ]) {
+      expect(words, place).toContain(place);
+    }
+    // The star is drawn last of all, at the gully the player is standing in.
+    const gully = svg.slice(svg.indexOf('COPPERHEAD GULLY'));
+    expect(gully).toMatch(/class="gf-c-here gf-blink"/);
+    expect(svg).toMatch(/viewBox="0 0 1000 660"/);
   });
 
-  it('marks pegged ground, a rush, and the company’s workings', () => {
+  it('keeps the sheet to one drawing, whole, with no scrolling to be done', () => {
+    const { svg } = buildMap(fresh());
+    expect(svg.startsWith('<svg')).toBe(true);
+    expect(svg.endsWith('</svg>')).toBe(true);
+    expect(svg).toContain('preserveAspectRatio="xMidYMid meet"');
+    // One star, and one only: a man cannot stand in two places.
+    expect(svg.match(/gf-c-here gf-blink/g)?.length).toBe(1);
+  });
+
+  it('marks pegged ground, a rush, and the company’s workings in the player’s own hand', () => {
     const state = digger('deep-mountains', 200);
     state.claims['damp-camp'] = { quality: 120, workedDays: 3, peggedOn: 100, proven: false };
     state.claims['snakey-gully'] = { quality: 80, workedDays: 60, peggedOn: 60, proven: false };
@@ -315,11 +339,11 @@ describe('the map, marked up (§21)', () => {
       driving: 'ordinary',
       lastWeek: null,
     };
-    const drawn = buildMap(state).lines.join('\n');
-    expect(drawn).toMatch(/your pegs/);
-    expect(drawn).toMatch(/your pegs, worked out/);
-    expect(drawn).toMatch(/a RUSH/);
-    expect(drawn).toMatch(/the workings/);
+    const written = buildMap(state).words.join('\n');
+    expect(written).toMatch(/your pegs/);
+    expect(written).toMatch(/your pegs, worked out/);
+    expect(written).toMatch(/a RUSH/);
+    expect(written).toMatch(/the workings/);
 
     const prose = mapView(state).body.join('\n');
     expect(prose).toMatch(/a RUSH at Copperhead Gully/);
@@ -332,10 +356,47 @@ describe('the map, marked up (§21)', () => {
     expect(mapView(fresh()).body.join('\n')).toMatch(/pegs in no ground anywhere/);
   });
 
-  it('keeps every line the same width, so the drawing lines up', () => {
-    const state = digger('damp-camp', 40);
-    const widths = new Set(buildMap(state).lines.map((l) => l.length));
-    expect(widths.size).toBe(1);
+  it('keeps the notes beneath the sheet short enough to sit on one page with it', () => {
+    // Six short lines at the very most, and none of them a paragraph: the
+    // drawing is the map, and the prose is only what a man's year has added.
+    const state = digger('deep-mountains', 300);
+    state.claims['damp-camp'] = { quality: 120, workedDays: 3, peggedOn: 100, proven: false };
+    state.rush = { camp: 'snakey-gully', untilDay: 320, factor: 2, since: 298, base: 1 };
+    const body = mapView(state).body;
+    expect(body.length).toBeLessThanOrEqual(6);
+    for (const line of body) expect(line.length, line).toBeLessThanOrEqual(110);
+  });
+
+  it('leaves Widow’s Reef off the sheet until a man has heard of it', () => {
+    const quiet = fresh();
+    expect(buildMap(quiet).words).not.toContain("WIDOW'S REEF");
+    const told = fresh();
+    told.secret = {
+      heard: true, genuine: true, chased: false, fromCamp: 'deep-mountains', heardOn: 10,
+    };
+    expect(buildMap(told).words).toContain("WIDOW'S REEF");
+  });
+
+  it('pins the reward notice on the sheet of a man who is worth one, and nobody else', () => {
+    const honest = fresh();
+    expect(buildMap(honest).words).not.toContain('REWARD');
+    expect(buildMap(honest).svg).not.toMatch(/gf-c-notice-paper/);
+
+    const wanted = fresh();
+    wanted.legal = 'wanted criminal';
+    wanted.notoriety = 80;
+    const drawn = buildMap(wanted);
+    expect(drawn.words).toContain('REWARD');
+    expect(drawn.words).toContain('£200');
+    expect(drawn.words).toContain('GOD SAVE THE QUEEN');
+    expect(drawn.svg).toMatch(/gf-c-notice-paper/);
+  });
+
+  it('draws the country nobody surveyed only once the player has made it', () => {
+    const straight = fresh();
+    expect(straight.hideout).toBeFalsy();
+    expect(buildMap(straight).words).not.toContain('Split Rock Camp');
+    expect(mapView(straight).body.join('\n')).not.toMatch(/Split Rock/);
   });
 });
 

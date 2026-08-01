@@ -73,19 +73,24 @@ export function parseMoney(input: string): number | null {
   const text = input.trim().toLowerCase();
   if (!text) return null;
   if (/^\d+$/.test(text)) return pounds(parseInt(text, 10));
-  const re = /(\d+)\s*(£|l|s|d)/g;
-  const alt = text.replace(/£\s*(\d+)/g, '$1£');
+  const re = /£\s*(\d+)|(\d+)\s*(£|l|s|d)/g;
   let total = 0;
-  let found = false;
+  let end = 0;
+  const seen = new Set<string>();
   let m: RegExpExecArray | null;
-  while ((m = re.exec(alt)) !== null) {
-    const n = parseInt(m[1], 10);
-    found = true;
-    if (m[2] === '£' || m[2] === 'l') total += pounds(n);
-    else if (m[2] === 's') total += shillings(n);
+  while ((m = re.exec(text)) !== null) {
+    if (text.slice(end, m.index).trim()) return null;
+    const unit = m[1] === undefined ? (m[3] === 'l' ? '£' : m[3]) : '£';
+    if (seen.has(unit)) return null;
+    seen.add(unit);
+    const n = parseInt(m[1] ?? m[2], 10);
+    if ((unit === 's' && n >= 20) || (unit === 'd' && n >= 12)) return null;
+    if (unit === '£') total += pounds(n);
+    else if (unit === 's') total += shillings(n);
     else total += n;
+    end = re.lastIndex;
   }
-  return found ? total : null;
+  return seen.size > 0 && !text.slice(end).trim() ? total : null;
 }
 
 // ---------------------------------------------------------------------------

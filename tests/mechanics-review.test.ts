@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { CARDS_PAYOUT, JOBS, PARTNER_SHARE, PRICES } from '../src/engine/constants';
+import {
+  CARDS_PAYOUT,
+  COOKSHOP_MEAL_PRICE,
+  HARBOUR_FISH_CATCH_DAYS,
+  HARBOUR_FISH_FAILURE_CHANCE,
+  JOBS,
+  PARTNER_SHARE,
+  PRICES,
+} from '../src/engine/constants';
 import { endDay, passKeptDays } from '../src/engine/daily';
 import {
   briggsDiscount,
@@ -8,8 +16,7 @@ import {
   provisionsQuote,
 } from '../src/engine/market';
 import { getView } from '../src/engine/menus';
-import { pounds, shillings } from '../src/engine/money';
-import { payDividends } from '../src/engine/events';
+import { pence, pounds, shillings } from '../src/engine/money';
 import { Log } from '../src/engine/narrate';
 import { step } from '../src/engine/reduce';
 import { makeRng } from '../src/engine/rng';
@@ -41,6 +48,35 @@ describe('the Port Gannet redesign', () => {
     const labels = getView({ ...state, screen: 'suze' }).menu.map((m) => m.label).join(' ');
     expect(labels).toMatch(/hot meal/i);
     expect(labels).toMatch(/fish/i);
+  });
+
+  it('keeps harbour food options proportionate to their time cost', () => {
+    expect(COOKSHOP_MEAL_PRICE).toBe(pence(6));
+
+    let meal = createInitialState(40);
+    const mealDay = meal.day;
+    const mealMoney = meal.moneyPence;
+    meal = step(meal, { type: 'buyMeal' }, makeRng(40)).state;
+    expect(meal.day).toBe(mealDay);
+    expect(meal.moneyPence).toBe(mealMoney - pence(6));
+    expect(meal.fedToday).toBe(true);
+
+    expect(HARBOUR_FISH_FAILURE_CHANCE).toBe(0.2);
+    expect(HARBOUR_FISH_CATCH_DAYS).toEqual({ lo: 3, hi: 5 });
+
+    const gains: number[] = [];
+    for (let seed = 1; seed <= 1_000; seed++) {
+      let fishing = createInitialState(seed);
+      fishing.provisionDays = 20;
+      const fishingDay = fishing.day;
+      fishing = step(fishing, { type: 'fishForFood' }, makeRng(seed)).state;
+      expect(fishing.day).toBe(fishingDay + 1);
+      gains.push(fishing.provisionDays - 20);
+    }
+    expect(gains).toContain(-1);
+    expect(gains.some((gain) => gain >= 2 && gain <= 4)).toBe(true);
+    expect(gains.reduce((sum, gain) => sum + gain, 0) / gains.length).toBeGreaterThanOrEqual(2);
+    expect(gains.reduce((sum, gain) => sum + gain, 0) / gains.length).toBeLessThanOrEqual(3);
   });
 
   it('lets horse knowledge be earned instead of giving the answer away', () => {
@@ -100,14 +136,35 @@ describe('approved timing fixes', () => {
     expect(state.moneyPence).toBe(afterFirst);
   });
 
-  it('does not pay a full-year dividend on scrip bought in the final month', () => {
-    const state = createInitialState(9);
-    state.day = 365;
-    state.shares = 3;
-    state.sharesBoughtOn = 350;
-    const rng = makeRng(9);
-    payDividends(state, rng, new Log(rng));
-    expect(state.bankPence).toBe(0);
+});
+
+describe('conditional hubs and local property', () => {
+  it('does not advertise the criminal hub before the dark ladder is visible', () => {
+    const state = createInitialState(10);
+    state.screen = 'suze';
+    expect(getView(state).menu.some((entry) => entry.action.type === 'goto' && entry.action.screen === 'bandit')).toBe(false);
+    state.legal = 'minor criminal';
+    expect(getView(state).menu.some((entry) => entry.action.type === 'goto' && entry.action.screen === 'bandit')).toBe(true);
+  });
+
+  it('shows an owned camp store only at the camp where it stands', () => {
+    const state = createInitialState(11);
+    state.estate.store = { camp: 'damp-camp', policy: 'fair', openedOn: 1 };
+    state.location = 'snakey-gully';
+    state.screen = 'camp';
+    expect(getView(state).menu.some((entry) => entry.action.type === 'goto' && entry.action.screen === 'estate')).toBe(false);
+    state.location = 'damp-camp';
+    const entry = getView(state).menu.find((item) => item.action.type === 'goto' && item.action.screen === 'estate');
+    expect(entry?.label).toMatch(/your store at Reedbank Camp/i);
+  });
+
+  it('calls Council projects funding, never subscriptions', () => {
+    const state = createInitialState(12);
+    state.location = 'fields-town';
+    state.screen = 'ftown-council';
+    const labels = getView(state).menu.map((entry) => entry.label).join(' ');
+    expect(labels).toMatch(/Fund a bridge/);
+    expect(labels).not.toMatch(/subscrib/i);
   });
 });
 
@@ -126,6 +183,44 @@ describe('expeditions, claims and company business', () => {
     }
     expect(state.secretExpedition?.trail).toBe(4);
     expect(getView(state).menu.find((m) => /Dig the black leader/.test(m.label))?.disabled).toBe(false);
+  });
+
+  it('requires three days on the exposed leader, then leaves the giant nugget in the ground', () => {
+    let state = createInitialState(21);
+    state.location = 'secret-mine';
+    state.screen = 'secret-expedition';
+    state.provisionDays = 30;
+    state.waterDays = 30;
+    state.secretExpedition = { trail: 4, daysSearched: 4, nuggetFound: false, exhausted: false };
+    const rng = makeRng(21);
+    rng.chance = (p) => p === 0.1;
+    state = step(state, { type: 'searchSecret', approach: 'dig' }, rng).state;
+    expect(state.secretExpedition?.nuggetFound).toBe(false);
+    state = step(state, { type: 'searchSecret', approach: 'dig' }, rng).state;
+    expect(state.secretExpedition?.nuggetFound).toBe(false);
+    state = step(state, { type: 'searchSecret', approach: 'dig' }, rng).state;
+    expect(state.secretExpedition?.nuggetFound).toBe(true);
+    expect(state.secretExpedition?.nuggetCentiOz).toBeGreaterThan(0);
+    expect(state.goldCentiOz).toBe(0);
+  });
+
+  it('charges ten pounds and three days to recover the giant nugget', () => {
+    let state = createInitialState(22);
+    state.location = 'secret-mine';
+    state.screen = 'secret-expedition';
+    state.moneyPence = pounds(20);
+    state.provisionDays = 30;
+    state.waterDays = 30;
+    state.secretExpedition = {
+      trail: 4, daysSearched: 7, nuggetFound: true, nuggetCentiOz: 70000,
+      nuggetRecovered: false, exhausted: false,
+    };
+    const day = state.day;
+    state = step(state, { type: 'recoverNugget' }, makeRng(22)).state;
+    expect(state.day).toBe(day + 3);
+    expect(state.moneyPence).toBe(pounds(10));
+    expect(state.goldCentiOz).toBe(70000);
+    expect(state.secretExpedition?.nuggetRecovered).toBe(true);
   });
 
   it('registers and guards claims, then gives a jumped owner a choice', () => {
@@ -165,6 +260,11 @@ describe('expeditions, claims and company business', () => {
     expect(state.company?.relations).toBeGreaterThan(0);
     state = step(state, { type: 'companySupplyContract' }, makeRng(41)).state;
     expect(state.company?.supplyContractUntilDay).toBeGreaterThan(state.day);
+    const day = state.day;
+    const money = state.moneyPence;
+    state = step(state, { type: 'companySupplyContract' }, makeRng(42)).state;
+    expect(state.day).toBe(day);
+    expect(state.moneyPence).toBe(money);
   });
 });
 

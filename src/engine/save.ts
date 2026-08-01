@@ -2,6 +2,7 @@ import { COMPANY_SHARE_PRICE, GANG_MAX } from './constants';
 import { SAVE_VERSION, createInitialState, emptyEstate, emptyHearth, emptyHeat } from './state';
 import {
   CAMPS,
+  LEGAL_LADDER,
   type CampId,
   type Claim,
   type Company,
@@ -27,6 +28,13 @@ export interface SaveStore {
   removeItem(key: string): void;
 }
 
+export interface StorageFailure {
+  kind: 'unavailable' | 'quota' | 'corrupt' | 'not-found';
+  message: string;
+}
+
+export type StorageResult<T> = { ok: true; value: T } | { ok: false; error: StorageFailure };
+
 /** An in-memory store so the engine and its tests never touch the DOM. */
 export function memoryStore(): SaveStore {
   const map = new Map<string, string>();
@@ -37,9 +45,15 @@ export function memoryStore(): SaveStore {
   };
 }
 
+const pageMemoryStore = memoryStore();
+
 export function defaultStore(): SaveStore {
-  const g = globalThis as unknown as { localStorage?: SaveStore };
-  return g.localStorage ?? memoryStore();
+  try {
+    const g = globalThis as unknown as { localStorage?: SaveStore };
+    return g.localStorage ?? pageMemoryStore;
+  } catch {
+    return pageMemoryStore;
+  }
 }
 
 export function serialise(state: GameState): string {
@@ -182,7 +196,7 @@ function migrateGang(raw: unknown, day: number): GangMember[] {
 
 /**
  * A save written before the civic ladder was kept comes back a man of no
- * property: nothing owned, nothing subscribed, no commission (§26-§31).
+ * property: nothing owned, no works funded, no commission (§26-§31).
  */
 function migrateEstate(raw: unknown): Estate {
   const base = emptyEstate();
@@ -232,19 +246,124 @@ function migrateHearth(raw: unknown): Hearth {
   };
 }
 
+function finiteInt(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value) && Number.isInteger(value);
+}
+
+const LOCATIONS = new Set(['suze-port', 'fields-town', 'on-road', 'hideout', ...CAMPS]);
+const LODGINGS = new Set(['inn', 'stable', 'tentground', 'rough']);
+const HORSES = new Set(['none', 'brumby', 'hack']);
+const STOCKADE_ROLES = new Set(['none', 'joined', 'kept clear', 'sold supplies', 'away']);
+const ILLNESSES = new Set([
+  'dysentery', 'typhoid', 'scurvy', 'sandyBlight', 'sunstroke',
+  'snakebite', 'spiderbite', 'injury', 'fever', 'exhaustion',
+]);
+const WORKS = new Set(['bridge', 'waterRace', 'ward', 'school']);
+const TONES = new Set(['good', 'bad', 'neutral', 'grave', 'title']);
+const HEARTH_RUNGS = new Set(['none', 'acquainted', 'courting', 'betrothed', 'wed', 'settled', 'estranged']);
+const HEARTH_EVENTS = new Set(['call', 'banns', 'wedding', 'christmas', 'birth', 'sickbed']);
+const INTENDED_TRADES = new Set(['storekeeper', 'nurse', 'boarding-house']);
+const MEETING_PLACES = new Set(['ball', 'shamrock', 'calico', 'garden']);
+const SCREENS = new Set([
+  'title', 'resume', 'intro', 'suze', 'suze-work', 'suze-store', 'suze-lodgings', 'suze-horses',
+  'secret-expedition', 'suze-crime', 'hearth', 'ball', 'letters', 'gazette', 'journal',
+  'travel-route', 'travel-mode', 'ftown', 'ftown-bank', 'ftown-lodgings', 'ftown-store',
+  'ftown-council', 'ftown-work', 'ftown-hospital', 'ftown-hotel', 'ftown-gamble', 'ftown-twoup',
+  'ftown-cards', 'ftown-depart', 'camp', 'camp-store', 'store-sell', 'camp-mine', 'camp-grog',
+  'company', 'company-crews', 'company-ground', 'company-policy', 'company-dividend',
+  'estate', 'court', 'press', 'bandit', 'bandit-roads', 'hideout', 'gang', 'stash', 'encounter',
+  'end', 'obituary',
+]);
+
+function validTree(value: unknown, depth = 0): boolean {
+  if (depth > 12) return false;
+  if (typeof value === 'number') return Number.isFinite(value) && Math.abs(value) <= 1_000_000_000_000;
+  if (typeof value === 'string') return value.length <= 20_000;
+  if (value === null || typeof value === 'boolean' || value === undefined) return true;
+  if (Array.isArray(value)) return value.length <= 1_000 && value.every((v) => validTree(v, depth + 1));
+  if (typeof value === 'object') return Object.values(value as Record<string, unknown>).every((v) => validTree(v, depth + 1));
+  return false;
+}
+
+function validRevivedState(state: GameState): boolean {
+  if (!LOCATIONS.has(state.location) || !SCREENS.has(state.screen)) return false;
+  if (!LEGAL_LADDER.includes(state.legal) || !LODGINGS.has(state.lodging) || !LODGINGS.has(state.slatefordLodging)) return false;
+  if (!HORSES.has(state.horse) || !STOCKADE_ROLES.has(state.stockadeRole)) return false;
+  if (state.gameId !== null && !/^\d{4}$/.test(state.gameId)) return false;
+  if (![state.day, state.moneyPence, state.bankPence, state.goldCentiOz, state.health, state.bankRate].every(finiteInt)) return false;
+  if (state.day < 1 || state.moneyPence < 0 || state.bankPence < 0 || state.goldCentiOz < 0) return false;
+  if (state.health < 0 || state.health > 100 || state.bankRate <= 0) return false;
+  if (state.illness && (!ILLNESSES.has(state.illness.id) || !finiteInt(state.illness.severity) || !finiteInt(state.illness.since))) return false;
+  if (!Object.values(state.items).every((n) => finiteInt(n) && n >= 0 && n <= 10_000)) return false;
+  for (const camp of CAMPS) {
+    const claim = state.claims[camp];
+    if (claim && (
+      ![claim.quality, claim.workedDays, claim.peggedOn].every(finiteInt) ||
+      claim.quality < 0 || claim.workedDays < 0 || claim.peggedOn < 0
+    )) return false;
+    if (typeof state.freshness[camp] !== 'number' || !Number.isFinite(state.freshness[camp]) || state.freshness[camp] < 0) return false;
+  }
+  if (state.company) {
+    const c = state.company;
+    if (c.name.length > 200 || c.crews.length > 4 || c.leases.length > 2) return false;
+    if (![c.treasury, c.sharesOwned, c.sharesPublic, c.sharesUnsold, c.sharePrice].every((n) => finiteInt(n) && n >= 0)) return false;
+    if (c.sharesOwned + c.sharesPublic + c.sharesUnsold !== 20) return false;
+    if (!['cautious', 'ordinary', 'hard'].includes(c.driving)) return false;
+    if (c.crews.some((crew) => crew.lease !== undefined && (!finiteInt(crew.lease) || crew.lease < 0 || crew.lease >= c.leases.length))) return false;
+    if (c.leases.some((lease) =>
+      lease.name.length > 200 ||
+      ![lease.reef, lease.level, lease.yieldNow, lease.progress].every(finiteInt) ||
+      !Number.isFinite(lease.face) || lease.level < 0 || lease.face < 0 ||
+      (lease.plan !== null && lease.plan !== 'sink' && lease.plan !== 'drive')
+    )) return false;
+  }
+  const store = state.estate.store;
+  if (store && (!CAMPS.includes(store.camp) || !['fair', 'gouge'].includes(store.policy) || !finiteInt(store.openedOn))) return false;
+  if (state.estate.works.length > 4 || state.estate.works.some((work) =>
+    !WORKS.has(work.id) || !finiteInt(work.day) || (work.camp !== undefined && !CAMPS.includes(work.camp))
+  )) return false;
+  if (!HEARTH_RUNGS.has(state.hearth.rung)) return false;
+  if (state.hearth.intended && (
+    !INTENDED_TRADES.has(state.hearth.intended.trade) ||
+    !MEETING_PLACES.has(state.hearth.intended.metAt) ||
+    state.hearth.intended.name.length > 200
+  )) return false;
+  if (state.hearth.nextEvent && (
+    !HEARTH_EVENTS.has(state.hearth.nextEvent.kind) ||
+    !finiteInt(state.hearth.nextEvent.openDay) || !finiteInt(state.hearth.nextEvent.closeDay)
+  )) return false;
+  if (state.hearth.letters.some((letter) =>
+    !finiteInt(letter.day) || typeof letter.text !== 'string' || letter.text.length > 20_000 || !TONES.has(letter.tone)
+  )) return false;
+  if (state.journal.some((entry) =>
+    !finiteInt(entry.day) || typeof entry.text !== 'string' || entry.text.length > 20_000 || !TONES.has(entry.tone)
+  )) return false;
+  return validTree(state);
+}
+
 /** Tolerant of older saves: anything missing falls back to a fresh game's value. */
 export function deserialise(text: string): GameState | null {
   try {
+    if (text.length > 2_000_000) return null;
     const raw = JSON.parse(text) as Partial<GameState>;
-    if (typeof raw.day !== 'number' || typeof raw.moneyPence !== 'number') return null;
+    if (typeof raw.v === 'number' && raw.v > SAVE_VERSION) return null;
+    if (!finiteInt(raw.day) || raw.day < 1 || raw.day > 36_500) return null;
+    if (!finiteInt(raw.moneyPence) || raw.moneyPence < 0) return null;
+    if (raw.seed !== undefined && !finiteInt(raw.seed)) return null;
     const base = createInitialState(raw.seed ?? 1);
+    const known = Object.fromEntries(
+      Object.keys(base).map((key) => [key, (raw as Record<string, unknown>)[key] ?? (base as unknown as Record<string, unknown>)[key]]),
+    ) as unknown as GameState;
     const rush: RushNews | null = raw.rush
       ? { ...raw.rush, since: raw.rush.since ?? raw.day, base: raw.rush.base ?? 1 }
       : null;
-    return {
+    const revived = {
       ...base,
-      ...raw,
+      ...known,
       v: SAVE_VERSION,
+      screen: (raw as { screen?: string }).screen === 'camp-shares'
+        ? (raw.company ? 'company' : 'camp')
+        : known.screen,
       items: { ...base.items, ...(raw.items ?? {}) },
       claims: migrateClaims(raw.claims, raw.day),
       freshness: { ...base.freshness, ...(raw.freshness ?? {}) },
@@ -291,18 +410,59 @@ export function deserialise(text: string): GameState | null {
       pardonOffered: raw.pardonOffered ?? false,
       outlawEnd: raw.outlawEnd ?? null,
       stats: { ...base.stats, ...(raw.stats ?? {}) },
-      journal: raw.journal ?? [],
+      journal: Array.isArray(raw.journal) ? raw.journal.slice(-400) : [],
     } as GameState;
+    if (!validRevivedState(revived)) return null;
+    revived.rateTrail = revived.rateTrail.slice(-30);
+    revived.worthHistory = revived.worthHistory.slice(-800);
+    revived.hearth.letters = revived.hearth.letters.slice(-40);
+    return revived;
   } catch {
     return null;
   }
 }
 
 export function saveGame(state: GameState, store: SaveStore = defaultStore()): string {
-  const id = state.gameId ?? String(1000 + Math.floor(Math.random() * 8999));
+  let id = state.gameId;
+  if (!id) {
+    const allocated = allocateSaveId(store);
+    if (!allocated.ok) throw new Error(allocated.error.message);
+    id = allocated.value;
+  }
   store.setItem(SAVE_PREFIX + id, serialise({ ...state, gameId: id }));
   store.setItem(LAST_KEY, id);
   return id;
+}
+
+function failure(error: unknown, fallback: StorageFailure['kind'] = 'unavailable'): StorageFailure {
+  const name = typeof error === 'object' && error && 'name' in error ? String((error as { name: unknown }).name) : '';
+  const quota = /quota/i.test(name) || (typeof error === 'object' && error && 'code' in error && (error as { code: unknown }).code === 22);
+  return quota
+    ? { kind: 'quota', message: 'Browser storage is full. Delete an older site save or free storage, then try again.' }
+    : { kind: fallback, message: 'Browser storage is unavailable in this window.' };
+}
+
+export function allocateSaveId(store: SaveStore = defaultStore()): StorageResult<string> {
+  try {
+    const start = Math.floor(Math.random() * 8999);
+    for (let n = 0; n < 8999; n++) {
+      const id = String(1000 + ((start + n) % 8999));
+      if (store.getItem(SAVE_PREFIX + id) === null && store.getItem(LEGACY_SAVE_PREFIX + id) === null) {
+        return { ok: true, value: id };
+      }
+    }
+    return { ok: false, error: { kind: 'quota', message: 'Every game number is already in use.' } };
+  } catch (error) {
+    return { ok: false, error: failure(error) };
+  }
+}
+
+export function trySaveGame(state: GameState, store: SaveStore = defaultStore()): StorageResult<string> {
+  try {
+    return { ok: true, value: saveGame(state, store) };
+  } catch (error) {
+    return { ok: false, error: failure(error) };
+  }
 }
 
 export function loadGame(id: string, store: SaveStore = defaultStore()): GameState | null {
@@ -311,8 +471,29 @@ export function loadGame(id: string, store: SaveStore = defaultStore()): GameSta
   return text ? deserialise(text) : null;
 }
 
+export function tryLoadGame(id: string, store: SaveStore = defaultStore()): StorageResult<GameState> {
+  try {
+    const cleanId = id.trim();
+    const text = store.getItem(SAVE_PREFIX + cleanId) ?? store.getItem(LEGACY_SAVE_PREFIX + cleanId);
+    if (!text) return { ok: false, error: { kind: 'not-found', message: 'No such game.' } };
+    const state = deserialise(text);
+    if (!state) return { ok: false, error: { kind: 'corrupt', message: 'That saved game is damaged or from a newer version.' } };
+    return { ok: true, value: state };
+  } catch (error) {
+    return { ok: false, error: failure(error) };
+  }
+}
+
 export function lastGameId(store: SaveStore = defaultStore()): string | null {
   return store.getItem(LAST_KEY) ?? store.getItem(LEGACY_LAST_KEY);
+}
+
+export function tryLastGameId(store: SaveStore = defaultStore()): StorageResult<string | null> {
+  try {
+    return { ok: true, value: lastGameId(store) };
+  } catch (error) {
+    return { ok: false, error: failure(error) };
+  }
 }
 
 export function listSaves(store: SaveStore = defaultStore()): string[] {

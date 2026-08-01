@@ -5,7 +5,7 @@
 import { it } from 'vitest';
 import { createInitialState } from '../src/engine/state';
 import { buildMap } from '../src/ui/map';
-import { endView, getView, kittyView, mapView } from '../src/engine/menus';
+import { endView, getView, menuView, mapView } from '../src/engine/menus';
 import { statusLine } from '../src/engine/state';
 import type { GameState, OutlawEnd } from '../src/engine/types';
 import { makeRng } from '../src/engine/rng';
@@ -59,14 +59,14 @@ function widths(lines: string[], label: string) {
 it('looks', () => {
   const s = outlaw();
   rule('MAP — hideout, wanted, intel on the Pass Road');
-  console.log(buildMap(s).lines.join('\n'));
+  console.log(buildMap(s).words.join(' | '));
   console.log(mapView(s).body.join('\n'));
 
   rule('MAP — before he has a hideout, no reward');
   const clean = createInitialState(7);
   clean.day = 40;
   clean.claims['damp-camp'] = { camp: 'damp-camp', quality: 90, workedDays: 2, pegged: 10, proven: false } as never;
-  console.log(buildMap(clean).lines.join('\n'));
+  console.log(buildMap(clean).words.join(' | '));
 
   rule('STATUS LINES');
   for (const st of [clean, s, outlaw({ location: 'damp-camp', notoriety: 100, moneyPence: 960_239, goldCentiOz: 12_345, health: 15 })]) {
@@ -75,7 +75,7 @@ it('looks', () => {
   }
 
   rule('KITTY');
-  const k = kittyView(s);
+  const k = menuView(s);
   console.log(k.body.join('\n'));
   widths(k.body, 'kitty');
 

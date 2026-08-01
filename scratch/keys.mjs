@@ -36,7 +36,7 @@ const after = await page.locator('.gf-menu-item.is-highlight').textContent();
 check(before !== after && (await page.locator('.gf-menu-item.is-highlight').count()) === 1,
   'the arrows move the marker, and only one row wears it');
 await press('Escape');
-check((await page.textContent('.gf-overlay-title')) === 'THE KITTY', 'ESC opens the kitty');
+check((await page.textContent('.gf-overlay-title')) === 'MENU', 'ESC opens the menu');
 check((await page.locator('.gf-overlay-close').count()) === 0, 'which needs no cross where there is an ESC');
 await press('Escape');
 await press('m');
@@ -44,7 +44,7 @@ check(/MAP/.test(await page.textContent('.gf-overlay-title')), 'M opens the map'
 await press('x');
 check((await page.locator('.gf-overlay-panel').count()) === 0, 'and any key shuts it');
 
-check((await page.textContent('.gf-legend')).includes('kitty'), 'the legend still teaches the keys');
+check((await page.textContent('.gf-legend')).includes('menu'), 'the legend still teaches the keys');
 
 // A game number, typed at the frame with nothing focused.
 await page.goto(`http://localhost:${PORT}/`, { waitUntil: 'networkidle' });

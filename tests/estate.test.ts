@@ -45,7 +45,7 @@ import {
   setStorePolicy,
   storeWeekProfit,
   storekeeperFactor,
-  subscribeWork,
+  fundWork,
 } from '../src/engine/estate';
 import { freshnessTick } from '../src/engine/events';
 import { hireMate } from '../src/engine/mining';
@@ -316,19 +316,19 @@ describe('public works strike rules from the dice (§27)', () => {
   it('is subscribed at the Chambers, once, and pays +standing and no income at all', () => {
     const { state, log } = subscriber();
     const standing = state.standing;
-    expect(subscribeWork({ ...state, location: 'damp-camp' }, log, 'bridge')).toBe(false);
-    expect(subscribeWork(state, log, 'bridge')).toBe(true);
+    expect(fundWork({ ...state, location: 'damp-camp' }, log, 'bridge')).toBe(false);
+    expect(fundWork(state, log, 'bridge')).toBe(true);
     expect(state.moneyPence).toBe(pounds(900) - WORK_DEFS.bridge.cost);
     expect(state.standing).toBe(standing + WORK_DEFS.bridge.standing);
-    expect(subscribeWork(state, log, 'bridge')).toBe(false);
+    expect(fundWork(state, log, 'bridge')).toBe(false);
     // Subscriptions are not investments (§26 valuation).
     expect(netWorth(state)).toBe(pounds(900) - WORK_DEFS.bridge.cost);
   });
 
   it('will not cut a race to nowhere in particular', () => {
     const { state, log } = subscriber();
-    expect(subscribeWork(state, log, 'waterRace')).toBe(false);
-    expect(subscribeWork(state, log, 'waterRace', 'snakey-gully')).toBe(true);
+    expect(fundWork(state, log, 'waterRace')).toBe(false);
+    expect(fundWork(state, log, 'waterRace', 'snakey-gully')).toBe(true);
     expect(hasWork(state, 'waterRace', 'snakey-gully')).toBe(true);
     expect(hasWork(state, 'waterRace', 'damp-camp')).toBe(false);
   });
@@ -350,7 +350,7 @@ describe('public works strike rules from the dice (§27)', () => {
       return bogged;
     };
     const before = winterRun(state, 900);
-    subscribeWork(state, log, 'bridge');
+    fundWork(state, log, 'bridge');
     const after = winterRun(state, 900);
     expect(before).toBeGreaterThan(0);
     expect(after).toBe(0);
@@ -367,7 +367,7 @@ describe('public works strike rules from the dice (§27)', () => {
     ).length;
     expect(blightsBefore).toBeGreaterThan(0);
 
-    subscribeWork({ ...state, location: 'fields-town' }, log, 'waterRace', 'snakey-gully');
+    fundWork({ ...state, location: 'fields-town' }, log, 'waterRace', 'snakey-gully');
     state.estate.works.push({ id: 'waterRace', day: state.day, camp: 'snakey-gully' });
     expect(sicknessRisk(state)).toBeLessThan(before);
     const blightsAfter = Array.from({ length: 400 }, () => rollIllness(state, rng)).filter(
@@ -379,7 +379,7 @@ describe('public works strike rules from the dice (§27)', () => {
   it('slows the raced camp going off, and washes more ground', () => {
     const { state, log } = subscriber();
     const plain = { ...state, freshness: { ...state.freshness }, estate: { ...state.estate, works: [] } };
-    subscribeWork(state, log, 'waterRace', 'damp-camp');
+    fundWork(state, log, 'waterRace', 'damp-camp');
     for (let i = 0; i < 100; i++) {
       freshnessTick(state);
       freshnessTick(plain);
@@ -391,7 +391,7 @@ describe('public works strike rules from the dice (§27)', () => {
   it('sends the school\'s first youngster out in year two, and he takes no wages', () => {
     const { state, log } = subscriber();
     state.location = 'damp-camp';
-    subscribeWork({ ...state, location: 'fields-town' }, log, 'school');
+    fundWork({ ...state, location: 'fields-town' }, log, 'school');
     state.estate.works.push({ id: 'school', day: state.day });
     state.yearsPlayed = 2;
     const money = state.moneyPence;
@@ -405,7 +405,7 @@ describe('public works strike rules from the dice (§27)', () => {
   it('makes Canvas House free to the man who endowed the ward', () => {
     const { state, log } = subscriber();
     expect(hospitalFee(state)).toBeGreaterThan(0);
-    subscribeWork(state, log, 'ward');
+    fundWork(state, log, 'ward');
     expect(hospitalFee(state)).toBe(0);
   });
 });
@@ -568,7 +568,7 @@ describe('the civic ladder through the reducer', () => {
     expect(state.estate.shamrock).toBe(true);
     state = step(state, { type: 'buyGazetteShare' }, rng).state;
     expect(state.estate.gazetteShare).toBe(true);
-    state = step(state, { type: 'subscribeWork', work: 'school' }, rng).state;
+    state = step(state, { type: 'fundWork', work: 'school' }, rng).state;
     expect(hasWork(state, 'school')).toBe(true);
 
     const day = state.day;
@@ -580,7 +580,7 @@ describe('the civic ladder through the reducer', () => {
     const { state, log } = notable(71);
     state.day = 355;
     buyShamrock(state, log);
-    subscribeWork(state, log, 'bridge');
+    fundWork(state, log, 'bridge');
     acceptCommission(state, log);
     const view = getView({ ...state, screen: 'end' });
     const body = view.body.join('\n');
@@ -603,7 +603,7 @@ describe('the civic ladder through the reducer', () => {
   it('carries the estate through a save, and reads an old one back a man of no property', () => {
     const { state, log } = notable(81);
     buyShamrock(state, log);
-    subscribeWork(state, log, 'ward');
+    fundWork(state, log, 'ward');
     const back = deserialise(JSON.stringify(state));
     expect(back?.estate.shamrock).toBe(true);
     expect(back?.estate.works).toHaveLength(1);

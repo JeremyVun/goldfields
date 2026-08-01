@@ -183,7 +183,7 @@ head('3. THE LEAD (§26 press x §30.1 house news)');
   s.screen = 'press';
   console.log('  --- the press room ---');
   for (const m of getView(s).menu) console.log(`   | [${m.key}] ${m.label}${m.disabled ? ' (disabled)' : ''}${m.note ? ` — ${m.note}` : ''}`);
-  s = press(s, 'Deep Mountains');
+  s = press(s, 'Blackcap Ranges');
   const called = s.rush;
   console.log(`  rush: ${called ? `${called.camp} since=${called.since} until=${called.untilDay} factor=${called.factor}` : 'none'} (day ${s.day})`);
   for (let i = 0; i < 6; i++) {
