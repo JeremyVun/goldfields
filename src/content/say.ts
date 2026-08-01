@@ -1,5 +1,9 @@
 import type { RNG } from '../engine/rng';
-import { TEXT } from './text';
+import { HEARTH_TEXT } from './hearthText';
+import { TEXT as BASE_TEXT } from './text';
+
+/** The base tables and the hearth's, folded into one book (§32). */
+const TEXT: Record<string, string[]> = { ...BASE_TEXT, ...HEARTH_TEXT };
 
 export type Vars = Record<string, string | number>;
 

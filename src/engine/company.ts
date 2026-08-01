@@ -1,7 +1,7 @@
 /**
  * The player's own company — labourer become capitalist (GAME_SPEC.md §19).
  *
- * A man who has proved ground in the Deep Mountains, kept his name clean and
+ * A man who has proved ground in the Blackcap Ranges, kept his name clean and
  * put a hundred pounds together may take the last step the diggings allow: he
  * stops swinging a pick and starts paying men who do.
  */
@@ -11,17 +11,29 @@ import {
   CLAIM_QUALITY_BASE,
   CLAIM_QUALITY_CLAMP,
   CLAIM_QUALITY_SPREAD,
+  COMPANY_BATTERY_UPKEEP,
+  COMPANY_BATTERY_COST,
   COMPANY_CAVEIN_CHANCE,
   COMPANY_CAVEIN_COST,
   COMPANY_CAVEIN_QUIT,
   COMPANY_CREW_WAGES,
   COMPANY_CREW_WEEK,
+  COMPANY_CRUSH_FEE,
+  COMPANY_DEPTH_BONUS,
+  COMPANY_DRIVE_COST,
+  COMPANY_DRIVE_DUFFER,
+  COMPANY_DRIVE_FACE,
+  COMPANY_DRIVE_YIELD,
+  COMPANY_DRIVING,
+  COMPANY_FACE_WEEKS,
+  COMPANY_SINK_BASE_WEEKS,
+  COMPANY_SINK_COST,
   COMPANY_FLOAT_CAPITAL,
   COMPANY_FLOAT_MAX_RUNG,
   COMPANY_FLOAT_STANDING,
   COMPANY_JOIN_PRICE_DROP,
   COMPANY_LEASE_REEF,
-  COMPANY_LEASE_WEAR,
+  COMPANY_LEASE_WET,
   COMPANY_MAX_CREWS,
   COMPANY_MAX_LEASES,
   COMPANY_PRICE_CAVEIN,
@@ -32,24 +44,27 @@ import {
   COMPANY_PRICE_WALK,
   COMPANY_PROSPECT_CHANCE,
   COMPANY_PROSPECT_OLD_HAND,
+  COMPANY_PUMP_PLANT,
   COMPANY_REGISTRATION_FEE,
   COMPANY_SELLOUT_FLOOR,
   COMPANY_SHARES,
   COMPANY_SHARE_PRICE,
   COMPANY_SUBSCRIPTIONS,
+  COMPANY_TAKEUP_FEE,
+  COMPANY_TIMBER_PLANT,
   COMPANY_UPTAKE_AGITATION,
   COMPANY_UPTAKE_BASE,
   COMPANY_UPTAKE_PROFIT,
   COMPANY_UPTAKE_STANDING,
   COMPANY_WALKOFF_STANDING,
-  DEPLETION_FLOOR_DAYS,
+  COMPANY_WET_LEVEL,
 } from './constants';
-import { depletionFactor, freshnessOf } from './mining';
+import { freshnessOf } from './mining';
 import { formatGold, formatMoney } from './money';
 import type { Log } from './narrate';
 import type { RNG } from './rng';
 import { addJournal, addStanding, legalRung, shaftRank } from './state';
-import type { Company, GameState, Lease } from './types';
+import type { Company, DrivingRate, GameState, Lease, LeasePlan } from './types';
 
 // ---------------------------------------------------------------------------
 // Naming
@@ -88,6 +103,38 @@ export function companyName(rng: RNG): string {
     return `${head} & ${other.replace(/^The /, '')} ${rng.pick(NAME_TAILS)}`;
   }
   return `${head} ${rng.pick(NAME_TAILS)}`;
+}
+
+/** What the mines themselves are called; a lease keeps its name for good (§19.4). */
+const MINE_NAMES = [
+  'the North Star',
+  'the Morning Star',
+  'the Perseverance',
+  'the Caledonia',
+  'the Britannia',
+  'the Golden Fleece',
+  'the Duke of Cornwall',
+  'the Hand and Band',
+  'the Rose of Denmark',
+  'the Specimen Hill',
+  'the Black Lead',
+  'the Welcome',
+];
+
+export function mineName(rng: RNG, taken: string[]): string {
+  const free = MINE_NAMES.filter((n) => !taken.includes(n));
+  return free.length > 0 ? rng.pick(free) : rng.pick(MINE_NAMES);
+}
+
+/** A freshly bottomed level's stone, rolled: deeper is richer, before luck (§19.4). */
+export function rollYield(rng: RNG, reef: number, level: number): number {
+  const depth = 1 + COMPANY_DEPTH_BONUS * Math.max(0, level - 1);
+  return Math.max(10, Math.round(reef * depth * Math.max(0.25, Math.min(3, rng.exponential()))));
+}
+
+/** Ground below the water line: needs a pumping plant to sink or mine (§19.4). */
+export function leaseIsWet(lease: Lease): boolean {
+  return lease.wet || lease.level >= COMPANY_WET_LEVEL;
 }
 
 // ---------------------------------------------------------------------------
@@ -167,10 +214,20 @@ export function floatCompany(state: GameState, rng: RNG, log: Log, shares: numbe
   }
 
   const claim = state.claims['deep-mountains'];
+  const reef = claim ? claim.quality : 100;
+  // The founding claim comes in bottomed at the first level: a going concern.
   const lease: Lease = {
-    quality: claim ? claim.quality : 100,
-    workedDays: claim ? Math.round(claim.workedDays / 2) : 0,
-    proven: true,
+    name: mineName(rng, []),
+    reef,
+    level: 1,
+    face: rng.int(4, 6),
+    yieldNow: rollYield(rng, reef, 1),
+    wet: rng.chance(COMPANY_LEASE_WET),
+    pump: false,
+    timbered: false,
+    flooded: false,
+    progress: 0,
+    plan: null,
   };
   state.claims['deep-mountains'] = null;
   if (state.shaft && state.shaft.camp === 'deep-mountains') state.shaft = null;
@@ -191,6 +248,9 @@ export function floatCompany(state: GameState, rng: RNG, log: Log, shares: numbe
     lastDividendDay: 0,
     relations: 0,
     supplyContractUntilDay: 0,
+    battery: false,
+    driving: 'ordinary',
+    lastWeek: null,
   };
   log.say(
     'company.float',
@@ -240,53 +300,135 @@ export function setCrewTask(
   state: GameState,
   log: Log,
   index: number,
-  task: 'mine' | 'prospect',
+  task: 'mine' | 'develop' | 'prospect',
+  lease?: number,
 ): boolean {
   const c = state.company;
   if (!c || !c.crews[index]) return false;
-  if (c.crews[index].task === task) return false;
-  c.crews[index].task = task;
-  log.say(task === 'mine' ? 'company.crew.mine' : 'company.crew.prospect', { n: index + 1 }, 'neutral');
+  const crew = c.crews[index];
+  if (crew.task === task && crew.lease === lease) return false;
+  crew.task = task;
+  crew.lease = lease;
+  const key =
+    task === 'mine'
+      ? 'company.crew.mine'
+      : task === 'develop'
+        ? 'company.crew.develop'
+        : 'company.crew.prospect';
+  log.say(key, { n: index + 1 }, 'neutral');
   return true;
 }
 
-/** What the ground is worth today: its quality worn down by the days upon it. */
-export function leaseValue(lease: Lease): number {
-  return (lease.quality / 100) * depletionFactor(lease.workedDays);
+// ---------------------------------------------------------------------------
+// Development, plant and policy (§19.4) — skeleton API; bodies owned by the
+// engine work, signatures relied upon by the screens.
+// ---------------------------------------------------------------------------
+
+/** What the developing crews are to do with a mine whose face has cut out. */
+export function setLeasePlan(state: GameState, log: Log, lease: number, plan: LeasePlan): boolean {
+  const c = state.company;
+  const l = c?.leases[lease];
+  if (!c || !l || l.level === 0 && plan === 'drive') return false;
+  if (l.plan === plan) return false;
+  l.plan = plan;
+  l.progress = 0;
+  log.say(plan === 'sink' ? 'company.plan.sink' : 'company.plan.drive', { name: l.name }, 'neutral');
+  return true;
 }
 
-export function leaseWorkedOut(lease: Lease): boolean {
-  return lease.workedDays >= DEPLETION_FLOOR_DAYS;
+/** Per-lease capital: the pumping plant or the standing timber-work. */
+export function installPlant(
+  state: GameState,
+  log: Log,
+  lease: number,
+  plant: 'pump' | 'timber',
+): boolean {
+  const c = state.company;
+  const l = c?.leases[lease];
+  if (!c || !l) return false;
+  const cost = plant === 'pump' ? COMPANY_PUMP_PLANT : COMPANY_TIMBER_PLANT;
+  if ((plant === 'pump' && l.pump) || (plant === 'timber' && l.timbered)) return false;
+  if (c.treasury < cost) {
+    log.raw('The treasury will not stand the machinery.', 'bad');
+    return false;
+  }
+  c.treasury -= cost;
+  if (plant === 'pump') l.pump = true;
+  else l.timbered = true;
+  log.say(plant === 'pump' ? 'company.plant.pump' : 'company.plant.timber', { name: l.name }, 'good');
+  return true;
+}
+
+/** The big capital decision the share float exists to finance (§19.4). */
+export function buyBattery(state: GameState, log: Log): boolean {
+  const c = state.company;
+  if (!c || c.battery) return false;
+  if (c.treasury < COMPANY_BATTERY_COST) {
+    log.raw('The treasury will not stand a battery.', 'bad');
+    return false;
+  }
+  c.treasury -= COMPANY_BATTERY_COST;
+  c.battery = true;
+  log.say('company.battery.bought', { name: c.name }, 'good');
+  addJournal(state, `${c.name} raised its own stamping battery.`, 'good');
+  return true;
+}
+
+/** Cautious, ordinary, or drive her hard (§19.4). */
+export function setDriving(state: GameState, log: Log, rate: DrivingRate): boolean {
+  const c = state.company;
+  if (!c || c.driving === rate) return false;
+  c.driving = rate;
+  log.say(`company.driving.${rate}`, undefined, 'neutral');
+  return true;
+}
+
+/** The last resort: plant and development forfeited with the ground (§19.4). */
+export function abandonLease(state: GameState, log: Log, lease: number): boolean {
+  const c = state.company;
+  const l = c?.leases[lease];
+  if (!c || !l) return false;
+  c.leases.splice(lease, 1);
+  for (const crew of c.crews) if (crew.lease === lease) crew.lease = undefined;
+  log.say('company.lease.abandon', { name: l.name }, 'bad');
+  addJournal(state, `${c.name} abandoned ${l.name}, and everything sunk in it.`, 'bad');
+  return true;
+}
+
+/** What the stone at the face is worth today, as a multiplier of an ordinary week. */
+export function leaseValue(lease: Lease): number {
+  if (lease.level === 0 || lease.face <= 0 || lease.flooded) return 0;
+  return lease.yieldNow / 100;
+}
+
+/** No stone at the face: the mine waits on a decision, it does not lapse (§19.4). */
+export function leaseCutOut(lease: Lease): boolean {
+  return lease.level > 0 && lease.face <= 0;
 }
 
 /** Never a number to the shareholders: a word, as the manager would put it. */
 export function leaseWord(lease: Lease): string {
-  const v = leaseValue(lease);
-  const wash =
+  if (lease.flooded) return `${lease.name}, full of water`;
+  if (lease.level === 0) return `${lease.name}, an unbottomed show`;
+  const v = lease.yieldNow / 100;
+  const stone =
     v < 0.6
-      ? 'poor stuff'
+      ? 'poor stone'
       : v < 0.9
-        ? 'fair wash'
+        ? 'fair stone'
         : v < 1.3
-          ? 'good wash'
+          ? 'good stone'
           : v < 1.9
-            ? 'handsome dirt'
+            ? 'handsome stone'
             : 'a jeweller\'s shop';
-  const worn =
-    lease.workedDays < 12
-      ? 'barely broken'
-      : lease.workedDays < 30
-        ? 'well opened'
-        : lease.workedDays < 50
-          ? 'going off'
-          : 'worked out';
-  return `${wash}, ${worn}`;
+  const stateWord = leaseCutOut(lease) ? 'the level cut out' : stone;
+  return `${lease.name}, No. ${lease.level} level, ${stateWord}`;
 }
 
 function bestLease(c: Company): Lease | null {
   let best: Lease | null = null;
   for (const l of c.leases) {
-    if (leaseWorkedOut(l)) continue;
+    if (leaseValue(l) <= 0) continue;
     if (!best || leaseValue(l) > leaseValue(best)) best = l;
   }
   return best;
@@ -359,21 +501,14 @@ export function companyWeek(state: GameState, rng: RNG, log: Log): void {
   if (!c) return;
 
   let revenue = 0;
+  let crushing = 0;
+  let development = 0;
+  let upkeep = 0;
   let gold = 0;
   let caveIns = 0;
   let compensation = 0;
+  const drive = COMPANY_DRIVING[c.driving];
   const quitters = new Set<Company['crews'][number]>();
-
-  const dead = c.leases.filter(leaseWorkedOut).length;
-  if (dead > 0) {
-    c.leases = c.leases.filter((l) => !leaseWorkedOut(l));
-    log.say('company.lease.abandoned', { name: c.name, n: dead }, 'neutral');
-    addJournal(
-      state,
-      `${c.name} let ${dead === 1 ? 'a worked-out lease' : `${dead} worked-out leases`} lapse.`,
-      'neutral',
-    );
-  }
 
   for (const crew of c.crews) {
     if (crew.task === 'prospect') {
@@ -386,49 +521,111 @@ export function companyWeek(state: GameState, rng: RNG, log: Log): void {
             COMPANY_LEASE_REEF *
             (CLAIM_QUALITY_BASE + CLAIM_QUALITY_SPREAD * rng.exponential()),
         );
-        const quality = Math.max(CLAIM_QUALITY_CLAMP.lo, Math.min(CLAIM_QUALITY_CLAMP.hi, q));
-        if (c.leases.length < COMPANY_MAX_LEASES) {
-          const lease: Lease = { quality, workedDays: 0, proven: true };
+        const reef = Math.max(CLAIM_QUALITY_CLAMP.lo, Math.min(CLAIM_QUALITY_CLAMP.hi, q));
+        if (c.leases.length < COMPANY_MAX_LEASES && c.treasury >= COMPANY_TAKEUP_FEE) {
+          c.treasury -= COMPANY_TAKEUP_FEE;
+          const lease: Lease = {
+            name: mineName(rng, c.leases.map((l) => l.name)),
+            reef,
+            level: 0,
+            face: 0,
+            yieldNow: 0,
+            wet: rng.chance(COMPANY_LEASE_WET),
+            pump: false,
+            timbered: false,
+            flooded: false,
+            progress: 0,
+            plan: null,
+          };
           c.leases.push(lease);
           log.say('company.prospect.strike', { name: c.name, word: leaseWord(lease) }, 'good');
-          addJournal(state, `${c.name} proved a new lease in the Deep Mountains.`, 'good');
-        } else {
-          // At the cap the find is pegged as an extension of the poorest ground:
-          // the lease takes the better quality and the fresh face wipes half its wear.
+          addJournal(state, `${c.name} took up ${lease.name} in the Blackcap Ranges.`, 'good');
+        } else if (c.leases.length > 0) {
+          // Both slots held: the find is driven into the poorest ground as a
+          // fresh face on its present level.
           let worst = c.leases[0];
           for (const l of c.leases) if (leaseValue(l) < leaseValue(worst)) worst = l;
-          worst.quality = Math.max(worst.quality, quality);
-          worst.workedDays = Math.floor(worst.workedDays / 2);
-          log.say('company.prospect.extend', { name: c.name, word: leaseWord(worst) }, 'good');
-          addJournal(state, `${c.name} extended a lease onto fresh ground.`, 'good');
+          if (worst.level > 0 && !worst.flooded) {
+            worst.yieldNow = Math.max(worst.yieldNow, rollYield(rng, reef, worst.level));
+            worst.face += rng.int(3, 5);
+            log.say('company.prospect.extend', { name: c.name, word: leaseWord(worst) }, 'good');
+            addJournal(state, `${c.name} drove ${worst.name} into fresh stone.`, 'good');
+          }
         }
       }
       continue;
     }
 
-    const lease = bestLease(c);
+    if (crew.task === 'develop') {
+      // Skeleton behaviour: sinking and driving in their crudest workable form.
+      // The engine work owns the full §19.4 rules (water, gates, dewatering).
+      const l = crew.lease !== undefined ? c.leases[crew.lease] : c.leases[0];
+      if (!l || !l.plan) continue;
+      const cost = l.plan === 'sink' ? COMPANY_SINK_COST : COMPANY_DRIVE_COST;
+      if (c.treasury < cost) continue;
+      c.treasury -= cost;
+      development += cost;
+      l.progress += 1;
+      const needed =
+        l.plan === 'sink' ? COMPANY_SINK_BASE_WEEKS + Math.floor(l.level / 2) : 1;
+      if (l.progress >= needed) {
+        l.progress = 0;
+        if (l.plan === 'sink') {
+          l.level += 1;
+          l.yieldNow = rollYield(rng, l.reef, l.level);
+          l.face = rng.int(COMPANY_FACE_WEEKS.lo, COMPANY_FACE_WEEKS.hi);
+          log.say('company.sink.bottomed', { name: l.name, word: leaseWord(l) }, 'good');
+        } else if (rng.chance(COMPANY_DRIVE_DUFFER)) {
+          log.say('company.drive.duffer', { name: l.name }, 'bad');
+        } else {
+          l.yieldNow = Math.round(rollYield(rng, l.reef, l.level) * COMPANY_DRIVE_YIELD);
+          l.face += rng.int(COMPANY_DRIVE_FACE.lo, COMPANY_DRIVE_FACE.hi);
+          log.say('company.drive.fresh', { name: l.name, word: leaseWord(l) }, 'good');
+        }
+        l.plan = null;
+      }
+      continue;
+    }
+
+    const lease =
+      crew.lease !== undefined && c.leases[crew.lease] && leaseValue(c.leases[crew.lease]) > 0
+        ? c.leases[crew.lease]
+        : bestLease(c);
     if (!lease) {
       log.say('company.lease.gone', { name: c.name }, 'bad');
       continue;
     }
 
-    if (rng.chance(COMPANY_CAVEIN_CHANCE)) {
+    const caveP = COMPANY_CAVEIN_CHANCE * drive.cavein * (lease.timbered ? 0.5 : 1);
+    if (rng.chance(caveP)) {
       caveIns += 1;
       const cost = rng.int(COMPANY_CAVEIN_COST.lo, COMPANY_CAVEIN_COST.hi);
       compensation += cost;
-      lease.workedDays += COMPANY_LEASE_WEAR;
+      lease.face = Math.max(0, lease.face - 1);
       log.say('company.cavein', { name: c.name, amount: formatMoney(cost) }, 'bad');
       if (rng.chance(COMPANY_CAVEIN_QUIT)) quitters.add(crew);
       continue;
     }
 
-    const value = Math.round(COMPANY_CREW_WEEK * leaseValue(lease) * rng.exponential());
-    revenue += value;
-    gold += Math.round((value * 100) / Math.max(1, state.bankRate));
-    lease.workedDays += COMPANY_LEASE_WEAR;
+    const gross = Math.round(
+      COMPANY_CREW_WEEK * leaseValue(lease) * drive.out * rng.exponential(),
+    );
+    const fee = c.battery ? 0 : Math.round(gross * COMPANY_CRUSH_FEE);
+    revenue += gross;
+    crushing += fee;
+    gold += Math.round((gross * 100) / Math.max(1, state.bankRate));
+    lease.face = Math.max(0, lease.face - drive.wear);
+    if (leaseCutOut(lease) && !lease.plan) {
+      log.say('company.face.cut', { name: lease.name }, 'neutral');
+    }
   }
 
-  c.treasury += revenue;
+  if (c.battery) {
+    const paid = Math.min(COMPANY_BATTERY_UPKEEP, Math.max(0, c.treasury + revenue - crushing));
+    upkeep += paid;
+  }
+
+  c.treasury += revenue - crushing - upkeep;
   c.lastWeekGold = gold;
 
   if (compensation > 0) {
@@ -461,8 +658,18 @@ export function companyWeek(state: GameState, rng: RNG, log: Log): void {
     }
   }
 
-  c.weekProfit.push(revenue - wagesPaid - compensation);
+  const net = revenue - crushing - wagesPaid - development - upkeep - compensation;
+  c.weekProfit.push(net);
   if (c.weekProfit.length > 60) c.weekProfit.shift();
+  c.lastWeek = {
+    revenue,
+    crushing,
+    wages: wagesPaid,
+    development,
+    upkeep,
+    compensation,
+    net,
+  };
 
   walkPrice(state, rng, caveIns);
   sellPublicShares(state, rng, log);
@@ -591,7 +798,7 @@ export function shakeSharePrice(state: GameState, factor: number): void {
 
 export const JOIN_PRICE_FACTOR = 1 - COMPANY_JOIN_PRICE_DROP;
 
-/** The line the Gazette runs on the company's week. */
+/** The line the Times runs on the company's week. */
 export function companyReport(state: GameState): string | null {
   const c = state.company;
   if (!c) return null;

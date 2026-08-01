@@ -15,7 +15,8 @@ export const THEMES: Theme[] = [
   { id: 'blue', name: 'the deep blue glass' },
 ];
 
-const THEME_KEY = 'goldfields.theme';
+const THEME_KEY = 'goldrush.theme';
+const LEGACY_THEME_KEY = 'goldfields.theme';
 
 export function currentTheme(): Theme {
   const id = document.body.dataset.gfTheme ?? 'paper';
@@ -35,7 +36,7 @@ export function applyTheme(id: string): void {
 export function loadTheme(): void {
   let id: string | null = null;
   try {
-    id = localStorage.getItem(THEME_KEY);
+    id = localStorage.getItem(THEME_KEY) ?? localStorage.getItem(LEGACY_THEME_KEY);
   } catch {
     id = null;
   }

@@ -1,10 +1,10 @@
 /*
- * Goldfields — retro 8-bit presentation.
+ * Goldrush — retro 8-bit presentation.
  * Ink on paper by default; deep blue and black & white as alternates.
  * Chunky system-monospace type, no webfonts, no network, no CRT filters.
  */
 
-/* Default: ink on paper (The Angus Gazette), with a printer's two colours. */
+/* Default: ink on paper (The Slateford Times), with a printer's two colours. */
 :root,
 body[data-gf-theme='paper'] {
   color-scheme: light;
@@ -303,14 +303,14 @@ body {
   color: var(--gf-bad);
 }
 
+/* Tone changes emphasis, never the body measure: every narration page keeps
+   the prose size defined once on .gf-para. */
 .gf-tone-grave {
   color: var(--gf-grave);
-  font-size: var(--gf-fs-loud);
 }
 
 .gf-tone-title {
   color: var(--gf-yellow);
-  font-size: var(--gf-fs-loud);
 }
 
 .gf-tone-neutral {

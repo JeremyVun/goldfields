@@ -35,7 +35,7 @@ function fresh(seed = 21) {
 const ALL_ITEMS = Object.keys(PRICES) as ItemId[];
 
 describe('prices', () => {
-  it('are much cheaper at Suze Port than at the diggings (the Journal’s first lesson)', () => {
+  it('are much cheaper at Port Gannet than at the diggings (the Journal’s first lesson)', () => {
     for (const it of ALL_ITEMS) {
       if (it === 'timber' || it === 'pump') continue; // only sold at the diggings
       expect(PRICES[it].fields).toBeGreaterThan(PRICES[it].suze);
@@ -71,7 +71,7 @@ describe('prices', () => {
       state.day = d;
       if (priceOf(state, 'pan') !== a) differed = true;
     }
-    expect(differed).toBe(true); // Briggs gouges now and then
+    expect(differed).toBe(true); // Bell gouges now and then
   });
 
   it('gouge only at the diggings, and rarely', () => {
@@ -159,7 +159,7 @@ describe('exchange rates', () => {
     expect(BANK_RATE_CEILING).toBe(lsd(3, 17, 10));
   });
 
-  it('the Fields Town bank pays best; camp storekeepers pay worst', () => {
+  it('the Slateford bank pays best; camp storekeepers pay worst', () => {
     const { state, rng } = fresh();
     for (let d = 1; d < 300; d++) {
       state.day = d;

@@ -197,9 +197,11 @@ describe('starvation and thirst', () => {
   it('running out of water in summer is far worse than in winter', () => {
     const summer = createInitialState(1);
     summer.day = 10;
+    summer.location = 'on-road';
     summer.waterDays = 0;
     const winter = createInitialState(1);
     winter.day = 190;
+    winter.location = 'on-road';
     winter.waterDays = 0;
     summer.provisionDays = winter.provisionDays = 10;
     const rngA = makeRng(1);
@@ -225,7 +227,7 @@ describe('starvation and thirst', () => {
   });
 });
 
-describe('Calico House', () => {
+describe('Canvas House', () => {
   it('carts a gravely ill digger off the field and charges him for it', () => {
     const { state, rng, log } = fresh(17);
     state.location = 'damp-camp';

@@ -7,5 +7,5 @@ if (root) {
   app.start();
 } else {
   // Should never happen — index.html always provides #screen — but fail loudly in dev.
-  console.error('goldfields: #screen element not found');
+  console.error('goldrush: #screen element not found');
 }

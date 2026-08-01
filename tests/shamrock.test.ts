@@ -309,7 +309,7 @@ describe('the drink table', () => {
     expect(spent - camp.moneyPence).toBeGreaterThanOrEqual(DRINKS.ale.camp);
   });
 
-  it('makes the grog tent’s liquor a hazard the Shamrock’s is not', () => {
+  it('makes the grog tent’s liquor a hazard the Crown & Cradle’s is not', () => {
     let campIll = 0;
     let townIll = 0;
     for (let seed = 1; seed <= 200; seed++) {
@@ -468,7 +468,7 @@ describe('shouting the bar', () => {
     expect(FLUSH_ROBBERY_FACTOR).toBeGreaterThan(1);
   });
 
-  it('prints the Gazette paragraph while the town still remembers', () => {
+  it('prints the Times paragraph while the town still remembers', () => {
     const state = atShamrock(15, 30);
     state.moneyPence = pounds(60);
     const out = step(state, { type: 'shoutBar', spree: true }, makeRng(15));

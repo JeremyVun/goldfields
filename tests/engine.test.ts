@@ -67,7 +67,7 @@ describe('the seeded RNG', () => {
 // ---------------------------------------------------------------------------
 
 describe('the reducer', () => {
-  it('starts a new chum with ten shillings at Suze Port', () => {
+  it('starts a new chum with ten shillings at Port Gannet', () => {
     const state = createInitialState(1);
     expect(state.moneyPence).toBe(STARTING_MONEY);
     expect(STARTING_MONEY).toBe(shillings(10));
@@ -108,7 +108,7 @@ describe('the reducer', () => {
     expect(a.events.map((e) => e.text)).toEqual(b.events.map((e) => e.text));
   });
 
-  it('walks the title -> intro -> Suze Port opening', () => {
+  it('walks the title -> intro -> Port Gannet opening', () => {
     let state = createInitialState(3);
     expect(state.screen).toBe('title');
     let out = step(state, { type: 'newGame' }, makeRng(3));
@@ -347,7 +347,7 @@ describe('screens and menus', () => {
     expect(text).toMatch(/Standing on the field: 0\/100/);
     expect(text).toMatch(/partner or company at 30/);
     const labels = view.menu.map((m) => m.label.toLowerCase()).join(' | ');
-    expect(labels).toMatch(/exchange gold/);
+    expect(labels).toMatch(/sell gold to the bank/);
     expect(labels).toMatch(/save the game/);
     expect(labels).toMatch(/finish the game/);
   });
@@ -358,12 +358,14 @@ describe('screens and menus', () => {
     state.moneyPence = pounds(2) + shillings(4);
     state.goldCentiOz = 120;
     // Day 37 is the 6th of February: the tail of the first summer.
-    expect(statusLine(state)).toBe('Day 37 · late summer · £2 4s · 1.20 oz · Health: Hearty · Honest · Fresh');
+    expect(statusLine(state)).toBe(
+      'Day 37 · late summer · £2 4s · 1.20 oz · Health: Hearty · Law: Honest · Fatigue: Fresh',
+    );
   });
 
   it('the map names the tracks, the town, the river and the camps', () => {
     const text = mapView(createInitialState(1)).body.join(' ');
-    for (const place of ["Trickey's Track", 'Pass Road', 'Fields Town', 'Blue River', 'Damp Camp', 'Snakey Gully', 'Deep Mountains', 'Suze Port']) {
+    for (const place of ["Mercer's Track", 'Razorback Road', 'Slateford', 'Slate River', 'Reedbank Camp', 'Copperhead Gully', 'Blackcap Ranges', 'Port Gannet']) {
       expect(text).toContain(place);
     }
   });
@@ -393,6 +395,7 @@ describe('screens and menus', () => {
       'travel-mode',
       'ftown',
       'ftown-bank',
+      'ftown-lodgings',
       'ftown-store',
       'ftown-council',
       'ftown-work',
@@ -462,15 +465,15 @@ describe('screens and menus', () => {
     expect(bail).toMatch(/hand over/);
   });
 
-  it('the Gazette prints the rate, the season and the news of the day', () => {
+  it('the Times prints the rate, the season and the news of the day', () => {
     const state = createInitialState(1);
     state.day = 20;
     state.rush = { camp: 'snakey-gully', untilDay: 40, factor: 2, since: 20, base: 1 };
     state.hunt = { camp: 'damp-camp', untilDay: 40 };
     const paper = gazetteFor(state).join('\n');
-    expect(paper).toMatch(/THE ANGUS GAZETTE/);
+    expect(paper).toMatch(/THE SLATEFORD TIMES/);
     expect(paper).toMatch(/EXCHANGE/);
-    expect(paper).toMatch(/RUSH AT SNAKEY GULLY/);
+    expect(paper).toMatch(/RUSH AT COPPERHEAD GULLY/);
     expect(paper).toMatch(/LICENCES/);
     expect(paper).toMatch(/WEATHER/);
   });

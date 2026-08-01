@@ -44,12 +44,12 @@ export function gazetteStokesTrouble(state: GameState): boolean {
   return agitationStory(state) !== null;
 }
 
-/** December at Snakey Gully, and what followed it. */
+/** December at Copperhead Gully, and what followed it. */
 function stockadeStory(state: GameState): string | null {
   if (!state.stockadeDone) return null;
   const since = state.day - state.stockadeDay;
   if (since >= 0 && since <= 12) {
-    return `THE RISING AT ${CAMP_DEFS[STOCKADE_CAMP].name.toUpperCase()}. The stockade on the flat was carried before dawn on Sunday, in something under twenty minutes, and the flag hauled down. Men are dead on both sides. The Angus has nothing to add to that fact, and no wish to be thought to excuse either party.`;
+    return `THE RISING AT ${CAMP_DEFS[STOCKADE_CAMP].name.toUpperCase()}. The stockade on the flat was carried before dawn on Sunday, in something under twenty minutes, and the flag hauled down. Men are dead on both sides. The Times has nothing to add to that fact, and no wish to be thought to excuse either party.`;
   }
   if (inAftermath(state) && state.day - AFTERMATH_DAY <= 20) {
     return `THE LICENCE ABOLISHED. It is announced that the miner's licence is at an end. In its place the Council will issue a miner's right, ${formatMoney(MINERS_RIGHT_COST)} for the year, carrying the vote with it, and the digger hunts are discontinued from this day. Thirty shillings a month has cost the Government a great deal more than it ever raised.`;
@@ -75,7 +75,7 @@ function outlawStory(state: GameState): string | null {
   ];
   if (state.bigJobsDone > 0) {
     bits.push(
-      'The Angus observes that the colony has not seen work of this order since the McIvor escort, and that the Government has said a great deal about it and done very little.',
+      'The Times observes that the colony has not seen work of this order since the McIvor escort, and that the Government has said a great deal about it and done very little.',
     );
   }
   if (state.diggersRobbed === 0 && state.stats.bailUps > 4) {
@@ -92,10 +92,10 @@ function outlawStory(state: GameState): string | null {
 
 export function gazetteFor(state: GameState): string[] {
   const lines: string[] = [];
-  lines.push(`THE ANGUS GAZETTE — ${formatDate(state.day)}`);
+  lines.push(`THE SLATEFORD TIMES — ${formatDate(state.day)}`);
   lines.push('');
   lines.push(
-    `EXCHANGE. The Bank of Australasia at Fields Town buys gold at ${formatMoney(state.bankRate)} the ounce. ${rateComment(state)} ${rateTrendPhrase(state)} Camp storekeepers pay a good deal less, and their scales are their own.`,
+    `EXCHANGE. The Bank of Australasia at Slateford buys gold at ${formatMoney(state.bankRate)} the ounce. ${rateComment(state)} ${rateTrendPhrase(state)} Gold is bought at the bank, not over a camp store counter.`,
   );
 
   if (state.rush && state.rush.since <= state.day && state.rush.untilDay >= state.day) {
@@ -119,7 +119,7 @@ export function gazetteFor(state: GameState): string[] {
   if (state.estate.flushUntilDay >= state.day && state.day - spreeDay <= 3) {
     lines.push(
       state.estate.shamrock && state.estate.houseSpreeOn === spreeDay
-        ? `TOWN TALK. The proprietor of the Shamrock entertained the town royally on the night of the ${ordinal(dayOfMonth(spreeDay))}, champagne being served to all comers at his own bar and the fiddler kept at it until daylight. We are told a hundred pounds would not cover the week's stock. It is his own house, and his own affair.`
+        ? `TOWN TALK. The proprietor of the Crown & Cradle entertained the town royally on the night of the ${ordinal(dayOfMonth(spreeDay))}, champagne being served to all comers at his own bar and the fiddler kept at it until daylight. We are told a hundred pounds would not cover the week's stock. It is his own house, and his own affair.`
         : `TOWN TALK. A lucky digger entertained the town royally on the night of the ${ordinal(dayOfMonth(spreeDay))}. Champagne was had at thirty shillings the bottle by men who had drunk nothing but creek water for a month, and the fiddler was paid to play till dawn. We have known such gentlemen to eat ten-pound notes in mutton sandwiches, and to be at the wash again on Friday with nothing whatever to show for it.`,
     );
   }
@@ -137,7 +137,7 @@ export function gazetteFor(state: GameState): string[] {
   const s = season(state.day);
   if (s === 'summer') {
     lines.push(
-      'WEATHER. Hot winds and dust continue. Travellers are again reminded to carry water; two men were brought in from the Pass Road this week, and one of them did not come in alive.',
+      'WEATHER. Hot winds and dust continue. Travellers are again reminded to carry water; two men were brought in from the Razorback Road this week, and one of them did not come in alive.',
     );
   } else if (s === 'winter') {
     lines.push(

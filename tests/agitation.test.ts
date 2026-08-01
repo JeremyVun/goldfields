@@ -81,7 +81,7 @@ describe('the agitation', () => {
     expect(state.agitation).toBe(AGITATION_PER_HUNT);
   });
 
-  it('rises a point for every licence story read in the Angus', () => {
+  it('rises a point for every licence story read in the Times', () => {
     const state = createInitialState(9);
     state.day = 200;
     state.agitation = 30;
@@ -106,7 +106,7 @@ describe('the agitation', () => {
     expect(huntChance(state)).toBeCloseTo(quiet * 1.4, 5);
   });
 
-  it('escalates the Gazette’s stories with the temperature', () => {
+  it('escalates the Times’s stories with the temperature', () => {
     const state = createInitialState(4);
     state.day = 200;
     const seen = new Set<string>();
@@ -210,7 +210,7 @@ describe('the stockade', () => {
     return state;
   }
 
-  it('finds a man at any camp, or in Fields Town, and passes a man at the port by', () => {
+  it('finds a man at any camp, or in Slateford, and passes a man at the port by', () => {
     for (const place of ['damp-camp', 'snakey-gully', 'fields-town'] as const) {
       const { state, rng, log } = digger(STOCKADE_WINDOW.from - 1, 6);
       state.meetingDone = true;
@@ -407,7 +407,7 @@ describe('the aftermath', () => {
     expect(label).not.toMatch(/thirty days/);
   });
 
-  it('is reported in the Angus, and noted in the journal but once', () => {
+  it('is reported in the Times, and noted in the journal but once', () => {
     const { state, rng, log } = digger(AFTERMATH_DAY - 1);
     state.meetingDone = true;
     state.stockadeDone = true;
@@ -489,6 +489,9 @@ describe('the epilogue', () => {
         lastWeekGold: 0,
         foundedOn: 200,
         lastDividendDay: 0,
+        battery: false,
+        driving: 'ordinary',
+        lastWeek: null,
       },
     }).join(' ');
     expect(chairman).toMatch(/The Golden Hope Quartz Mining Co./);

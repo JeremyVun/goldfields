@@ -20,16 +20,16 @@ interface PlaceDef {
 }
 
 const PLACES: Record<Exclude<LocationId, 'on-road'>, PlaceDef> = {
-  'suze-port': { row: 4, col: 2, label: '[ SUZE PORT ]' },
-  'fields-town': { row: 4, col: 56, label: '[ FIELDS TOWN ]' },
-  'damp-camp': { row: 9, col: 74, label: '[ DAMP CAMP ]' },
-  'snakey-gully': { row: 11, col: 74, label: '[ SNAKEY GULLY ]' },
-  'deep-mountains': { row: 13, col: 74, label: '[ DEEP MOUNTAINS ]' },
-  'secret-mine': { row: 15, col: 74, label: '[ THE SECRET MINE ]' },
+  'suze-port': { row: 4, col: 2, label: '[ PORT GANNET ]' },
+  'fields-town': { row: 4, col: 56, label: '[ SLATEFORD ]' },
+  'damp-camp': { row: 9, col: 74, label: '[ REEDBANK CAMP ]' },
+  'snakey-gully': { row: 11, col: 74, label: '[ COPPERHEAD GULLY ]' },
+  'deep-mountains': { row: 13, col: 74, label: '[ BLACKCAP RANGES ]' },
+  'secret-mine': { row: 15, col: 74, label: "[ WIDOW'S REEF ]" },
   // No printed map shows the camp in the ranges, and this one only shows it
   // once there is one — in a small hand, off the ruled country, without the
   // brackets the surveyed places are given.
-  hideout: { row: 16, col: 92, label: 'your camp in the ranges' },
+  hideout: { row: 16, col: 92, label: 'Split Rock Camp' },
 };
 
 const BRANCH_ROW: Record<CampId, number> = {
@@ -62,7 +62,7 @@ export interface MapResult {
   markerCol: number;
 }
 
-/** Has the player any reason to know the secret mine is out there? */
+/** Has the player any reason to know Widow's Reef is out there? */
 function knowsSecretMine(state: GameState): boolean {
   return state.location === 'secret-mine' || !!state.secret?.heard;
 }
@@ -136,25 +136,25 @@ function rewardNotice(amount: number): string[] {
 export function buildMap(state: GameState): MapResult {
   const grid = makeGrid();
 
-  // Suze Port, on the coast.
+  // Port Gannet, on the coast.
   stamp(grid, 3, 2, '~~~~~~~~~~~~~');
   stamp(grid, 5, 2, '~~~~~~~~~~~~~');
   stamp(grid, 4, PLACES['suze-port'].col, PLACES['suze-port'].label);
 
   // The two roads inland, and whatever is doing on them.
-  stamp(grid, 1, 30, "TRICKEY'S TRACK");
+  stamp(grid, 1, 30, "MERCER'S TRACK");
   dots(grid, 2, 16, 54);
   dots(grid, 6, 20, 50);
-  stamp(grid, 7, 34, 'PASS ROAD');
+  stamp(grid, 7, 34, 'RAZORBACK ROAD');
   // Each road's news hangs under its name, short of the spine at column 71.
   const trickeys = roadNote(state, 'trickeys', 39);
   if (trickeys) stamp(grid, 3, 30, trickeys);
   const pass = roadNote(state, 'pass', 33);
   if (pass) stamp(grid, 8, 36, pass);
 
-  // Fields Town, on Blue River, where the roads meet.
+  // Slateford, on Slate River, where the roads meet.
   stamp(grid, 4, PLACES['fields-town'].col, PLACES['fields-town'].label);
-  stamp(grid, 5, 56, 'on Blue River');
+  stamp(grid, 5, 56, 'on Slate River');
 
   // The spine down to the camps beyond.
   for (let r = 5; r <= 14; r++) stamp(grid, r, 71, '|');

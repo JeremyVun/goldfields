@@ -42,7 +42,7 @@ interface JournalState {
   pageIndex: number;
 }
 
-/** The browser presentation layer for Goldfields. The engine underneath is never mutated by hand. */
+/** The browser presentation layer for Goldrush. The engine underneath is never mutated by hand. */
 export class App {
   private readonly root: HTMLElement;
   private readonly frame: HTMLElement;
@@ -178,7 +178,7 @@ export class App {
       }
     } catch (err) {
       // Never let an exception blank the screen.
-      console.error('goldfields: step failed', err);
+      console.error('goldrush: step failed', err);
       this.pendingState = null;
       this.narrationPages = [
         [
@@ -907,7 +907,7 @@ export class App {
     this.renderAside(undefined);
 
     if (js.mode === 'list') {
-      this.titleEl.textContent = 'A GOLDFIELDS JOURNAL';
+      this.titleEl.textContent = "THE NEW CHUM'S COMPANION";
       this.subtitleEl.textContent = 'Nicholas Jacob Rowe, lately returned from the Gold Rushes';
       this.subtitleEl.style.display = '';
 

@@ -1,7 +1,7 @@
-# Goldfields — Faithful Clone Specification
+# Goldrush — Game Specification
 
-A faithful web clone of **Goldfields** (Jacaranda Software, 1986, by Trevor K. Jacob) — an
-educational simulation of "life on the diggings" in an 1854 Australian goldrush.
+An educational simulation of "life on the diggings" in an 1854 Australian gold rush,
+adapted from **Goldfields** (Jacaranda Software, 1986, by Trevor K. Jacob).
 
 Primary sources (in `research/`):
 - `teachers_guide.txt` — original Teacher's Guide (OCR)
@@ -19,12 +19,12 @@ like 1854 Australian goldfields idiom (the Journal is the style reference).
 ## 1. Premise & victory
 
 - Year is **1854**. The player is a **"new chum"** — a penniless recent arrival at
-  **Suze Port**.
+  **Port Gannet**.
 - The player has **one year (365 days)** to make their fortune on the goldfields.
 - The game itself makes **no judgment of success** (faithful to original). At year's end
   it presents a summary of experiences and possessions (a "Bank Draft" style tally), and
   offers to continue for a **second year** or start anew.
-- Death (health reaching zero) ends the game with an obituary in *The Angus Gazette*.
+- Death (health reaching zero) ends the game with an obituary in *The Slateford Times*.
 
 ## 2. Currency, weights, time
 
@@ -72,28 +72,28 @@ State fields:
 
 Fictional geography (faithful names):
 
-- **Suze Port** — the port of arrival. Cheap goods, work, lodgings.
-- Two roads to the diggings (faithful): **Trickey's Track** — longer, better surface,
-  crowded, safer; **the Pass Road** — shorter, rough, isolated, higher bushranger and
+- **Port Gannet** — the port of arrival. Cheap goods, work, lodgings.
+- Two roads to the diggings (faithful): **Mercer's Track** — longer, better surface,
+  crowded, safer; **the Razorback Road** — shorter, rough, isolated, higher bushranger and
   accident risk.
-- **Fields Town** — the largest settlement, on Blue River. Contains **Briggs' Store**
-  (and Briggs' Express), the **Bank of Australasia**, the hospital (**"Calico House"**),
-  the **Shamrock Hotel**, the **Council Chambers** (licences, claims, complaints), police
+- **Slateford** — the largest settlement, on Slate River. Contains **Bell's Outfitters**
+  (and Bell's Freight), the **Bank of Australasia**, the hospital (**"Canvas House"**),
+  the **Crown & Cradle**, the **Council Chambers** (licences, claims, complaints), police
   camp with "the logs", and **Lin Wu's market garden** just out of town.
 - Mining camps, each with its own character (faithful):
-  - **Damp Camp** — closest to Fields Town; alluvial creek workings; wet; flood-prone in
+  - **Reedbank Camp** — closest to Slateford; alluvial creek workings; wet; flood-prone in
     winter; modest but steady gold.
-  - **Snakey Gully** — rowdy large camp; good alluvial and puddling (rentable
+  - **Copperhead Gully** — rowdy large camp; good alluvial and puddling (rentable
     horse-powered puddling machine, faithful); night-time crime; snakes; flash floods in
     its steep gully.
-  - **Deep Mountains** — shaft/reef country and **big company mines**; highest potential
+  - **Blackcap Ranges** — shaft/reef country and **big company mines**; highest potential
     yields; cave-in and flooding risk; player may buy **shares** in a mining company or
     work for company wages.
-  - **The secret mine** — sometimes there are **rumours of a secret mine** (faithful).
+  - **Widow's Reef** — sometimes there are **rumours of a lost reef**.
     Rumours may be genuine (a rich, remote working reachable by a hard journey) or a
     **hoax** (days wasted). At most one genuine chance per year.
-- A **map screen** (M key) drawn in period style showing Suze Port, the two tracks, Blue
-  River, Fields Town and the camps (the original shipped a poster map).
+- A **map screen** (M key) drawn in period style showing Port Gannet, the two tracks, Slate
+  River, Slateford and the camps (the original shipped a poster map).
 
 ## 5. Program/screen structure
 
@@ -101,10 +101,10 @@ Mirror the original's module structure (BBC files INTRO, SUZE, TRAVEL, FTOWN, MI
 END):
 
 1. **INTRO** — title screen ("Press the SPACE BAR to start"), then new game / resume
-   saved game (enter ID number), then arrival narrative at Suze Port.
-2. **SUZE** — Suze Port hub.
-3. **TRAVEL** — journey sequences between Suze Port and the Goldfields area.
-4. **FTOWN** — Fields Town hub.
+   saved game (enter ID number), then arrival narrative at Port Gannet.
+2. **SUZE** — Port Gannet hub.
+3. **TRAVEL** — journey sequences between Port Gannet and the Slate River diggings.
+4. **FTOWN** — Slateford hub.
 5. **MINING** — camps and diggings.
 6. **END** — end-of-year summary; continue a second year or finish.
 
@@ -112,25 +112,26 @@ All hubs are **numbered/lettered menu screens** (keyboard driven: number keys, l
 RETURN, SPACE BAR, `@` for kitty, `M` for map), with short narrative paragraphs and
 occasional simple illustrations. See §15 for presentation.
 
-## 6. Suze Port (SUZE)
+## 6. Port Gannet (SUZE)
 
 Starting money: **10s** (effectively penniless; one bad night's lodging wipes it out).
 
 Menu:
 
-1. **Seek work at the wharves/town** — jobs are plentiful, "wages are good" (faithful):
-   casual work pays **2s–4s per day** (random within range; a week's engagement pays a
-   small bonus). Each day worked = 1 day.
-2. **Briggs' agency store (Suze Port prices)** — buy equipment **much cheaper than at
+1. **Seek work at the wharves/town** — jobs are plentiful, "wages are good" (faithful).
+   Wharf labour pays **2s–3s per day** and includes a hot meal; odd jobs pay
+   **4s–6s per day**, build port connections faster, and only sometimes include food.
+   A week's engagement pays a small bonus. Each day worked = 1 day.
+2. **Bell's Outfitters (Port Gannet prices)** — buy equipment **much cheaper than at
    the goldfields** (faithful). Price list §11.
 3. **Lodgings each night** (faithful prices): inn dormitory **10s**, stable on straw
    **5s**, rent tent-ground **5s per week** (requires tent), or **sleep rough (free)** —
    sleeping rough or in the stable risks illness and theft; the dormitory has fleas but
    is safe-ish.
-4. **Read The Angus Gazette (1d)** — news: exchange-rate movements, rushes/strikes at
+4. **Read The Slateford Times (1d)** — news: exchange-rate movements, rushes/strikes at
    particular camps (which temporarily raise that camp's yields), licence-hunt warnings,
-   secret-mine rumours, colour stories drawn from the Journal.
-5. **Buy A Goldfields Journal (6d)** (faithful price) — in-game access to excerpted
+   rumours of Widow's Reef, colour stories drawn from the Journal.
+5. **Buy The New Chum's Companion (6d)** — in-game access to excerpted
    survival hints from `journal.txt`.
 6. **Set out for the diggings** → TRAVEL.
 
@@ -141,7 +142,7 @@ raises legal status ladder; if caught → court (§13).
 
 Choices, then a day-by-day journey with events:
 
-- **Route**: Trickey's Track (**8 days'** walk equivalent) or the Pass Road (**5 days'**
+- **Route**: Mercer's Track (**8 days'** walk equivalent) or the Razorback Road (**5 days'**
   walk equivalent, rougher — higher event rates).
 - **Mode**:
   - **Walk ("footslogger")** — free. Must carry limited kit (tent + hand tools; no
@@ -151,52 +152,52 @@ Choices, then a day-by-day journey with events:
   - **Wagon ride** — **£3** per person, gear carried; 20% slower than walking pace is
     NOT true — wagons move at walking pace but carry everything and halve fatigue;
     bogging risk in winter mud (lose 1–3 days).
-  - **Horseback** — fastest (**3 days** either route). Horses at the Suze Port dealer:
+  - **Horseback** — fastest (**3 days** either route). Horses at the Port Gannet dealer:
     **brumby £15** (hardy, finds water, won't eat poisonous plants — faithful) or
     **showy hack £25** (prestige, but suffers in drought/rough country; dealers cheat
     new chums — faithful). A horse also speeds later trips between town and camps.
-- **Events en route** (per-day rolls; Pass Road roughly doubles the bad ones):
+- **Events en route** (per-day rolls; Razorback Road roughly doubles the bad ones):
   - **Bushrangers bail you up** — lose money/gold; owning a loaded **gun** usually
     scares them off (faithful advice); resisting without one risks injury.
-  - **Trooper licence patrol** (only within the Goldfields area) — see §13.
+  - **Trooper licence patrol** (only within the Slate River diggings) — see §13.
   - Bogged / flash flood at crossings (winter), thirst (summer), snakebite, meeting
     fellow travellers (rumours, small trades), finding abandoned goods along the track
-    (faithful: chests of clothes, books, china — saleable back at Suze Port for a
+    (faithful: chests of clothes, books, china — saleable back at Port Gannet for a
     "wonderful profit", but a burden to carry).
 
-Arrival from Suze Port lands the player at **Fields Town**. Between Fields Town and each
-camp: 1 day on foot (Deep Mountains 2), half on horseback.
+Arrival from Port Gannet lands the player at **Slateford**. Between Slateford and each
+camp: 1 day on foot (Blackcap Ranges 2), half on horseback.
 
-## 8. Fields Town (FTOWN)
+## 8. Slateford (FTOWN)
 
 Menu:
 
 1. **Bank of Australasia** — best gold **exchange rate** in the colony (§10); deposit
    money (safe from theft; the year-end Bank Draft shows the balance).
-2. **Briggs' Store** — full equipment and provisions at **inflated diggings prices**
-   (typically 2–3× Suze Port; the Journal records a pan selling for **£16** at the worst
+2. **Bell's Outfitters** — full equipment and provisions at **inflated diggings prices**
+   (typically 2–3× Port Gannet; the Journal records a pan selling for **£16** at the worst
    of a rush — allow rare gouging spikes). Sells everything in §11.
 3. **Council Chambers** — buy/renew **miner's licence: 30 shillings for 30 days**
    (faithful); register a claim; lodge complaints (flavour).
 4. **Seek work** (faithful job list) — jobs pay daily wages, no licence needed:
-   - **Hospital orderly at Calico House** — ~4s/day, small hygiene/health benefit.
-   - **Store clerk at Briggs'** — ~4s/day, occasional store discounts.
-   - **Barman at the Shamrock Hotel** — ~5s/day, hears rumours early, small risk of
+   - **Hospital orderly at Canvas House** — ~4s/day, small hygiene/health benefit, plain staff meal on a successful shift.
+   - **Store clerk at Bell's** — ~4s/day, occasional store discounts.
+   - **Barman at the Crown & Cradle** — ~5s/day, hears rumours early, small risk of
      brawls (grog-shop adjacent).
    - **Market gardener for Lin Wu** — ~3s/day plus fresh vegetables (health bonus;
      scurvy protection).
    - **Council office clerk** — ~6s/day, **refused to anyone with a criminal record**
      (faithful).
-5. **Calico House (hospital)** — treatment costs money (~10s/day of stay) and days, but
-   cures illness/injury. Severe illness anywhere triggers automatic carting to Calico
+5. **Canvas House (hospital)** — treatment costs money (~10s/day of stay) and days, but
+   cures illness/injury. Severe illness anywhere triggers automatic carting to Canvas
    House (faithful). Beware quack "doctors" at the camps charging **£10 for surgery**
    (faithful) with uncertain results.
-6. **Shamrock Hotel / grog shops** — drink and gamble (two-up / cards): fast money
+6. **Crown & Cradle / grog shops** — drink and gamble (two-up / cards): fast money
    either direction; drunkenness risks theft, injury, arrest; grog shops are illegal but
    police-protected (flavour, faithful).
-7. **Cobb & Co.** — paid coach seat back to Suze Port (**£2**, 2 days, bushranger-proof
+7. **Cobb & Co.** — paid coach seat back to Port Gannet (**£2**, 2 days, bushranger-proof
    mostly); the gold escort (flavour, faithful).
-8. **Go to the diggings** — Damp Camp / Snakey Gully / Deep Mountains (or follow a
+8. **Go to the diggings** — Reedbank Camp / Copperhead Gully / Blackcap Ranges (or follow a
    secret-mine rumour).
 
 ## 9. Mining (MINING)
@@ -211,20 +212,20 @@ location, equipment, and active "rush" news):
 | method | needs | character |
 |---|---|---|
 | **Fossick** | nothing | free, tiny yields; the fallback of the destitute; allowed without claim (mullock heaps) |
-| **Pan** | pan | simple, cheap, slow (faithful); best at Damp Camp / Snakey Gully creeks |
+| **Pan** | pan | simple, cheap, slow (faithful); best at Reedbank Camp / Copperhead Gully creeks |
 | **Cradle** | cradle, ideally a mate | "easiest and surest way of finding gold, but never in such large quantities as shaft mining" (faithful) — steadier, higher mean; hire a mate for 2s/day or yields halve |
-| **Puddling machine** | rent at Snakey Gully, 5s/day | good in winter when creeks run; watch the owner or lose a little dirt (faithful) |
-| **Shaft mining** | pick, shovel, rope & bucket; timber supports & pump strongly advised | Deep Mountains (and lucky claims elsewhere). Multi-day sinking (bottoming at 20–100 ft, faithful) with nothing until "bottomed", then chance of striking the reef: the big lottery. **Cave-in risk each day** (much reduced by timber supports), **flooding risk in winter** (reduced by pump). Cave-in: injury, possible death, shaft lost. |
-| **Buy shares / company work** | Deep Mountains | shares (£5 each, up to 3 — matches the three share certificates shipped with the game) pay dividends at year end scaled to a hidden company-fortune roll; company wages 5s/day, safe but slow |
+| **Puddling machine** | rent at Copperhead Gully, 5s/day | good in winter when creeks run; watch the owner or lose a little dirt (faithful) |
+| **Shaft mining** | pick, shovel, rope & bucket; timber supports & pump strongly advised | Blackcap Ranges (and lucky claims elsewhere). Multi-day sinking (bottoming at 20–100 ft, faithful) with nothing until "bottomed", then chance of striking the reef: the big lottery. **Cave-in risk each day** (much reduced by timber supports), **flooding risk in winter** (reduced by pump). Cave-in: injury, possible death, shaft lost. |
+| **Buy shares / company work** | Blackcap Ranges | shares (£5 each, up to 3 — matches the three share certificates shipped with the game) pay dividends at year end scaled to a hidden company-fortune roll; company wages 5s/day, safe but slow |
 
-- **Dryblowing** appears as Journal lore and as the technique at the **secret mine**
+- **Dryblowing** appears as Journal lore and as the technique at **Widow's Reef**
   (a desert working) if the genuine rumour is followed: no water needed, good yields,
   brutal health toll in summer.
 - **Claim-jumpers** may seize an unattended claim (faithful); a gun or a mate deters.
 - Nightly camp events: tent robbery ("candle-lighters", faithful — a tent + gun helps),
-  grog tent, rumours, snakebite at Snakey Gully, spider bites, fires.
+  grog tent, rumours, snakebite at Copperhead Gully, spider bites, fires.
 - Living at camp costs provisions (~1s/day equivalent; bought food at camp stores costs
-  2–3× Suze Port — faithful price notes: bread up to 5s a loaf, water 5s a bucket in
+  2–3× Port Gannet — faithful price notes: bread up to 5s a loaf, water 5s a bucket in
   drought).
 
 ## 10. Gold & exchange
@@ -232,21 +233,21 @@ location, equipment, and active "rush" news):
 - **Exchange rates vary by location** (faithful): camp storekeepers pay poorly
   (~£2 10s–£3 0s per oz, and may **cheat on the scales** — watch the weights, faithful:
   small chance of being short-weighted, reduced if the player chooses to "watch the
-  weighing"); **Bank of Australasia in Fields Town pays best** (~£3 5s–£3 17s per oz).
-- The rate performs a small daily random walk, published in *The Angus Gazette* and the
+  weighing"); **Bank of Australasia in Slateford pays best** (~£3 5s–£3 17s per oz).
+- The rate performs a small daily random walk, published in *The Slateford Times* and the
   kitty. Faithful anchor: the period standard price ~£3 17s 10d per oz is the bank-rate
   ceiling.
 - Carrying much gold or cash raises robbery stakes; the bank deposit is the safe store.
 
-## 11. Price list (Suze Port / Fields Town typical)
+## 11. Price list (Port Gannet / Slateford typical)
 
-| item | Suze Port | goldfields |
+| item | Port Gannet | goldfields |
 |---|---|---|
 | pan | 8s | £1 4s (rush spikes to £16, rare, faithful anecdote) |
 | cradle | £2 | £5 |
-| pick | 6s | 18s |
-| shovel | 5s | 15s |
-| rope & bucket | 8s | £1 4s |
+| pick | 8s | 18s |
+| shovel | 7s | 15s |
+| rope & bucket | 11s | £1 4s |
 | tent | £1 10s | £4 |
 | swag/blanket | 6s | 15s |
 | gun (loaded) | £1 10s | £3 |
@@ -255,7 +256,7 @@ location, equipment, and active "rush" news):
 | timber supports (per shaft) | — | £2 |
 | pump | — | £4 |
 | barrow | 12s | £1 10s |
-| *A Goldfields Journal* | 6d | 1s |
+| *The New Chum's Companion* | 6d | 1s |
 | brumby / hack | £15 / £25 | — |
 
 ## 12. Health
@@ -267,14 +268,14 @@ location, equipment, and active "rush" news):
   bushranger, flood).
 - Risk drivers: sleeping rough, camp squalor, bad water, summer heat, winter cold and
   wet, overwork while Poorly.
-- Health recovers slowly with rest + provisions; quickly (but expensively) at Calico
-  House. Reaching **Gravely ill** away from town → automatic cart to Calico House, fees
+- Health recovers slowly with rest + provisions; quickly (but expensively) at Canvas
+  House. Reaching **Gravely ill** away from town → automatic cart to Canvas House, fees
   deducted, many days lost. Health 0 → death → END with obituary.
 
 ## 13. Law
 
 - **Licence**: 30s / 30 days (faithful). Troopers run **digger hunts** at the camps
-  (base ~1 in 8 digging days; the Gazette sometimes warns of a sweep). Caught without a
+  (base ~1 in 8 digging days; the Times sometimes warns of a sweep). Caught without a
   licence:
   - option to **bribe ~£5** ("a fiver is a good-sized bribe for most troopers",
     faithful) — usually works, small chance the trooper is honest → worse;
@@ -290,9 +291,9 @@ location, equipment, and active "rush" news):
 
 Simulated over many seeded runs (see §16):
 
-- A player who never leaves Suze Port and just works ends the year with roughly
+- A player who never leaves Port Gannet and just works ends the year with roughly
   **£15–£30** — survival, not fortune (mirrors the design intent: wages alone won't do).
-- A cautious licensed panner/cradler at Damp Camp typically ends with **£50–£250**.
+- A cautious licensed panner/cradler at Reedbank Camp typically ends with **£50–£250**.
 - A skilled strategy (cradle + good exchange timing + shaft or shares when capitalised)
   can reach **£500–£2000**; the shaft/secret-mine lottery allows rare windfalls beyond.
 - An unlicensed, careless, or unlucky player frequently ends the year broke, jailed, or
@@ -341,7 +342,7 @@ mates → shafts and capital → **your own mining company**. Depletion and rush
 *push* between rungs, never the loop itself. Design principle: every new location or
 tier must hand the player a genuinely new verb, and the year must end somewhere the
 player could not have stood on day 1 — as a labourer become capitalist, or a rebel, or
-a dead man in the Gazette.
+a dead man in the Times.
 
 Nothing here breaks period fidelity: companies floating shares, licence agitation
 boiling over in December 1854, worked-out ground and rushes are all *more* faithful to
@@ -385,7 +386,7 @@ interface Claim {
 
 ### 17.2 Camp freshness — rushes are the engine of movement
 
-New per-camp state `freshness: Record<CampId, number>` (start 1.0; secret mine 1.4).
+New per-camp state `freshness: Record<CampId, number>` (start 1.0; Widow's Reef 1.4).
 
 - Baseline decay: −0.0009/day for each of the three ordinary camps (fields get picked
   over across the year; ~0.67 by December).
@@ -395,7 +396,7 @@ New per-camp state `freshness: Record<CampId, number>` (start 1.0; secret mine 1
   arrive and peg, the richer the roll**. The old blanket `rushFactor()` yield
   multiplier is **removed**; a rush now pays through pegging fresh ground (and a modest
   ×1.15 on common ground while it runs).
-- The Gazette already announces rushes; camp talk at the Shamrock should too.
+- The Times already announces rushes; camp talk at the Crown & Cradle should too.
 
 ### 17.3 Prospecting — a new verb
 
@@ -439,26 +440,26 @@ monster meeting (§20); −10 per rung of legal worsening. Never decays. Gates:
 
 - **≥ 25**: council clerk job (in addition to a clean record).
 - **≥ 30**: a **partner** offers himself when you hire a mate — new action
-  `takePartner` (and `dissolvePartnership`). A partner costs no wage but takes **25%
+  `takePartner` (and `dissolvePartnership`). A partner costs no wage but takes **50%
   of gross gold** won while partnered. Full cradle factor, mate bonuses to shaft work,
   claim-jump and night-theft rolls halved. `partner: boolean` replaces day-counted
   mateship when active.
-- **≥ 30**: may float a company (§19). The proven Deep Mountains claim and capital,
+- **≥ 30**: may float a company (§19). The proven Blackcap Ranges claim and capital,
   rather than a second reputation grind beyond partnership, are the main gates.
-- **≥ 60**: Briggs knows your name — 10% off store goods (not provisions).
+- **≥ 60**: Bell knows your name — 10% off store goods (not provisions).
 
 ## 19. The company — labourer become capitalist (amends §9 shares row)
 
-The existing three-certificate £5 share purchase in the Deep Mountains company stays
+The existing three-certificate £5 share purchase in the Blackcap Ranges company stays
 as-is (the small-time flutter). This section is the player's *own* company.
 
 ### 19.1 Floating
 
-At the **company office (Deep Mountains)** or **Council Chambers**, action
+At the **company office (Blackcap Ranges)** or **Council Chambers**, action
 `floatCompany`, available when **all** hold:
 
 - standing ≥ 30, legal status no worse than petty criminal;
-- a **proven** claim at Deep Mountains (a shaft bottomed payable there, ever — §17.1);
+- a **proven** claim at Blackcap Ranges (a shaft bottomed payable there, ever — §17.1);
 - £100 or more in hand + bank (the clerk will not register paupers).
 
 Flotation: registration fee **£10**. The company issues **20 shares at £10**. The
@@ -474,7 +475,7 @@ carries over; company leases deplete at half the §17 rate — deeper ground).
 
 ### 19.2 Running it
 
-New screen `company` (from Deep Mountains camp menu and Fields Town council menu).
+New screen `company` (from Blackcap Ranges camp menu and Slateford council menu).
 State:
 
 ```ts
@@ -494,7 +495,7 @@ interface Crew { task: 'mine' | 'prospect' }
 ```
 
 - **Hire/fire crews** (`hireCrew`/`fireCrew`): a crew is four wages-men, **£6/week**
-  from the treasury. Hiring only at Deep Mountains.
+  from the treasury. Hiring only at Blackcap Ranges.
 - **Assign** (`setCrewTask`): mining crews work the best un-worked-out lease; a
   prospecting crew has a 0.22/week chance (+0.06 if the player is an old hand at
   shaft work) of proving a new lease (quality rolled off camp freshness × reef).
@@ -515,22 +516,137 @@ interface Crew { task: 'mine' | 'prospect' }
   paid, agitation (§20), and cave-ins.
 
 Company value (`sharesOwned × sharePrice + treasury × sharesOwned/20`) counts in
-`netWorth`. Weekly report line in the log when the player is at Deep Mountains or
-reads the Gazette ("The Golden Hope washed 31 oz for the week").
+`netWorth`. Weekly report line in the log when the player is at Blackcap Ranges or
+reads the Times ("The Golden Hope washed 31 oz for the week").
+
+### 19.4 The mine goes down (amends §19.1–19.2; the second-year arc)
+
+The company exists to give the game a **second year**: the player floats it late in
+year one, gets it standing on its feet, and continues past the year's end to take it
+deep. So a lease stops being ground that wears out and gets dropped, and becomes a
+**named mine** that is developed downward for as long as the player dares pay for it.
+Everything in §19.2 about crews, wages, shares, dividends, uptake and price stands
+except where amended here.
+
+**The lease.** Replaces the §19.2 `Lease` entirely:
+
+```ts
+interface Lease {
+  name: string;        // "the North Star", "the Perseverance" — fixed at discovery
+  reef: number;        // ×100 quality of the lode, rolled at discovery; never shown as a number
+  level: number;       // 0 = an unbottomed show; 1+ = bottomed levels, each a sunk project
+  face: number;        // crew-weeks of payable stone left at the current level
+  yieldNow: number;    // ×100 worth of the stone now being broken; rolled when a level or drive is opened
+  wet: boolean;        // rolled at discovery (40%); ALL ground below level 2 counts wet
+  pump: boolean;       // pumping plant installed on this lease (treasury capital)
+  timbered: boolean;   // standing timber-work installed (treasury capital)
+  flooded: boolean;    // a flooded mine yields nothing until dewatered
+  progress: number;    // crew-weeks put into the current development job
+  plan: 'sink' | 'drive' | null; // what a developing crew is at on this lease
+}
+```
+
+- `COMPANY_MAX_LEASES` falls **4 → 2**. Two named mines, worked deep, are the game;
+  churning ground is not. Worked-out leases are never auto-lapsed; an idle lease
+  simply stands. Abandoning one (new action `abandonLease`) forfeits all plant and
+  development sunk in it, so it is the last resort, not the loop.
+- The founding claim converts to a lease at **level 1** with a rolled face (4–6
+  crew-weeks), `yieldNow` from the claim's quality, `reef` = claim quality, wet rolled.
+- A prospecting strike (same chance as §19.2) now yields a **level-0 show**: named,
+  `reef` rolled by the existing formula, wet rolled; £5 take-up fee from treasury. If
+  both slots are full the find is driven into the poorest lease instead: fresh face
+  (3–5 crew-weeks) at a freshly rolled `yieldNow` on its current level.
+
+**Crews.** `Crew` becomes `{ task: 'mine' | 'develop' | 'prospect'; lease?: number }`
+(index into `leases` for mine/develop; a mining crew with no assignment takes the best
+open face). `setCrewTask` gains the optional lease index.
+
+**Development.** A crew put to `develop` on a lease executes its `plan`
+(action `setLeasePlan`):
+
+- **Sink** to the next level: needs `sinkWeeks(level) = 2 + floor(level / 2)`
+  crew-weeks; each crew-week costs `COMPANY_SINK_COST` (£8, timber and powder) from
+  treasury. Ground below level 2 (or wet at any level) cannot be sunk or mined
+  without a pump installed. On completion: `level += 1`, roll
+  `yieldNow = reef × (1 + 0.22 × (level − 1)) × clamp(rng.exponential())` and
+  `face = 4–7` crew-weeks. **Deeper is richer on average and dearer to reach** —
+  each level is a capital gamble on the same mine, and a deep level can still bottom
+  on poor stone (that is the lottery).
+- **Drive** along the current level: 1 crew-week, `COMPANY_DRIVE_COST` (£4); rolls a
+  fresh `yieldNow` at ×0.85 the level's depth factor and a smaller face (2–4 weeks);
+  20% chance of a duffer (nothing; the week and the money are gone). The cheap,
+  modest continuation when the face cuts out.
+- **Dewater** happens automatically when a develop crew is put on a flooded lease
+  with a working pump: 2 crew-weeks, no materials cost.
+
+**Water.** In winter, each lease that is wet-or-deep and unpumped floods with 10%
+chance per week (`flooded = true`, narrated). A pumped lease never floods, but the
+pump breaks with 3% chance per week: repair £8–£15 paid from treasury automatically
+if it can; if it cannot, the pump stands broken (flag off) until the treasury can,
+and the flood risk returns. Personal shafts (§17) lose the Bell portable pump:
+Bell **no longer sells pumps**; instead the Blackcap Ranges camp offers **"engage
+the pump-man"** (new action `hirePumpman`, £2 10s) which sets `shaft.pumped` on the
+player's current shaft. A pump still carried from an old save keeps working.
+
+**Plant.** Per-lease capital from treasury, action `installPlant`:
+- **Pumping plant** — £35. Required for deep/wet sinking and mining as above.
+- **Timber-work** — £20. Halves the cave-in chance on that lease.
+
+Company-wide, action `buyBattery`: **a stamping battery, £150** capital plus £3/week
+upkeep. Until it is owned, all crushing is paid for: **15% of every mining crew's
+gross revenue** goes in battery fees (`COMPANY_CRUSH_FEE`). The battery is the big
+mid-game capital decision the share float exists to finance.
+
+**Driving rate.** One company-wide policy, action `setDriving`,
+`'cautious' | 'ordinary' | 'hard'`: output ×0.8 / ×1.0 / ×1.3; cave-in chance
+×0.5 / ×1 / ×2; face consumed ×0.8 / ×1 / ×1.45. Hard driving on untimbered deep
+ground is how the disaster happens; cautious driving is how a thin treasury survives
+winter.
+
+**Mining week.** Each mining crew on an open, unflooded face wins
+`COMPANY_CREW_WEEK × (yieldNow/100) × drivingOut × rng.exponential()` gross; crushing
+fees off the top unless the battery is owned; `face` falls by the driving wear (when
+it reaches 0 the level is cut out and the mine waits on a decision — sink, drive, or
+stand idle, narrated once). Cave-ins as §19.2, halved by timber, scaled by driving;
+a cave-in also knocks 1 off `face`.
+
+**The books.** The company keeps `lastWeek` for the ledger pane:
+
+```ts
+interface WeekBooks {
+  revenue: number; crushing: number; wages: number;
+  development: number; upkeep: number; compensation: number; net: number;
+}
+```
+
+The company screen shows it as a ruled weekly statement (stone won, crushing and
+cartage, wages, development, upkeep, compensation, net) in place of the bare profit
+trail. Shares are the financing layer, exactly as §19.2: the battery and the deep
+levels are what the public's money is *for*.
+
+**Balance (amends §22 targets).** The magnate's year-one median falls to
+**£400–£700** (still above the aggressive shafter): development weeks earn nothing,
+crushing takes its slice, and plant eats the treasury. The payoff moves to year two:
+a held company worked deep through a second year should show median company value
+(player's holding + dividends taken) at least **×2** its end-of-year-one figure, and
+clearly beat selling out at year one and digging on. Bots: the magnate bot learns to
+sink, install plant and buy the battery; a two-year magnate variant is added to the
+harness. The tuning agent may report a target as unreachable with evidence and a
+trade-off curve rather than forcing it.
 
 ## 20. A year with a shape — the licence agitation (new)
 
 1854 boils. `agitation: number` 0–100:
 
 - +0.15/day from day 120; +2 whenever the player is stopped in a hunt; +1 per
-  Gazette licence story; capped at 100. Never falls before the confrontation.
-- Effects while rising: hunt chance ×(1 + agitation/250); Gazette runs escalating
+  Times licence story; capped at 100. Never falls before the confrontation.
+- Effects while rising: hunt chance ×(1 + agitation/250); Times runs escalating
   agitation stories (meetings, burned licences, the Commissioner's men jeered).
 - **Monster meeting**, first camp night in the window day 240–260: attend
   (+5 standing, agitation +5, tiny arrest risk if the player has a record) or keep
   to your tent.
-- **The stockade**, window day 330–345 (December): the diggers rise at **Snakey
-  Gully**. If the player is at any camp (or Fields Town) they must choose:
+- **The stockade**, window day 330–345 (December): the diggers rise at **Copperhead
+  Gully**. If the player is at any camp (or Slateford) they must choose:
   - **Join them**: 8% killed, 30% wounded (injury, severity 2), 25% arrested if the
     stockade falls (it always falls, faithfully to history — but the cause wins);
     survivors gain +30 standing, a journal entry to be proud of, and the epilogue
@@ -543,10 +659,10 @@ reads the Gazette ("The Golden Hope washed 31 oz for the week").
     company owners who sell supplies gain treasury but the −15 standing stings.
 - **Aftermath**, from day 350 (and all of year two): licence hunts **cease**. The
   Council sells a **miner's right — £1 for the year** replacing the 30s/30-day
-  licence. The Gazette reports the change. (Historically the licence died with the
+  licence. The Times reports the change. (Historically the licence died with the
   Eureka Stockade; the game's fiction follows.)
-- If the player is at Suze Port for the whole window it happens off-stage in the
-  Gazette; the aftermath still applies.
+- If the player is at Port Gannet for the whole window it happens off-stage in the
+  Times; the aftermath still applies.
 
 ## 21. UX pass (amends §15)
 
@@ -554,12 +670,12 @@ reads the Gazette ("The Golden Hope washed 31 oz for the week").
   END screen renders a 52-week sparkline in block glyphs (▁▂▃▄▅▆▇█) with start/peak/
   final figures — the shape of your year at a glance.
 - **Rate trend**: keep the last 14 days of `bankRate` (`rateTrail`). Kitty, bank and
-  Gazette show a period-idiom trend word ("gold is rising / easing / steady") plus
+  Times show a period-idiom trend word ("gold is rising / easing / steady") plus
   the direction over the week.
 - **Licence at a glance**: at any camp, the status line adds `Licence 12d` (or `NO
   LICENCE`). Starting a mining spell that will outlive the licence warns first:
   "your licence dies on Thursday, mid-spell."
-- **Map**: mark the player, pegged claims, an active rush ("a RUSH at Snakey
+- **Map**: mark the player, pegged claims, an active rush ("a RUSH at Copperhead
   Gully"), and the company's workings.
 - **Camp screens differ**: each camp screen leads with what is *distinct* there
   (freshness word, rush, puddling machine, company office) so moving feels like
@@ -625,13 +741,13 @@ Gates:
 
 | notoriety | unlocks |
 |---|---|
-| ≥ 15 | **`bailUp`** — lurk on a chosen road (Trickey's Track or the Pass) and stick up travellers |
-| ≥ 30 | **`makeHideout`** — a camp in the ranges beyond Deep Mountains: new pseudo-location `hideout`, safe sleep, a **stash** (the outlaw's bank) |
+| ≥ 15 | **`bailUp`** — lurk on a chosen road (Mercer's Track or the Pass) and stick up travellers |
+| ≥ 30 | **`makeHideout`** — **Split Rock Camp** beyond Blackcap Ranges: new pseudo-location `hideout`, safe sleep, a **stash** (the outlaw's bank) |
 | ≥ 45 | **`recruitGangMember`** (up to 3, at grog tents/sly-grog shanties) — no wage, each takes an equal share of gross takings; enable the big jobs; each is a possible informer |
-| ≥ 60 | **the big jobs**: `robBank` (Fields Town) and the capstone `robEscort` (Trickey's Track) |
+| ≥ 60 | **the big jobs**: `robBank` (Slateford) and the capstone `robEscort` (Mercer's Track) |
 
 At notoriety ≥ 40, victims sometimes hand over without a fight ("they knew the
-name": no resistance roll, +1 notoriety). The Gazette prints the player's **reward
+name": no resistance roll, +1 notoriety). The Times prints the player's **reward
 notice** once wanted: reward = £5 × notoriety/10, rounded to period-plausible sums
 (£20, £50, £100, £200, £500 cap), re-printed when it rises. The reward drives
 informer probability (§23.5).
@@ -657,11 +773,11 @@ they band together and carry less), hideout search chance (§23.4). While agitat
   unless the player chose to shoot), trooper patrol interruption (heat-scaled).
   Robbing **diggers** marks the field hostile (§23.5); a bandit may choose to let
   poor diggers pass ("a digger's pile is safe with me" — the sympathy play).
-- **`makeHideout`** (2 days, in Deep Mountains; needs tent + provisions). Adds
+- **`makeHideout`** (2 days, in Blackcap Ranges; needs tent + provisions). Adds
   `hideout: { stashPence, stashGold, discovered: boolean } | null`. At the hideout:
   sleep costs nothing and is safe, `stash`/`unstash` money and gold. Each week,
   search chance = camps-zone heat/100 × 0.15, halved per bushcraft rank; if found
-  while away, the stash is lost and the Gazette crows; if found while present, a
+  while away, the stash is lost and the Times crows; if found while present, a
   fight-or-flee encounter.
 - **`recruitGangMember`** / **`dismissGangMember`**: `gang: GangMember[]` (max 3),
   `{ name, joined, loyalty: number }`. Gross takings split equally with gang present
@@ -669,7 +785,7 @@ they band together and carry less), hideout search chance (§23.4). While agitat
   inform: chance = reward/£500 × 0.06 × (2 − loyalty), loyalty 0–1 rolled at recruit,
   +0.1 per job they share fairly in. An informer sets the ambush flag on the
   player's next big job (troopers waiting) and quits.
-- **`gatherIntelligence`** (1 day, at the Shamrock via a harbourer or a sly-grog
+- **`gatherIntelligence`** (1 day, at the Crown & Cradle via a harbourer or a sly-grog
   shanty, costs 5s in shouted drinks): learns one of — the escort's next run day and
   strength (needed before `robEscort` at better than blind odds), whether the bank's
   gold room is full (bank job payout ×1.5 window), or a rich traveller due on a road
@@ -680,15 +796,15 @@ they band together and carry less), hideout search chance (§23.4). While agitat
   rate while merely criminal. The scales-cheating game inverts: now *he* is the one
   short-weighted.
 - **Big jobs** (notoriety ≥ 60, full gang, guns for all — buy them, horses advised):
-  - **`robBank`** (Fields Town, 1 day): base take £150–£400 (×1.5 in a full-gold-room
+  - **`robBank`** (Slateford, 1 day): base take £150–£400 (×1.5 in a full-gold-room
     window); 35% base failure (troopers/armed clerk) → fight: wounds, possible
     capture. Success: +15 notoriety, town heat +25, `outlawed` set.
-  - **`robEscort`** (the capstone; Trickey's Track; must hold intelligence of the
+  - **`robEscort`** (the capstone; Mercer's Track; must hold intelligence of the
     run): 2 days' ride and ambush. Take **£1000–£4000** equivalent in gold, split
     with the gang. Without intelligence it is a blind 15% chance of even meeting the
     escort; with it, success 55% (+10% if all mounted, −ambush flag −30%). Failure:
     running fight — each participant 15% killed, 30% wounded; player capture 30% on
-    failure. Success: +25 notoriety, all-zones heat +25, `outlawed` set, a Gazette
+    failure. Success: +25 notoriety, all-zones heat +25, `outlawed` set, a newspaper
     front page for the ages.
 
 ### 23.5 Sympathy vs. the reward — the moral texture
@@ -716,8 +832,8 @@ flat `pursuitRisk`): troopers at the lodging house, a party of police on the roa
 the hideout raid. Capture while outlawed → the **assizes** (not the monthly
 magistrate):
 
-- **Hanged** if blood was shed (a trooper or victim killed) — the Gazette obituary
-  runs a ballad verse; game over `dead`, cause "hanged at the Fields Town assizes".
+- **Hanged** if blood was shed (a trooper or victim killed) — the Times obituary
+  runs a ballad verse; game over `dead`, cause "hanged at the Slateford assizes".
 - Otherwise **years' hard labour**: game over `finished`, epilogue "the road ends in
   the hulks"; the year tally shows what the Crown confiscated (everything not
   stashed).
@@ -727,7 +843,7 @@ magistrate):
 
 Chosen endings:
 
-- **Got away clean**: at Suze Port, `buyPassage` (£20, under a false name) — sail for
+- **Got away clean**: at Port Gannet, `buyPassage` (£20, under a false name) — sail for
   California. Recognition chance at the gangway = notoriety/200 (halved if bushcraft
   captain). Success: game over `finished`, victory epilogue; **net worth counts only
   what he got out** (hand + stash — the bank kept anything left there, claims and
@@ -741,7 +857,7 @@ Chosen endings:
 
 ## 25. Balance & harness additions (amends §14/§22 — all prior targets still hold)
 
-New bot **bushranger**: turns criminal early at Suze Port, buys gun and horse, farms
+New bot **bushranger**: turns criminal early at Port Gannet, buys gun and horse, farms
 the roads (rotating on heat), makes a hideout, recruits, gathers intelligence,
 attempts the escort when able, tries the California exit at year end. Targets over
 seeded runs:
@@ -765,7 +881,7 @@ terminates; save `v` → 3 with migration defaulting all new fields (`notoriety`
 
 The third ladder. The company (§19) makes the player a capitalist and the dark ladder
 (§23) makes him a captain, but both leave the *world* untouched: towns, prices, roads,
-rushes and the Gazette act on him and never the reverse. §26–§29 add the missing tier —
+rushes and the Times act on him and never the reverse. §26–§29 add the missing tier —
 **status sinks**: large spends of money (gated by standing, §18.2) whose payoff is not a
 yield multiplier but a rewrite of the world's own rules. Identity arc: **digger → man of
 property → notable of the fields**.
@@ -795,13 +911,13 @@ interface Estate {
 All purchases at the named premises; all require legal status **honest or petty
 criminal** (respectability is bought with clean money — a wanted man is refused
 everywhere; his sinks live in §28.3). Estate counts in `netWorth` at purchase price.
-Each purchase: journal entry, Gazette story, and the deed named in the kitty.
+Each purchase: journal entry, newspaper story, and the deed named in the kitty.
 
-- **The Shamrock Hotel** — **£250**, standing ≥ 40, at Fields Town. Mrs. Doyle stays on
+- **The Crown & Cradle** — **£250**, standing ≥ 40, at Slateford. Mrs. Doyle stays on
   to run it. Weekly takings £2–£6 (×1.5 while any rush runs — thirsty diggers), paid
   wherever the player is. The world-rewrite: **all rumour traffic now flows to the
   owner** — secret-mine rumours arrive pre-graded (the barman hears which teller was
-  drunk: genuine/hoax revealed), rush news arrives **2 days before** the Gazette prints
+  drunk: genuine/hoax revealed), rush news arrives **2 days before** the Times prints
   it (peg ahead of the crowd, §17.2), and `gatherIntelligence` (§23.4) is free and
   discreet. Liability: brawl damages £1–£5 some weeks; if agitation > 70 the troopers
   lean on licensed houses (one shakedown event, £5 or +5 agitation).
@@ -811,13 +927,13 @@ Each purchase: journal entry, Gazette story, and the deed named in the kitty.
   New verb `setStorePolicy`: **fair dealing** (profit ×1, +0.5 standing/week, the camp's
   night-theft rolls against *you* halved — the field protects its honest man) or
   **gouge** (profit ×2, −0.5 standing/week, claim-jump and theft rolls against you
-  +25% — the field remembers). The player buys own-kit at cost (Suze Port prices) at
+  +25% — the field remembers). The player buys own-kit at cost (Port Gannet prices) at
   their store. A worked-over camp (freshness < 0.5) makes the store a dying concern —
   depletion pushes the storekeeper too.
-- **A half-share in The Angus Gazette** — **£200**, standing ≥ 50, at Fields Town.
+- **A half-share in The Slateford Times** — **£200**, standing ≥ 50, at Slateford.
   Trivial income (£1/week); the point is the **press**. New verb `placeStory`
-  (1 day, at Fields Town, max one story per 14 days):
-  - **Talk up a camp**: the Gazette cries a strike at a chosen camp → a **called rush**
+  (1 day, at Slateford, max one story per 14 days):
+  - **Talk up a camp**: the Times cries a strike at a chosen camp → a **called rush**
     (§17.2 rush, factor 1.3–1.7) begins there in 2 days. The player knows it's paper;
     the field doesn't. If the camp's true freshness < 0.6 the rush collapses in a week
     of duffer ground and the field learns whose paper called it: **−15 standing**, no
@@ -830,22 +946,22 @@ Each purchase: journal entry, Gazette story, and the deed named in the kitty.
     boil-over cannot be printed away; history still happens).
   - **Kill a reward notice** (merely criminal, not `outlawed`): the player's own
     misdeeds go unprinted — all heat zones decay ×2 for 14 days. Once per year; if
-    later outlawed, the Gazette's rival prints *that* he bought silence: notoriety +5,
+    later outlawed, a rival paper prints *that* he bought silence: notoriety +5,
     standing −20.
 
 ## 27. Public works — striking rules from the dice (new)
 
-Subscribed at the **Council Chambers** (the Council puts up a plaque; the Gazette
+Subscribed at the **Council Chambers** (the Council puts up a plaque; the Times
 prints the subscription list with the player's name at its head). Pure sinks — no
 income, ever. Each grants **+10 standing**, a journal entry, and a permanent,
 field-wide rule change:
 
 | work | cost | the rule it strikes |
 |---|---|---|
-| **Bridge over Blue River** | £120 | winter bogging/flood-crossing events on the Fields Town–Damp Camp leg **removed for all travel** (player, escort, everyone); that leg costs half a day |
-| **Water race to a chosen camp** | £80 | at that camp: summer thirst and dust events halved, **Sandy Blight struck from its event table**, puddling works year-round (§9), camp freshness decay −25% (water washes more ground) |
-| **A ward at Calico House** | £100 | treatment **free for the subscriber, half-price for the field**; dysentery/typhoid base rates at all camps ×0.8 (the sick are carted out before it spreads) |
-| **A school at Fields Town** | £60 | pure standing (+15 total) and the epilogue's warmest line; year two: one educated youngster turns up as the best mate/crew hire in the game (wage-free mate, loyalty 1.0) |
+| **Bridge over Slate River** | £120 | winter bogging/flood-crossing events on the Slateford–Reedbank Camp leg **removed for all travel** (player, escort, everyone); that leg costs half a day |
+| **Water race to a chosen camp** | £80 | at that camp: carried water is no longer consumed, summer thirst and dust events halved, **Sandy Blight struck from its event table**, puddling works year-round (§9), camp freshness decay −25% (water washes more ground) |
+| **A ward at Canvas House** | £100 | treatment **free for the subscriber, half-price for the field**; dysentery/typhoid base rates at all camps ×0.8 (the sick are carted out before it spreads) |
+| **A school at Slateford** | £60 | pure standing (+15 total) and the epilogue's warmest line; year two: one educated youngster turns up as the best mate/crew hire in the game (wage-free mate, loyalty 1.0) |
 
 Works persist into year two. The map (§21) marks them. When a struck event *would*
 have fired, occasionally narrate the absence ("the coach rolls over Vun's Bridge;
@@ -861,17 +977,17 @@ In the **aftermath** (§20, day ≥ 350) or year two, at the Council Chambers:
 one §26 property or two §27 works held. Costs a **£50 subscription** to the Court
 fund. The player is gazetted J.P.:
 
-- Once per month, a **court day** at Fields Town (1 day): 2–3 cases drawn from the
+- Once per month, a **court day** at Slateford (1 day): 2–3 cases drawn from the
   game's own event tables (a licence dodger — year two vagrants, a claim-jumper, a
-  drunk who wrecked the Shamrock, a captured bushranger). Verb per case: **leniency**
+  drunk who wrecked the Crown & Cradle, a captured bushranger). Verb per case: **leniency**
   (camps heat −5, agitation −3, +1 standing with the field) or **severity** (town
   heat −8, theft/claim-jump event rates −10% for 30 days, −1 standing — the field
   respects but does not love a hard bench).
 - The player's own petty scrapes are quietly no-billed (fines waived while J.P.);
-  being *convicted* of anything real forfeits the commission, −30 standing, Gazette
+  being *convicted* of anything real forfeits the commission, −30 standing, Times
   front page.
 - The kitty's resume line becomes the ladder's summit: "arrived a new chum; sits on
-  the Fields Town bench now."
+  the Slateford bench now."
 
 ### 28.2 Epilogue (amends END)
 
@@ -879,7 +995,7 @@ The END tally gains an **Estate** section: properties, works (with plaque lines)
 the commission. Epilogue precedence when multiple ladders were climbed: hanged/dead >
 California > company sold out > **J.P./notable** > company held > captain at large >
 old hand > survivor. A notable's epilogue is about the *town*, not the pile: what
-Fields Town looks like because he was there.
+Slateford looks like because he was there.
 
 ### 28.3 The dark mirror (amends §23)
 
@@ -891,7 +1007,7 @@ same design law (world-rewrite, not multiplier):
   free, and the shanty's harbourers extend the §23.5 patrol warning to *every* week
   regardless of the diggers-robbed rule. If troopers raid it (camps heat > 60,
   4%/week) the £80 is ash.
-- **Retain a lawyer in Fields Town** — **£60/quarter**, via the shanty: at the
+- **Retain a lawyer in Slateford** — **£60/quarter**, via the shanty: at the
   assizes (§24) "years' hard labour" becomes a defended trial — 35% acquitted
   (walk free, notoriety +8), else sentence stands. Hanging is never lawyered away
   (blood is blood).
@@ -914,9 +1030,9 @@ day ~150, works and subscribes, takes the commission when offered. Targets:
 Invariants: at most one store, one shanty; J.P. ⇒ honest at gazettal; estate values
 ≥ 0. Save `v` → 4; migration defaults `estate` to empty, no works, `jpSince` null.
 
-## 30. Life at the Shamrock (amends §8.6, §26)
+## 30. Life at the Crown & Cradle (amends §8.6, §26)
 
-The Shamrock currently sells two verbs (drink, gamble) and treats every man the same.
+The Crown & Cradle currently sells two verbs (drink, gamble) and treats every man the same.
 It becomes the room where the game **reflects the player's name back at him** — the
 social readout for all three ladders, and home of the period's most authentic status
 sink: *shouting the bar*.
@@ -930,7 +1046,7 @@ taller), before the menu:
 |---|---|
 | standing < 15 | **new chum**: nobblers watered (drink costs full price, half effect), card sharps seek him out (gambling odds worsened ~5%), nobody talks (rumours vague or absent) |
 | 15–39 | **known face**: fair measures, straight games, ordinary rumour access |
-| 40–59 | **a respected man**: the settlers' corner; rumours arrive unasked (one free Gazette-grade item per visit); parlour gambling unlocked — higher stakes (£1–£5 a hand) against squatters and warders, fair odds |
+| 40–59 | **a respected man**: the settlers' corner; rumours arrive unasked (one free newspaper-grade item per visit); parlour gambling unlocked — higher stakes (£1–£5 a hand) against squatters and warders, fair odds |
 | ≥ 60 | **the field's own**: some nights the room shouts *him* (free drink, +1 health, flavour); the landlord's table — one `gatherIntelligence`-grade item per week, free, honest-flavoured |
 | notoriety ≥ 40 | the dark mirror: benches clear, talk stops; if `diggersRobbed === 0` an admirer stands him a drink and a warning ("the traps were asking after a man of your description" — next pursuit event telegraphed); any drinking visit while wanted: 4% an informer slips out (one pursuit event within 3 days) |
 
@@ -939,7 +1055,7 @@ reception-tier rumour benefits at one tier above his standing.
 
 ### 30.2 Shouting the bar — the authentic sink
 
-New verb `shoutTheBar` (evening, at the Shamrock or any camp grog tent):
+New verb `shoutTheBar` (evening, at the Crown & Cradle or any camp grog tent):
 
 - **Shout the room** — cost `2s × heads present` (roughly £1–£3 town, 10s–£1 camp
   tents): +2 standing (capped: shouts count at most once per 14 days — generosity
@@ -947,13 +1063,13 @@ New verb `shoutTheBar` (evening, at the Shamrock or any camp grog tent):
   the night passes merrily (+2 health, unless already drunk).
 - **The spree** — the full gold-mad performance, £15–£25: champagne at 30s the bottle
   for the whole house, the fiddler paid to play till dawn. +5 standing (same 14-day
-  cap shared with shouts), a **Gazette paragraph** ("a lucky digger entertained the
+  cap shared with shouts), a **paragraph in the Times** ("a lucky digger entertained the
   town royally on Tuesday night"), a journal entry, next day lost with a sore head
   (−5 health) — and the town *knows he's flush*: theft/bail-up rolls against him +25%
   for 7 days. Faithful to the sources' men who "have eaten £10 notes in mutton"
   sandwiches; the copy should reach for exactly that register.
-- If the player **owns the Shamrock** (§26): shouting his own house costs half (the
-  wholesale price of generosity) and spree Gazette lines mention the house — takings
+- If the player **owns the Crown & Cradle** (§26): shouting his own house costs half (the
+  wholesale price of generosity) and spree reports in the Times mention the house — takings
   ×1.25 the following week.
 - Bandit colour: a wanted man shouting a sly-grog shanty (same costs via the fence's
   prices) buys **loyalty, not standing** — every gang member present +0.1 loyalty
@@ -973,10 +1089,10 @@ should *voice* them. Contract (all from `journal.txt`):
 
 1. **The licence scandal is arithmetic**: 30s/month = 1s/day = £18/year, "when a
    labourer's wage is five shillings a week, and shepherds receive a miserable ten
-   pounds a year". The colonial baseline wage is **5s/week**; the Gazette's licence
+   pounds a year". The colonial baseline wage is **5s/week**; the licence story in the Times
    stories and the agitation copy (§20) must quote this sum. Boom wages (port 2s–4s
    a day, town 3s–6s) stand — the Journal's own reason: "workers are scarce, the
-   wages are good" — but at least one Suze Port narration should marvel at earning
+   wages are good" — but at least one Port Gannet narration should marvel at earning
    "a shepherd's month in a week".
 2. **A night's bed costs days of wages** (why the new chum sleeps rough): dormitory
    10s, stable 5s, tent-ground 5s/week — already faithful; never soften them.
@@ -986,7 +1102,7 @@ should *voice* them. Contract (all from `journal.txt`):
    narration says so). Flour at £20 the hundredweight is the quotable spike.
 4. **Drink is priced nowhere in §11** — add:
 
-   | drink | Suze Port | Shamrock | camp grog tent / sly-grog |
+   | drink | Port Gannet | Crown & Cradle | camp grog tent / sly-grog |
    |---|---|---|---|
    | nobbler (brandy) | 6d | 1s | 1s 6d |
    | pot of ale | 4d | 6d | 1s |
@@ -1006,13 +1122,13 @@ should *voice* them. Contract (all from `journal.txt`):
 Harness addition: a **relativity assertion** — over seeded years, median honest
 *daily* digging take at a fair claim must sit between the town daily wage and 3× it
 (digging must tempt, not guarantee — the Journal's whole argument for why the wharves
-empty), and one week of camp provisions must never fall below 2× Suze Port's price.
+empty), and one week of camp provisions must never fall below 2× Port Gannet's price.
 
 ---
 
 # HEARTH & KIN — THE COURTSHIP ANCHOR (§32)
 
-Suze Port is early game only: cheap kit, wages, then the road, returning only to sell
+Port Gannet is early game only: cheap kit, wages, then the road, returning only to sell
 salvage or flee. §32 makes it the game's **hearth** — the mid/late-game anchor and a
 motivation the tally cannot measure. The player is a new chum who came out alone; the
 year can end with a household he built. Sources: the Journal's *Goldfields Women*
@@ -1039,7 +1155,7 @@ interface Hearth {
   intended: Intended | null;     // the person courted / married
   rung: 'none' | 'acquainted' | 'courting' | 'betrothed' | 'wed' | 'settled'
       | 'estranged';
-  cottage: boolean;              // the Suze Port household exists
+  cottage: boolean;              // the Port Gannet household exists
   nextEvent: HearthEvent | null; // one dated pull at a time
   eventsKept: number; eventsMissed: number;
   homeStashPence: number; homeStashGold: number;
@@ -1055,24 +1171,28 @@ interface Intended {
 
 - **Meeting** (rung → `acquainted`): the game introduces exactly one prospective
   partner at a time, through surfaces the player already inhabits — a **subscription
-  ball** at Fields Town (Gazette-announced, 2–3 per year, ticket 5s, standing ≥ 25
+  ball** at Slateford (announced in the Times, 2–3 per year, ticket 5s, standing ≥ 25
   to be received; the ball is also a §30-grade social night for anyone), the
-  Shamrock's respected corner (§30.1 tier, standing ≥ 40), being nursed at Calico
+  Crown & Cradle's respected corner (§30.1 tier, standing ≥ 40), being nursed at Canvas
   House, or Lin Wu's garden. She is the Journal's astute businesswoman — a
-  storekeeper's daughter keeping her father's books, a nurse from Calico House, a
+  storekeeper's daughter keeping her father's books, a nurse from Canvas House, a
   widow who runs a boarding house — rolled with a name, trade and manner. Her
-  people are at **Suze Port**; if nothing comes of the meeting, nothing comes of it.
+  people are at **Port Gannet**; if nothing comes of the meeting, nothing comes of it.
 - **Paying addresses** (`payAddresses`, then `callAtThePort`): courting means
-  calling at Suze Port — each call a dated window the player requests (2–7 days,
+  calling at Port Gannet — each call a dated window the player requests (2–7 days,
   ~3–4 weeks apart, printed in a letter). A call is an evening of period scenes
   (walking the esplanade, tea with her people, her opinion of the diggings — copy
   keyed to her trade and manner). After **2–3 kept calls**, *she decides*:
   betrothal is her consent, weighed openly on standing, record, and calls kept —
   and she may decline with reasons ("she'd not follow a man she has met thrice to
-  a tent at Snakey Gully"). Small gifts (≤ 5s, from her trade's wants) colour a
-  call; anything lavish cools it — **"she is nobody's purchase"** — the one
-  mechanic that punishes spending.
-- **Banns & wedding**: `betrothed` → banns read at Suze Port (Gazette line) → the
+  a tent at Copperhead Gully"). Small gifts (≤ 5s, from her trade's wants) colour a
+  call. A **lavish** gift is read in context, not by its price: rare, and from a
+  man whose name she already knows (standing ≥ 30), it lands as plain generosity —
+  a warm scene, nothing more. Press a second one on her inside the month, or offer
+  one before your name has earned it, and it cools the courtship — **"she is
+  nobody's purchase."** Either way her consent is never bought: money moves the
+  roll not at all, in any direction.
+- **Banns & wedding**: `betrothed` → banns read at Port Gannet (Times line) → the
   wedding (dated window, **£10–£20**, a §30-style shout, +3 standing, journal
   entry) → `wed`. A record worse than petty criminal and her family refuses the
   banns (she may not — §32.5).
@@ -1081,7 +1201,7 @@ interface Intended {
   reasons plain, no meter shown or kept. One courtship per year at most; a broken
   one does not re-roll a new suitor for 60 days, and never re-rolls the same one.
 
-**The cottage** (`buyCottage`, Suze Port, **£60–£120** by size) houses them; rung
+**The cottage** (`buyCottage`, Port Gannet, **£60–£120** by size) houses them; rung
 `settled` = wed + cottage. She keeps her trade after the wedding (faithful — "free
 women doing similar work to the men"): the household supports itself, **no weekly
 drain**; what the player leaves or sends is his choice (§32.3).
@@ -1091,15 +1211,15 @@ drain**; what the player leaves or sends is his choice (§32.3).
 All require `cottage` and rung ≥ `wed`/`settled`:
 
 - **Home strikes the port's dice**: sleeping at the cottage is free and safe (the
-  10s dormitory, stable, and sleep-rough illness/theft rolls all struck at Suze
-  Port); `homeStash` is theft-proof storage — a second bank at the port end (and
+  10s dormitory, stable, and sleep-rough illness/theft rolls all struck at Port
+  Gannet); `homeStash` is theft-proof storage — a second bank at the port end (and
   the outlaw's only honest-side vault, §32.5).
 - **Hearth convalescence**: resting at home heals **+6 health/day** (best in the
-  game, better than Calico House) and costs nothing. Gravely-ill carting (§12) goes
-  to the *cottage* instead of Calico House if the player is at Suze Port or on the
+  game, better than Canvas House) and costs nothing. Gravely-ill carting (§12) goes
+  to the *cottage* instead of Canvas House if the player is at Port Gannet or on the
   port side of the map — illness now pulls him home.
-- **The port agent** (`consignGoods`, at Fields Town via Briggs' Express, 2s
-  freight): track-salvage and goods sell at **Suze Port prices without the trip**;
+- **The port agent** (`consignGoods`, at Slateford via Bell's Freight, 2s
+  freight): track-salvage and goods sell at **Port Gannet prices without the trip**;
   gold may be consigned to the homeStash (escort-safe). This is *her* acumen, and
   her trade colours which arm is strongest (flavour-sized, not a ranking): the
   storekeeper's daughter clears consignments at the best figure; the nurse's
@@ -1107,8 +1227,8 @@ All require `cottage` and rung ≥ `wed`/`settled`:
   hears the wharves — newly-landed labour calls at your door first, and hiring a
   mate or crew within 7 days of any ship's docking rolls the **best-quality hire
   in the game** (year two: the §27 schoolhouse youngster arrives this way).
-- **Letters** — a channel mirroring the Gazette, collected at any post office
-  (Suze Port, Fields Town) for 1d: family news in period voice, every dated event
+- **Letters** — a channel mirroring the Times, collected at any post office
+  (Port Gannet, Slateford) for 1d: family news in period voice, every dated event
   printed ahead, and the emotional ledger — letters warm or cool with
   `eventsKept/Missed` and remittances. Mail day at the camps (weekly) announces
   waiting letters by name.
@@ -1116,7 +1236,7 @@ All require `cottage` and rung ≥ `wed`/`settled`:
 ## 32.3 The pull calendar — 3–5 events a year, one collision
 
 `nextEvent` schedules at most one dated pull at a time, ~3–5 per year total, each a
-2–7 day window at Suze Port: the calls while courting, the banns and the wedding,
+2–7 day window at Port Gannet: the calls while courting, the banns and the wedding,
 **Christmas at the hearth** (day ~359 — deliberately inside the stockade
 aftermath), a birth (year two, or late year one if wed early), a sickbed (the
 Scally shadow: wife or child down with typhoid — being there + paying a real
@@ -1182,8 +1302,9 @@ Targets:
 - assertion: missing every event costs **£0 and 0 health** versus keeping none
   scheduled (no punishment loops — only rung/epilogue divergence);
 - assertion: total money spent during courtship has **zero effect** on her consent
-  roll (gifts are flavour; lavish spending strictly cools — the taste law is
-  load-bearing and tested);
+  roll (gifts are flavour; a *pattern* of lavishness — repeated inside the month,
+  or lavish while standing < 30 — strictly cools, while a rare well-earned one
+  never helps nor harms consent — the taste law is load-bearing and tested);
 - assertion: `consignGoods` + port-agent hiring make a rush-chaser-with-hearth
   within 10% of the plain rush chaser's median (the anchor must not tax the
   ambitious into ignoring it);
@@ -1191,5 +1312,5 @@ Targets:
 
 Invariants: at most one hearth, one intended at a time; `estranged` is reachable
 only through missed events or her stated reasons, never through poverty; homeStash
-≥ 0; save `v` → 5, migration defaults `hearth` to `{ intended: null, rung: 'none' }`
+≥ 0; save `v` → 6, migration defaults `hearth` to `{ intended: null, rung: 'none' }`
 with empty fields.

@@ -195,18 +195,22 @@ export function makeRun(state: GameState, rng: RNG, log: Log): 'escaped' | 'logs
  * Chained to the logs to await the travelling magistrate (faithful), then the
  * fine, or thirty days' hard labour if you cannot pay.
  */
-export function toTheLogs(state: GameState, rng: RNG, log: Log): void {
+export function toTheLogs(
+  state: GameState,
+  rng: RNG,
+  log: Log,
+  advanceKept: (days: number) => void = (days) => { state.day += days; },
+): void {
   state.stats.timesArrested += 1;
   log.say('trooper.logs', undefined, 'bad');
   const wait = daysUntilMagistrate(state.day);
   state.onLogs = true;
   state.logsSince = state.day;
-  state.day += wait;
   state.location = 'fields-town';
   state.journey = null;
+  advanceKept(wait);
   damage(state, Math.round(wait * 0.5), 'the logs');
   checkYearEnd(state);
-  state.provisionDays = Math.max(0, state.provisionDays - wait);
   log.raw(
     `You wait ${wait} day${wait === 1 ? '' : 's'} in irons, fed on gaol rations, while the field goes on being dug by other men.`,
     'bad',
@@ -237,7 +241,7 @@ export function toTheLogs(state: GameState, rng: RNG, log: Log): void {
     addJournal(state, `Fined ${formatMoney(fine)} for digging without a licence.`, 'bad');
   } else {
     log.say('court.hardlabour', undefined, 'bad');
-    state.day += HARD_LABOUR_DAYS;
+    advanceKept(HARD_LABOUR_DAYS);
     damage(state, rng.int(10, 22), 'the chain gang');
     worsen(state, log, 2);
     addJournal(state, 'Thirty days on the chain gang, breaking rock.', 'bad');
@@ -263,10 +267,15 @@ export function pursuitRisk(state: GameState): number {
  * What follows being taken. A proclaimed outlaw does not wait on the monthly
  * magistrate; he waits on the assizes, and they hang men (§24).
  */
-export function toGaol(state: GameState, rng: RNG, log: Log): void {
+export function toGaol(
+  state: GameState,
+  rng: RNG,
+  log: Log,
+  advanceKept?: (days: number) => void,
+): void {
   if (state.outlawed) {
-    captured(state, rng, log, 'town');
+    captured(state, rng, log, 'town', advanceKept);
     return;
   }
-  toTheLogs(state, rng, log);
+  toTheLogs(state, rng, log, advanceKept);
 }

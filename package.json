@@ -1,9 +1,9 @@
 {
-  "name": "goldfields",
+  "name": "goldrush",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "A faithful web clone of Goldfields (Jacaranda Software, 1986, by Trevor K. Jacob)",
+  "description": "An 1854 Australian gold-rush life simulation",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",

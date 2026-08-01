@@ -460,7 +460,7 @@ describe('standing on the field', () => {
     expect(state.partner).toBe(true);
   });
 
-  it('earns visible Briggs discount tiers through days served, not general standing', () => {
+  it('earns visible Bell discount tiers through days served, not general standing', () => {
     const state = createInitialState(55);
     state.location = 'fields-town';
     const full = priceOf(state, 'cradle');
@@ -473,7 +473,7 @@ describe('standing on the field', () => {
 });
 
 describe('a partner', () => {
-  it('takes a quarter of the gold and no wage at all', () => {
+  it('takes half the gold and no wage at all', () => {
     const { state, rng, log } = atCamp('damp-camp', 56);
     state.standing = 100;
     state.claims['damp-camp'] = { quality: 200, workedDays: 0, peggedOn: 1, proven: false };

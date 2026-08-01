@@ -78,7 +78,7 @@ function notable(seed = 11): { state: GameState; rng: RNG; log: Log } {
 // ---------------------------------------------------------------------------
 
 describe('buying a seat at the table (§26)', () => {
-  it('sells the Shamrock only at Fields Town, to a known and honest man with the money', () => {
+  it('sells the Crown & Cradle only at Slateford, to a known and honest man with the money', () => {
     const { state, log } = notable();
     expect(buyShamrock({ ...state, location: 'damp-camp' }, log)).toBe(false);
     expect(buyShamrock({ ...state, standing: 20 }, log)).toBe(false);
@@ -204,7 +204,7 @@ describe('the press (§26)', () => {
     return ctx;
   }
 
-  it('is refused to a man who does not own half of it, or is not in Briggs Street', () => {
+  it('is refused to a man who does not own half of it, or is not in Bell Street', () => {
     const { state, rng, log } = notable();
     expect(placeStory(state, rng, log, 'soothe')).toBe(false);
     const { state: p, rng: r2, log: l2 } = proprietor();
@@ -230,7 +230,7 @@ describe('the press (§26)', () => {
     const before = state.freshness['damp-camp'];
     freshnessTick(state);
     expect(state.freshness['damp-camp']).toBeLessThanOrEqual(before);
-    expect(getView(state).body.join(' ')).not.toMatch(/RUSH at Damp Camp/i);
+    expect(getView(state).body.join(' ')).not.toMatch(/RUSH at Reedbank Camp/i);
 
     // And then it is a real rush, and lifts the ground.
     state.day += CALLED_RUSH_DELAY_DAYS;
@@ -333,7 +333,7 @@ describe('public works strike rules from the dice (§27)', () => {
     expect(hasWork(state, 'waterRace', 'damp-camp')).toBe(false);
   });
 
-  it('takes the winter out of the Damp Camp leg for everybody on it', () => {
+  it('takes the winter out of the Reedbank Camp leg for everybody on it', () => {
     const { state, log } = subscriber();
     const winterRun = (s: GameState, seed: number): number => {
       let bogged = 0;
@@ -402,7 +402,7 @@ describe('public works strike rules from the dice (§27)', () => {
     expect(lad.events.some((e) => e.id === 'works.school.lad')).toBe(true);
   });
 
-  it('makes Calico House free to the man who endowed the ward', () => {
+  it('makes Canvas House free to the man who endowed the ward', () => {
     const { state, log } = subscriber();
     expect(hospitalFee(state)).toBeGreaterThan(0);
     subscribeWork(state, log, 'ward');
@@ -585,10 +585,10 @@ describe('the civic ladder through the reducer', () => {
     const view = getView({ ...state, screen: 'end' });
     const body = view.body.join('\n');
     expect(body).toMatch(/THE ESTATE — WHAT YOUR NAME IS ON/);
-    expect(body).toMatch(/Shamrock Hotel/);
-    expect(body).toMatch(/BLUE RIVER BRIDGE/);
+    expect(body).toMatch(/Crown & Cradle/);
+    expect(body).toMatch(/SLATE RIVER BRIDGE/);
     expect(body).toMatch(/Justice of the Peace/);
-    expect(body).toMatch(/sits on the Fields Town bench now/);
+    expect(body).toMatch(/sits on the Slateford bench now/);
   });
 
   it('gives the notable his own last paragraph, above a company still held', () => {
@@ -613,14 +613,14 @@ describe('the civic ladder through the reducer', () => {
     old.v = 3;
     delete old.estate;
     const migrated = deserialise(JSON.stringify(old));
-    expect(migrated?.v).toBe(5);
+    expect(migrated?.v).toBe(6);
     expect(migrated?.estate.shamrock).toBe(false);
     expect(migrated?.estate.store).toBeNull();
     expect(migrated?.estate.works).toEqual([]);
     expect(migrated?.estate.jpSince).toBeNull();
   });
 
-  it('gives the landlord of the Shamrock the rush two days before the Angus has it', () => {
+  it('gives the landlord of the Crown & Cradle the rush two days before the Times has it', () => {
     const { state, rng, log } = notable(91);
     buyShamrock(state, log);
     state.rush = {

@@ -108,8 +108,8 @@ export function beginJourney(
 }
 
 /**
- * Whether this leg is the one the subscribers bridged: Fields Town to Damp
- * Camp, over the Blue River, where the ford used to swallow wheels (§27).
+ * Whether this leg is the one the subscribers bridged: Slateford to Damp
+ * Camp, over the Slate River, where the ford used to swallow wheels (§27).
  */
 export function bridged(state: GameState, from: LocationId, to: LocationId): boolean {
   if (!hasWork(state, 'bridge')) return false;
@@ -148,7 +148,7 @@ export function travelOneDay(state: GameState, rng: RNG, log: Log): TravelStop {
   }
 
   // --- the road itself -------------------------------------------------
-  // The Blue River bridge takes the winter out of the Damp Camp leg, for the
+  // The Slate River bridge takes the winter out of the Reedbank Camp leg, for the
   // player and for every bullocky on it (§27). Now and then he is shown it.
   if (bridged(state, j.from, j.to) && s === 'winter') {
     if (rng.chance(0.2)) log.say('works.bridge.absence', undefined, 'good');
@@ -177,7 +177,7 @@ export function travelOneDay(state: GameState, rng: RNG, log: Log): TravelStop {
     log.say('travel.hack.suffers', undefined, 'bad');
     if (rng.chance(0.25)) {
       state.horse = 'none';
-      log.raw('The hack is done for. You go on afoot, poorer by twenty-five pounds.', 'bad');
+      log.raw('The tall chestnut is done for. You go on afoot, poorer by twenty-five pounds.', 'bad');
       j.daysLeft += 2;
     }
   } else if (rng.chance(0.07)) {
@@ -222,7 +222,7 @@ export function arrive(state: GameState, log: Log): void {
   state.journey = null;
   if (j.to === 'fields-town') {
     log.say('travel.arrive.ftown', undefined, 'good');
-    addJournal(state, 'Came down into Fields Town at last.', 'good');
+    addJournal(state, 'Came down into Slateford at last.', 'good');
   } else if (j.to === 'suze-port') {
     log.say('travel.arrive.suze', undefined, 'neutral');
   } else if (j.to === 'hideout') {
@@ -238,12 +238,12 @@ export function arrive(state: GameState, log: Log): void {
   }
 }
 
-/** Days between Fields Town and a camp (or between camps). */
+/** Days between Slateford and a camp (or between camps). */
 export function localTravelDays(state: GameState, to: LocationId): number {
-  // The secret mine is a hard journey in both directions; coming back out of
+  // Widow's Reef is a hard journey in both directions; coming back out of
   // the desert is no shorter than going in.
   if (to === 'secret-mine' || state.location === 'secret-mine') return SECRET_TRAVEL_DAYS;
-  // The ranges beyond the Deep Mountains: two days up, and two days down.
+  // The ranges beyond the Blackcap Ranges: two days up, and two days down.
   if (to === 'hideout' || state.location === 'hideout') {
     const near = to === 'deep-mountains' || state.location === 'deep-mountains';
     const days = near ? HIDEOUT_TRAVEL_DAYS : HIDEOUT_TRAVEL_DAYS + 1;

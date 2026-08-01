@@ -18,7 +18,7 @@ import { pursuitRisk } from './law';
 import { formatGold, formatMoney, goldValue, pounds } from './money';
 import type { Log } from './narrate';
 import type { RNG } from './rng';
-import { addJournal, betrayalFactor, hasWork, isCamp } from './state';
+import { addJournal, betrayalFactor, hasWork, isCamp, lodgingAt } from './state';
 import { season } from './time';
 import { CAMPS, type CampId, type GameState } from './types';
 
@@ -55,8 +55,8 @@ export function newsTick(state: GameState, rng: RNG): void {
   if (!state.rush && rng.chance(RUSH_CHANCE_PER_DAY)) {
     const camp = rng.pick(ORDINARY_CAMPS);
     // Word of heavy wash takes a couple of days to reach the other camps and
-    // the Angus's compositor; the ground is not rushed until it does. A man
-    // who keeps the Shamrock hears it the night it happens (§26).
+    // the Times' compositor; the ground is not rushed until it does. A man
+    // who keeps the Crown & Cradle hears it the night it happens (§26).
     const since = state.day + SHAMROCK_RUSH_LEAD_DAYS;
     state.rush = {
       camp,
@@ -80,8 +80,8 @@ export function newsTick(state: GameState, rng: RNG): void {
 }
 
 /**
- * Rumours of a secret mine reach the player through the Gazette, the bar of the
- * Shamrock, or talk around a camp fire. At most one genuine chance a year.
+ * Rumours of Widow's Reef reach the player through the Times, the bar of the
+ * Crown & Cradle, or talk around a camp fire. At most one genuine chance a year.
  */
 export function maybeRumour(state: GameState, rng: RNG, log: Log, boost = 1): boolean {
   if (state.secret) return false;
@@ -97,7 +97,7 @@ export function maybeRumour(state: GameState, rng: RNG, log: Log, boost = 1): bo
   if (state.estate.shamrock) {
     log.say(genuine ? 'estate.shamrock.rumour.genuine' : 'estate.shamrock.rumour.hoax', undefined, genuine ? 'good' : 'neutral');
   }
-  addJournal(state, `Heard talk of a secret mine out beyond ${CAMP_DEFS[from].name}.`, 'neutral');
+  addJournal(state, `Heard talk of Widow's Reef out beyond ${CAMP_DEFS[from].name}.`, 'neutral');
   return true;
 }
 
@@ -110,7 +110,7 @@ export function flushFactor(state: GameState): number {
   return state.day <= state.estate.flushUntilDay ? FLUSH_ROBBERY_FACTOR : 1;
 }
 
-/** Night in a camp: candle-lighters, fires, grog tents, and the Snakey Gully din. */
+/** Night in a camp: candle-lighters, fires, grog tents, and the Copperhead Gully din. */
 export function nightAtCamp(state: GameState, rng: RNG, log: Log): void {
   if (!isCamp(state.location)) return;
   const def = CAMP_DEFS[state.location];
@@ -167,12 +167,13 @@ export function nightAtCamp(state: GameState, rng: RNG, log: Log): void {
 
 /** Theft and mischief for those living rough in the towns. */
 export function nightInTown(state: GameState, rng: RNG, log: Log): void {
+  const lodging = lodgingAt(state);
   const safety =
-    state.lodging === 'inn'
+    lodging === 'inn'
       ? 0.97
-      : state.lodging === 'tentground'
+      : lodging === 'tentground'
         ? 0.93
-        : state.lodging === 'stable'
+        : lodging === 'stable'
           ? 0.9
           : 0.85;
   const p = (1 - safety) * 0.12 * flushFactor(state);
@@ -253,6 +254,10 @@ export function claimJumpCheck(state: GameState, rng: RNG, log: Log, camp: CampI
 /** Year-end dividend on mining company shares. */
 export function payDividends(state: GameState, rng: RNG, log: Log): void {
   if (state.shares <= 0) return;
+  if (state.sharesBoughtOn > 0 && state.day - state.sharesBoughtOn < 30) {
+    log.raw('The year-end dividend is for shares held a full month. Your new scrip is carried into the next account.', 'neutral');
+    return;
+  }
   const fortune = rng.next();
   const mult = fortune < 0.28 ? 0 : rng.range(0.4, 4.5);
   const amount = Math.round(state.shares * pounds(5) * mult);

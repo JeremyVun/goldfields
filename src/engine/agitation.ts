@@ -4,7 +4,7 @@
  * The fee is a shilling a day when a labourer earns five shillings a week, and
  * the troopers ride through the holes twice a month to collect it. The field
  * grows angrier all year, meets by torchlight at winter's end, and in December
- * puts up slabs at Snakey Gully. The stockade always falls; the licence dies
+ * puts up slabs at Copperhead Gully. The stockade always falls; the licence dies
  * with it.
  */
 
@@ -51,7 +51,7 @@ export { agitationHuntFactor, betrayalFactor, bumpAgitation };
 // The temperature of the field
 // ---------------------------------------------------------------------------
 
-/** The word the Gazette and the camp use for how things stand. */
+/** The word the Times and the camp use for how things stand. */
 export function agitationWord(level: number): string {
   if (level >= 85) return 'past bearing';
   if (level >= 60) return 'openly defiant';
@@ -68,7 +68,7 @@ export function stockadeWindow(state: GameState): boolean {
   return state.day >= STOCKADE_WINDOW.from && state.day <= STOCKADE_WINDOW.to;
 }
 
-/** A man at a camp or in Fields Town in December cannot pretend not to know. */
+/** A man at a camp or in Slateford in December cannot pretend not to know. */
 function withinReach(state: GameState): boolean {
   return isCamp(state.location) || state.location === 'fields-town';
 }
@@ -78,13 +78,13 @@ function withinReach(state: GameState): boolean {
  * player is. Raises the meeting and the stockade as pending encounters, and
  * settles them off-stage when the player was nowhere near.
  */
-export function agitationTick(state: GameState, log: Log): void {
+export function agitationTick(state: GameState, log: Log, available = true): void {
   if (state.day >= AGITATION_FROM_DAY && !state.stockadeDone) {
     bumpAgitation(state, AGITATION_PER_DAY);
   }
 
   // --- the monster meeting -------------------------------------------
-  if (!state.meetingDone && meetingWindow(state) && isCamp(state.location) && !state.pending) {
+  if (available && !state.meetingDone && meetingWindow(state) && isCamp(state.location) && !state.pending) {
     state.pending = { kind: 'meeting', data: { camp: state.location } };
     return;
   }
@@ -94,7 +94,7 @@ export function agitationTick(state: GameState, log: Log): void {
   }
 
   // --- the stockade ---------------------------------------------------
-  if (!state.stockadeDone && stockadeWindow(state) && withinReach(state) && !state.pending) {
+  if (available && !state.stockadeDone && stockadeWindow(state) && withinReach(state) && !state.pending) {
     state.pending = { kind: 'stockade' };
     return;
   }
@@ -112,7 +112,7 @@ export function agitationTick(state: GameState, log: Log): void {
   }
 }
 
-/** Reading a licence story in the Angus stokes the fire a little (§20). */
+/** Reading a licence story in the Times stokes the fire a little (§20). */
 export function agitationFromStory(state: GameState): void {
   if (state.stockadeDone) return;
   bumpAgitation(state, AGITATION_PER_STORY);
@@ -128,7 +128,13 @@ export function agitationFromHunt(state: GameState): void {
 // The monster meeting
 // ---------------------------------------------------------------------------
 
-export function resolveMeeting(state: GameState, rng: RNG, log: Log, attend: boolean): void {
+export function resolveMeeting(
+  state: GameState,
+  rng: RNG,
+  log: Log,
+  attend: boolean,
+  advanceKept: (days: number) => void = (days) => { state.day += days; },
+): void {
   state.meetingDone = true;
   state.pending = null;
   if (!attend) {
@@ -143,10 +149,9 @@ export function resolveMeeting(state: GameState, rng: RNG, log: Log, attend: boo
   if (state.legal !== 'honest' && rng.chance(MEETING_ARREST_CHANCE)) {
     log.say('meeting.arrest', undefined, 'bad');
     const held = rng.int(3, 9);
-    state.day += held;
     state.location = 'fields-town';
     state.journey = null;
-    state.provisionDays = Math.max(0, state.provisionDays - held);
+    advanceKept(held);
     damage(state, rng.int(2, 8), 'a night in the lock-up');
     state.stats.timesArrested += 1;
     checkYearEnd(state);
@@ -182,6 +187,7 @@ export function resolveStockade(
   rng: RNG,
   log: Log,
   choice: StockadeChoice,
+  advanceKept: (days: number) => void = (days) => { state.day += days; },
 ): void {
   if (choice === 'keepClear') {
     closeStockade(state, 'kept clear');
@@ -231,12 +237,11 @@ export function resolveStockade(
   if (rng.chance(STOCKADE_JOIN.arrested)) {
     log.say('stockade.arrested', undefined, 'bad');
     const held = rng.int(8, 24);
-    state.day += held;
     state.location = 'fields-town';
     state.journey = null;
-    state.provisionDays = Math.max(0, state.provisionDays - held);
+    advanceKept(held);
     state.stats.timesArrested += 1;
-    damage(state, Math.round(held * 0.4), 'the lock-up at Fields Town');
+    damage(state, Math.round(held * 0.4), 'the lock-up at Slateford');
     checkYearEnd(state);
     if (!state.gameOver) log.say('stockade.acquitted', undefined, 'good');
   }

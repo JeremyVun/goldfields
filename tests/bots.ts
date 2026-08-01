@@ -7,7 +7,7 @@
  */
 
 import { makeRng } from '../src/engine/rng';
-import { createInitialState, hasWork, inAftermath, isCamp, isLicensed, netWorth } from '../src/engine/state';
+import { createInitialState, hasWork, inAftermath, isCamp, isLicensed, lodgingAt, netWorth } from '../src/engine/state';
 import { step } from '../src/engine/reduce';
 import { bankRefuses, priceOf, provisionsPrice } from '../src/engine/market';
 import { depletionFactor, freshnessOf, isWorkedOut } from '../src/engine/mining';
@@ -130,7 +130,7 @@ function canAfford(state: GameState, item: ItemId, reserve = 0): boolean {
   return state.moneyPence - reserve >= priceOf(state, item);
 }
 
-/** Kit up at Suze Port, where goods are much cheaper (the Journal's first lesson). */
+/** Kit up at Port Gannet, where goods are much cheaper (the Journal's first lesson). */
 function outfitAtSuze(state: GameState, wanted: ItemId[]): Action | null {
   for (const it of wanted) {
     // Keep a fortnight's food money back while buying tools.
@@ -160,7 +160,7 @@ function feed(state: GameState, floor = 10): Action | null {
 }
 
 // ---------------------------------------------------------------------------
-// The idler: never leaves Suze Port, just works.
+// The idler: never leaves Port Gannet, just works.
 // ---------------------------------------------------------------------------
 
 export const idler: Bot = {
@@ -243,9 +243,9 @@ interface DiggerPlan {
   method: DigMethod | ((state: GameState) => DigMethod);
   licence: boolean;
   kit: ItemId[];
-  /** Bought at Suze Port only if the money is there after the essentials. */
+  /** Bought at Port Gannet only if the money is there after the essentials. */
   optional?: ItemId[];
-  /** Kept in stock at the diggings prices of Fields Town, up to the given count. */
+  /** Kept in stock at the diggings prices of Slateford, up to the given count. */
   stock?: Partial<Record<ItemId, number>>;
   capitalToLeave: number;
   /** Centi-ounces of gold the bot will carry before making for the bank. */
@@ -262,7 +262,7 @@ interface DiggerPlan {
   /** Health at which he knocks off for a few days, and at which he walks to town. */
   restBelow?: number;
   townBelow?: number;
-  /** Health at which he pays Calico House, and the greens interval he keeps. */
+  /** Health at which he pays Canvas House, and the greens interval he keeps. */
   hospitalBelow?: number;
   greensAfter?: number;
   /** Climbs the civic ladder: a counter of his own, a name, and the bench (§29). */
@@ -387,7 +387,7 @@ function makeDigger(plan: DiggerPlan): Bot {
       // the field respects a hard man and does not love him (§28.1).
       if (state.screen === 'court') return { type: 'rule', ruling: 'leniency' };
 
-      // ---- Suze Port: earn, outfit, and go -----------------------------
+      // ---- Port Gannet: earn, outfit, and go -----------------------------
       if (state.location === 'suze-port') {
         const food = feed(state, 12);
         if (food) return food;
@@ -402,7 +402,7 @@ function makeDigger(plan: DiggerPlan): Bot {
         if (!kitted) {
           const buy = outfitAtSuze(state, plan.kit);
           if (buy) return buy;
-          return { type: 'work', job: 'wharf', days: 7 };
+          return { type: 'work', job: 'town', days: 7 };
         }
         // Kitted out: lay in food and the price of a licence, then go.
         if (state.items.waterBags > 0 && state.waterDays < 8 && state.moneyPence > shillings(2)) {
@@ -419,10 +419,10 @@ function makeDigger(plan: DiggerPlan): Bot {
           }
           return { type: 'travel', route: plan.route, mode: 'walk' };
         }
-        return { type: 'work', job: 'wharf', days: 7 };
+        return { type: 'work', job: 'town', days: 7 };
       }
 
-      // ---- Fields Town: bank, licence, victuals, then out again --------
+      // ---- Slateford: bank, licence, victuals, then out again --------
       if (state.location === 'fields-town') {
         if (state.goldCentiOz > 0) return { type: 'sellGold', where: 'bank', watch: true };
         // The registrar keeps his ledger at the Chambers as well as at the
@@ -543,7 +543,7 @@ function makeDigger(plan: DiggerPlan): Bot {
         if (plan.civic && state.provisionDays < 14 && state.moneyPence >= provisionsPrice(state) * 2) {
           return { type: 'buyProvisions', weeks: 2 };
         }
-        if (plan.civic && state.items.waterBags > 0 && state.waterDays < 5 && state.moneyPence > shillings(6)) {
+        if (state.items.waterBags > 0 && state.waterDays < 5 && state.moneyPence > shillings(6)) {
           return { type: 'fillWater' };
         }
         if (state.provisionDays < 6) return { type: 'travelTo', place: 'fields-town' };
@@ -560,7 +560,7 @@ function makeDigger(plan: DiggerPlan): Bot {
         }
         // Slabbing the sides costs a day of gold and may cost nothing at all,
         // which is the whole of the difference between a careful man and the
-        // column of the Angus that lists what was dug out of the fall.
+        // column of the Times that lists what was dug out of the fall.
         if (plan.timberFirst && state.shaft && !state.shaft.timbered && state.items.timber > 0) {
           return { type: 'timberShaft' };
         }
@@ -629,7 +629,7 @@ export const licenceDodger = makeDigger({
 
 /**
  * The rush chaser: the same cradle and the same mate as the cautious man, but
- * he reads the Gazette and walks. Fresh ground pegged early is the whole of the
+ * he reads the Times and walks. Fresh ground pegged early is the whole of the
  * difference (§22).
  */
 export const rushChaser = makeDigger({
@@ -728,7 +728,7 @@ export const notable = makeDigger({
   timberFirst: true,
   civic: true,
   // A man with a counter to mind and a name to keep does not dig himself into
-  // Calico House: the safest late game in the book (§29).
+  // Canvas House: the safest late game in the book (§29).
   restBelow: 60,
   townBelow: 50,
   hospitalBelow: 55,
@@ -769,7 +769,7 @@ export const bushranger: Bot = {
       const food = feed(state, 21);
       if (food) return food;
     }
-    // No man rides out of a town dry; that is how the Angus fills its column.
+    // No man rides out of a town dry; that is how the Times fills its column.
     if (shop && state.items.waterBags > 0 && state.waterDays < 9 && state.moneyPence > shillings(6)) {
       return { type: 'fillWater' };
     }
@@ -790,7 +790,7 @@ export const bushranger: Bot = {
     if (state.daysWithoutGreens > 70 && shop && state.moneyPence > shillings(5)) {
       return { type: 'buyGreens' };
     }
-    if (shop && state.lodging !== 'rough' && !atPort) return { type: 'setLodging', kind: 'rough' };
+    if (shop && lodgingAt(state) !== 'rough' && !atPort) return { type: 'setLodging', kind: 'rough' };
 
     // ---- turn what has been taken into money --------------------------
     if (atPort && state.salvage > 0) return { type: 'sellSalvage' };
@@ -887,7 +887,7 @@ export const bushranger: Bot = {
     // ---- men to ride with, and the capstone -------------------------------
     if (canRecruit(state).ok) return { type: 'recruitGangMember' };
     // A man tries the big work twice and no more: the ones who kept at it are
-    // all in the Gazette's obituary column.
+    // all in the Times' obituary column.
     const jobsTried = state.stats.bigJobs;
     if (canBigJob(state).ok && jobsTried < 1) {
       // Sold to the traps: buy the word of where they are lying up, first.

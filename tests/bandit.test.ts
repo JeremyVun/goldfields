@@ -172,7 +172,7 @@ describe('heat — the push, never the loop (§23.3)', () => {
     expect(state.heat.pass).toBeCloseTo(HEAT_PER_CRIME);
     expect(state.heat.trickeys).toBeCloseTo(HEAT_PER_CRIME / 2);
     expect(state.heat.town).toBeCloseTo(HEAT_PER_CRIME / 2);
-    // The camps are not next door to the Pass Road.
+    // The camps are not next door to the Razorback Road.
     expect(state.heat.camps).toBe(0);
   });
 
@@ -197,7 +197,7 @@ describe('heat — the push, never the loop (§23.3)', () => {
     expect(boiling.heat.town).toBeLessThan(quiet.heat.town);
   });
 
-  it('drives the search of the camp in the ranges, and bushcraft blunts it', () => {
+  it('drives the search of Split Rock Camp, and bushcraft blunts it', () => {
     const state = fresh();
     state.hideout = { stashPence: 0, stashGold: 0, discovered: false, madeOn: 1 };
     state.heat.camps = 100;

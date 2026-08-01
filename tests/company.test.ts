@@ -507,15 +507,15 @@ describe('the company in the kitty', () => {
     state.screen = 'company';
     const checklist = getView(state).body.join('\n');
     expect(checklist).toMatch(/standing of 30\/100/);
-    expect(checklist).toMatch(/Deep Mountains/);
+    expect(checklist).toMatch(/Blackcap Ranges/);
     expect(checklist).toMatch(/in hand and bank/);
   });
 
-  it('is not kept at Suze Port', () => {
+  it('has a commercial office at Port Gannet', () => {
     const { state } = floated(103);
     state.location = 'suze-port';
     state.screen = 'company';
-    expect(getView(state).screen).toBe('suze');
+    expect(getView(state).screen).toBe('company');
   });
 
   it('round-trips through a save, and an older save comes back without one', () => {

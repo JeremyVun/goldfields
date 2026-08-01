@@ -181,7 +181,7 @@ describe('the trend of the gold rate (§21)', () => {
     expect(rateWeekAgo({ ...fresh(), rateTrail: [] })).toBe(BANK_RATE_START);
   });
 
-  it('is told to the player at the kitty, at the bank and in the Angus', () => {
+  it('is told to the player at the kitty, at the bank and in the Times', () => {
     const state = fresh();
     state.rateTrail = [800, 810, 820, 830, 840, 850, 860, 900];
     state.bankRate = 900;
@@ -287,7 +287,7 @@ describe('the map, marked up (§21)', () => {
     const state = digger('snakey-gully', 40);
     const { lines, markerRow, markerCol } = buildMap(state);
     expect(lines[markerRow][markerCol]).toBe('*');
-    expect(lines[markerRow]).toContain('SNAKEY GULLY');
+    expect(lines[markerRow]).toContain('COPPERHEAD GULLY');
   });
 
   it('marks pegged ground, a rush, and the company’s workings', () => {
@@ -303,11 +303,17 @@ describe('the map, marked up (§21)', () => {
       sharesUnsold: 4,
       sharePrice: pounds(14),
       crews: [{ task: 'mine' }],
-      leases: [{ quality: 140, workedDays: 4, proven: true }],
+      leases: [{
+        name: 'the North Star', reef: 140, level: 1, face: 5, yieldNow: 140,
+        wet: false, pump: false, timbered: false, flooded: false, progress: 0, plan: null,
+      }],
       weekProfit: [],
       lastWeekGold: 0,
       foundedOn: 150,
       lastDividendDay: 0,
+      battery: false,
+      driving: 'ordinary',
+      lastWeek: null,
     };
     const drawn = buildMap(state).lines.join('\n');
     expect(drawn).toMatch(/your pegs/);
@@ -316,10 +322,10 @@ describe('the map, marked up (§21)', () => {
     expect(drawn).toMatch(/the workings/);
 
     const prose = mapView(state).body.join('\n');
-    expect(prose).toMatch(/a RUSH at Snakey Gully/);
-    expect(prose).toMatch(/Your stakes are in the ground at Damp Camp and Snakey Gully \(worked out\)/);
-    expect(prose).toMatch(/The workings of The Golden Hope Quartz Mining Co\. lie in the Deep Mountains/);
-    expect(prose).toMatch(/The star marks where you are: Deep Mountains/);
+    expect(prose).toMatch(/a RUSH at Copperhead Gully/);
+    expect(prose).toMatch(/Your stakes are in the ground at Reedbank Camp and Copperhead Gully \(worked out\)/);
+    expect(prose).toMatch(/The workings of The Golden Hope Quartz Mining Co\. lie in the Blackcap Ranges/);
+    expect(prose).toMatch(/The star marks where you are: Blackcap Ranges/);
   });
 
   it('says plainly when a man has pegs in no ground anywhere', () => {
@@ -390,6 +396,9 @@ describe('camps that read like different places (§21)', () => {
       lastWeekGold: 0,
       foundedOn: 150,
       lastDividendDay: 0,
+      battery: false,
+      driving: 'ordinary',
+      lastWeek: null,
     };
     expect(getView(state).body.join('\n')).toMatch(/office of The Try Again Consols/);
   });

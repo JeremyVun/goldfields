@@ -19,7 +19,7 @@ function traveller(seed = 8): GameState {
 }
 
 describe('the two roads', () => {
-  it("Trickey's Track is longer and safer; the Pass Road shorter and rougher (faithful)", () => {
+  it("Mercer's Track is longer and safer; the Razorback Road shorter and rougher (faithful)", () => {
     expect(ROUTES.trickeys.walkDays).toBeGreaterThan(ROUTES.pass.walkDays);
     expect(ROUTES.pass.danger).toBeGreaterThan(ROUTES.trickeys.danger);
     expect(ROUTES.trickeys.walkDays).toBe(8);
@@ -112,7 +112,7 @@ describe('the journey itself', () => {
     expect(state.waterDays).toBeLessThan(water);
   });
 
-  it('the Pass Road bails up more travellers than Trickey’s Track', () => {
+  it('the Razorback Road bails up more travellers than Mercer’s Track', () => {
     const bailups = (route: 'trickeys' | 'pass') => {
       let n = 0;
       for (let seed = 0; seed < 300; seed++) {
@@ -133,7 +133,7 @@ describe('the journey itself', () => {
     expect(bailups('pass')).toBeGreaterThan(bailups('trickeys'));
   });
 
-  it('lands the traveller at Fields Town through the reducer', () => {
+  it('lands the traveller at Slateford through the reducer', () => {
     let state = traveller(11);
     const rng = makeRng(11);
     let guard = 0;
@@ -163,7 +163,7 @@ describe('short journeys about the goldfields', () => {
     expect(localTravelDays(state, 'damp-camp')).toBe(1);
   });
 
-  it('the secret mine is a long way out', () => {
+  it("Widow's Reef is a long way out", () => {
     const state = traveller();
     expect(localTravelDays(state, 'secret-mine')).toBeGreaterThanOrEqual(5);
   });

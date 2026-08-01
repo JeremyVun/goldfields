@@ -358,7 +358,7 @@ function storeAside(state: GameState): AsidePanel {
   rows.push({ label: 'Gold', value: formatGold(state.goldCentiOz) });
   rows.push({ label: 'Gold buyer', value: 'the bank only' });
   if (state.location === 'suze-port' || state.location === 'fields-town') {
-    rows.push({ label: 'Briggs standing', value: briggsDiscountLabel(state) });
+    rows.push({ label: 'Bell standing', value: briggsDiscountLabel(state) });
   }
   rows.push({
     label: 'Provisions',
@@ -416,7 +416,7 @@ function estateEntry(state: GameState, key: string): MenuItem {
       ? 'deeds, subscriptions, and the business of the Bench'
       : held > 0
         ? 'deeds, the store\'s prices, and the paper'
-        : 'a hotel, a store, a half-share in the Angus; standing buys what money cannot',
+        : 'a hotel, a store, a half-share in the Times; standing buys what money cannot',
   );
 }
 
@@ -448,7 +448,7 @@ function shamrockEntry(state: GameState, key: string): MenuItem {
 
 /** What the subscription list strikes out of the world's dice (§27). */
 const WORK_NOTES: Record<WorkId, string> = {
-  bridge: 'no more bogging or flood-crossing on the Damp Camp road, for you or any bullocky on it',
+  bridge: 'no more bogging or flood-crossing on the Reedbank Camp road, for you or any bullocky on it',
   waterRace: 'summer halved at that camp, the Sandy Blight struck out, puddling the year round, and the ground goes off slower',
   ward: 'treatment free to the subscriber and half-price to the field; less dysentery and typhoid at every camp',
   school: 'no return whatever, this year; in the next, a lad off the school benches worth ten hired mates',
@@ -521,7 +521,7 @@ function equipmentLines(state: GameState): string[] {
   lines.push(owned.length ? `You have ${owned.join(', ')}.` : 'You own nothing but the clothes you stand in.');
   lines.push(`Provisions: ${state.provisionDays} days. Water: ${state.waterDays} days.`);
   if (claims.length) lines.push(`Claims pegged at ${claims.map((c) => CAMP_DEFS[c].name).join(', ')}.`);
-  if (state.shares > 0) lines.push(`${state.shares} share${state.shares === 1 ? '' : 's'} in a Deep Mountains company.`);
+  if (state.shares > 0) lines.push(`${state.shares} share${state.shares === 1 ? '' : 's'} in a Blackcap Ranges company.`);
   if (state.company) {
     lines.push(
       `${state.company.sharesOwned} of the twenty shares in ${state.company.name}, at ${formatMoney(state.company.sharePrice)}.`,
@@ -555,7 +555,7 @@ export function kittyView(state: GameState): ScreenView {
   body.push(`Gold: ${formatGold(state.goldCentiOz)}`);
   body.push(
     `Exchange rate of the day: ${formatMoney(rateAt(state, state.location))} the ounce here` +
-      (state.location === 'fields-town' ? '.' : ` (the bank at Fields Town: ${formatMoney(state.bankRate)}).`),
+      (state.location === 'fields-town' ? '.' : ` (the bank at Slateford: ${formatMoney(state.bankRate)}).`),
   );
   body.push(rateTrendPhrase(state));
   body.push('');
@@ -571,7 +571,7 @@ export function kittyView(state: GameState): ScreenView {
     `Standing on the field: ${standingNumber(state.standing)}/100 — you are reckoned ${standingPhrase(state.standing)}.`,
   );
   body.push(
-    `Standing opens doors: Council work at ${STANDING_COUNCIL_JOB}; a partner or company at ${COMPANY_FLOAT_STANDING}. Briggs' prices use days served and your legal record.`,
+    `Standing opens doors: Council work at ${STANDING_COUNCIL_JOB}; a partner or company at ${COMPANY_FLOAT_STANDING}. Bell's prices use days served and your legal record.`,
   );
   if (state.notoriety > 0 || state.outlawed) {
     body.push(`To the traps you are ${notorietyPhrase(state.notoriety)}, and in the bush ${bushArticle(bushRankOf(state))}.`);
@@ -581,7 +581,7 @@ export function kittyView(state: GameState): ScreenView {
   }
   if (state.hideout) {
     body.push(
-      `A camp in the ranges, and ${formatMoney(state.hideout.stashPence)} and ${formatGold(state.hideout.stashGold)} under the flat stone.`,
+      `Split Rock Camp, and ${formatMoney(state.hideout.stashPence)} and ${formatGold(state.hideout.stashGold)} under the flat stone.`,
     );
   }
   if (state.gang.length > 0) body.push(`Riding with you: ${state.gang.map((g) => g.name).join(', ')}.`);
@@ -606,12 +606,12 @@ export function kittyView(state: GameState): ScreenView {
 
 export function mapView(state: GameState): ScreenView {
   const body: string[] = [
-    'Suze Port lies on the coast. Two tracks run inland to the diggings:',
-    "Trickey's Track, the better and more popular road, and the Pass Road,",
+    'Port Gannet lies on the coast. Two tracks run inland to the diggings:',
+    "Mercer's Track, the better and more popular road, and the Razorback Road,",
     'which is shorter and lonelier and harder on man and beast.',
     '',
-    'Fields Town stands on Blue River, at the head of the tracks. Damp Camp',
-    'and Snakey Gully lie a day out; the Deep Mountains two days, in reef country.',
+    'Slateford stands on Slate River, at the head of the tracks. Reedbank Camp',
+    'and Copperhead Gully lie a day out; the Blackcap Ranges two days, in reef country.',
     '',
     `The star marks where you are: ${locationName(state.location)}.`,
   ];
@@ -642,7 +642,7 @@ export function mapView(state: GameState): ScreenView {
 
   if (state.hideout) {
     body.push(
-      'Beyond the Deep Mountains, where no surveyor has been and the map has no business going, is your camp in the ranges.',
+      'Beyond the Blackcap Ranges, where no surveyor has been and the map has no business going, is Split Rock Camp.',
     );
   }
 
@@ -668,6 +668,7 @@ const CAMP_SCREENS = new Set(['camp', 'camp-store', 'camp-mine', 'camp-shares', 
 const TOWN_SCREENS = new Set([
   'ftown',
   'ftown-bank',
+  'ftown-lodgings',
   'ftown-store',
   'ftown-council',
   'ftown-work',
@@ -715,16 +716,19 @@ export function getView(state: GameState): ScreenView {
   if (BANDIT_SCREENS.has(state.screen) && state.location === 'on-road') {
     return getView({ ...state, screen: homeScreenFor(state) });
   }
-  // Defensive: a player carted off to Calico House mid-shift must not be shown
+  // Defensive: a player carted off to Canvas House mid-shift must not be shown
   // a camp screen for a camp he is no longer standing in.
   if (CAMP_SCREENS.has(state.screen) && !isCamp(state.location)) {
     return getView({ ...state, screen: homeScreenFor(state) });
+  }
+  if (CAMP_SCREENS.has(state.screen) && state.location === 'secret-mine') {
+    return getView({ ...state, screen: 'secret-expedition' });
   }
   if (state.screen === 'camp-shares' && state.location !== 'deep-mountains') {
     return getView({ ...state, screen: 'camp' });
   }
   // The company's books are at the workings and Council; its commercial business
-  // is conducted with investors and shipping agents at Suze Port.
+  // is conducted with investors and shipping agents at Port Gannet.
   if (
     state.screen === 'company' &&
     state.location !== 'deep-mountains' &&
@@ -736,7 +740,7 @@ export function getView(state: GameState): ScreenView {
   // Likewise, a man at the diggings cannot walk into the Bank of Australasia.
   if (TOWN_SCREENS.has(state.screen) && state.location !== 'fields-town') {
     if (state.screen === 'ftown-bank' && state.location === 'suze-port') {
-      // The Suze Port branch is the one exception.
+      // The Port Gannet branch is the one exception.
     } else if (state.location !== 'on-road') {
       return getView({ ...state, screen: homeScreenFor(state) });
     }
@@ -749,7 +753,7 @@ export function getView(state: GameState): ScreenView {
     case 'title':
       return {
         screen: 'title',
-        title: 'GOLDFIELDS',
+        title: 'GOLDRUSH',
         subtitle: 'The year is 1854',
         body: [
           'A simulation of life on the diggings.',
@@ -779,11 +783,11 @@ export function getView(state: GameState): ScreenView {
         menu: [item(' ', 'Press the SPACE BAR to go ashore', { type: 'continue' })],
       };
 
-    // --- Suze Port -----------------------------------------------------
+    // --- Port Gannet -----------------------------------------------------
     case 'suze':
       return {
         screen: 'suze',
-        title: 'SUZE PORT',
+        title: 'PORT GANNET',
         subtitle: `${formatDate(state.day)} · ${titleCase(seasonPhrase(state.day))}`,
         body: [
           'Dirty, unlit streets, garish signs, and horses hitched to wooden railings.',
@@ -792,13 +796,13 @@ export function getView(state: GameState): ScreenView {
         ],
         menu: [
           item('1', 'Seek work about the port', { type: 'goto', screen: 'suze-work' }),
-          item('2', "Briggs' agency store", { type: 'goto', screen: 'suze-store' }, 'goods are much cheaper here than at the diggings'),
-          item('3', 'See about lodgings', { type: 'goto', screen: 'suze-lodgings' }, `at present: ${lodgingWord(state)}`),
+          item('2', "Bell's Outfitters", { type: 'goto', screen: 'suze-store' }, 'goods are much cheaper here than at the diggings'),
+          item('3', 'See about lodgings', { type: 'goto', screen: 'suze-lodgings' }, `at present: ${lodgingWord(state, 'suze-port')}`),
           item('4', 'The horse dealer', { type: 'goto', screen: 'suze-horses' }),
           item('C', 'A hot meal at the cookshop — 1s', { type: 'buyMeal' }, state.fedToday ? 'you already have a meal waiting today' : 'eaten when the next day is spent', state.fedToday || state.moneyPence < shillings(1)),
           item('F', 'Fish the harbour for the day', { type: 'fishForFood' }, 'no wage; usually enough food for several days'),
-          item('5', 'Read The Angus Gazette (1d)', { type: 'readGazette' }),
-          item('6', 'Read A Goldfields Journal', { type: 'readJournal' }, state.items.journal ? undefined : 'you have no copy', state.items.journal < 1),
+          item('5', state.gazetteReadOn === state.day ? "Read today's Slateford Times again — free" : 'Read The Slateford Times (1d)', { type: 'readGazette' }),
+          item('6', "Read The New Chum's Companion", { type: 'readJournal' }, state.items.journal ? undefined : 'you have no copy', state.items.journal < 1),
           item('7', 'Rest a spell', { type: 'rest', days: state.spellDays }, `${state.spellDays} days`),
           item('H', `A doctor in Main Street — ${formatMoney(HOSPITAL_FEE_PER_DAY)} the day`, { type: 'hospital', days: 3 }, 'three days under his care', state.moneyPence < HOSPITAL_FEE_PER_DAY),
           item('K', `A nobbler in a Main Street public house — ${formatMoney(drinkPrice(state, 'nobbler'))}`, { type: 'drink', what: 'nobbler' }, 'the port has not yet learned to charge diggings prices for it', state.moneyPence < drinkPrice(state, 'nobbler')),
@@ -816,7 +820,7 @@ export function getView(state: GameState): ScreenView {
     case 'suze-work':
       return {
         screen: 'suze-work',
-        title: 'WORK AT SUZE PORT',
+        title: 'WORK AT PORT GANNET',
         body: [
           'Ships lie in the harbour short-handed, their crews gone to the diggings.',
           'A man who will stay and work can always find a day\'s wage.',
@@ -832,13 +836,13 @@ export function getView(state: GameState): ScreenView {
     case 'suze-store':
       return {
         screen: 'suze-store',
-        title: "BRIGGS' AGENCY STORE, SUZE PORT",
+        title: "BELL'S OUTFITTERS, PORT GANNET",
         body: [
           'Prices keep rising, but equipment and supplies are much cheaper here than',
           'at the goldfields. Buy before you go, and buy carefully.',
           '',
           briggsDiscountLabel(state),
-          ...(state.legal === 'honest' ? [] : [`Briggs adds a visible risk premium because your standing is ${state.legal}.`]),
+          ...(state.legal === 'honest' ? [] : [`Bell adds a visible risk premium because your standing is ${state.legal}.`]),
         ],
         menu: storeMenu(state, 'suze'),
         aside: storeAside(state),
@@ -906,7 +910,7 @@ export function getView(state: GameState): ScreenView {
     case 'gazette':
       return {
         screen: 'gazette',
-        title: 'THE ANGUS GAZETTE',
+        title: 'THE SLATEFORD TIMES',
         body: gazetteFor(state),
         menu: [item('0', 'Put the paper down', { type: 'continue' })],
       };
@@ -918,7 +922,7 @@ export function getView(state: GameState): ScreenView {
       menu.push(item('0', 'Close the book', { type: 'continue' }));
       return {
         screen: 'journal',
-        title: 'A GOLDFIELDS JOURNAL',
+        title: "THE NEW CHUM'S COMPANION",
         subtitle: 'Nicholas Jacob Rowe, lately returned from the Gold Rushes',
         body: ['Choose a chapter.'],
         menu,
@@ -948,7 +952,7 @@ export function getView(state: GameState): ScreenView {
       const horse = planJourney(state, route, 'horse');
       return {
         screen: 'travel-mode',
-        title: `HOW WILL YOU TRAVEL ${route === 'trickeys' ? "TRICKEY'S TRACK" : 'THE PASS ROAD'}?`,
+        title: `HOW WILL YOU TRAVEL ${route === 'trickeys' ? "MERCER'S TRACK" : 'THE RAZORBACK ROAD'}?`,
         body: [
           'Prepare carefully. Some travellers are stark, staring, gold mad and head off',
           'with nothing. If they do not die on the way, they arrive with no tools,',
@@ -965,11 +969,11 @@ export function getView(state: GameState): ScreenView {
       };
     }
 
-    // --- Fields Town -----------------------------------------------------
+    // --- Slateford -----------------------------------------------------
     case 'ftown':
       return {
         screen: 'ftown',
-        title: 'FIELDS TOWN',
+        title: 'SLATEFORD',
         subtitle: `${formatDate(state.day)} · ${titleCase(seasonPhrase(state.day))}`,
         body: [
           'A street a mile long and wide enough to turn a bullock team, lined with tin',
@@ -978,19 +982,37 @@ export function getView(state: GameState): ScreenView {
         ],
         menu: [
           item('1', 'The Bank of Australasia', { type: 'goto', screen: 'ftown-bank' }, `gold at ${formatMoney(state.bankRate)} the ounce`),
-          item('2', "Briggs' Store", { type: 'goto', screen: 'ftown-store' }, 'everything from a pick to a needle, at diggings prices'),
+          item('2', "Bell's Outfitters", { type: 'goto', screen: 'ftown-store' }, 'everything from a pick to a needle, at diggings prices'),
           item('3', 'The Council Chambers', { type: 'goto', screen: 'ftown-council' }, isLicensed(state) ? licenceWord(state) : 'no licence'),
           item('4', 'Seek work in the town', { type: 'goto', screen: 'ftown-work' }),
-          item('5', 'Calico House (the hospital)', { type: 'goto', screen: 'ftown-hospital' }),
-          item('6', 'The Shamrock Hotel', { type: 'goto', screen: 'ftown-hotel' }),
-          item('7', `Cobb & Co. to Suze Port — ${formatMoney(COACH_FARE)}`, { type: 'coach' }, '2 days, and mostly bushranger-proof', state.moneyPence < COACH_FARE),
+          item('5', 'Canvas House (the hospital)', { type: 'goto', screen: 'ftown-hospital' }),
+          item('6', 'The Crown & Cradle', { type: 'goto', screen: 'ftown-hotel' }),
+          item('7', `Cobb & Co. to Port Gannet — ${formatMoney(COACH_FARE)}`, { type: 'coach' }, '2 days, and mostly bushranger-proof', state.moneyPence < COACH_FARE),
           item('8', 'Out to the diggings', { type: 'goto', screen: 'ftown-depart' }),
-          item('9', 'Read The Angus Gazette (1d)', { type: 'readGazette' }),
+          item('9', state.gazetteReadOn === state.day ? "Read today's Slateford Times again — free" : 'Read The Slateford Times (1d)', { type: 'readGazette' }),
+          item('L', 'See about lodgings', { type: 'goto', screen: 'ftown-lodgings' }, `at present: ${lodgingWord(state, 'fields-town')}`),
           item('R', 'Rest a spell', { type: 'rest', days: state.spellDays }, `${state.spellDays} days`),
-          item('J', 'Read A Goldfields Journal', { type: 'readJournal' }, undefined, state.items.journal < 1),
+          item('J', "Read The New Chum's Companion", { type: 'readJournal' }, undefined, state.items.journal < 1),
           estateEntry(state, 'E'),
           banditEntry(state, 'B'),
           item('D', 'Length of a spell of work', { type: 'cycleSpell' }, `${state.spellDays} days`),
+        ],
+      };
+
+    case 'ftown-lodgings':
+      return {
+        screen: 'ftown-lodgings',
+        title: 'LODGINGS IN SLATEFORD',
+        body: [
+          'Beds and dry ground are dear wherever the rush has raised a street.',
+          'The inn and stable include a plain evening meal; tent ground does not.',
+        ],
+        menu: [
+          item('1', 'Inn dormitory — 10s a night', { type: 'setLodging', kind: 'inn' }, 'flea-ridden stretchers, but safe enough'),
+          item('2', 'A stable, on clean straw — 5s a night', { type: 'setLodging', kind: 'stable' }, 'a stall shared with two others and perhaps a horse'),
+          item('3', 'Rent tent ground — 5s a week', { type: 'setLodging', kind: 'tentground' }, state.items.tent ? 'the canvas town' : 'you would need a tent', state.items.tent < 1),
+          item('4', 'Sleep rough — nothing', { type: 'setLodging', kind: 'rough' }, 'free, and it may cost you dear'),
+          back('ftown'),
         ],
       };
 
@@ -999,7 +1021,7 @@ export function getView(state: GameState): ScreenView {
       const rate = atPort ? rateAt(state, 'suze-port') : state.bankRate;
       return {
         screen: 'ftown-bank',
-        title: atPort ? 'THE BANK, MAIN STREET, SUZE PORT' : 'THE BANK OF AUSTRALASIA',
+        title: atPort ? 'THE BANK, MAIN STREET, PORT GANNET' : 'THE BANK OF AUSTRALASIA',
         body: [
           atPort
             ? 'One of the few brick buildings in the port, and busy with importers, agents'
@@ -1008,7 +1030,7 @@ export function getView(state: GameState): ScreenView {
             ? 'and diggers turning their dust into notes before they take ship again.'
             : 'the safe at the other, and a few remodelled gin cases for a desk.',
           '',
-          `Gold today: ${formatMoney(rate)} the ounce${atPort ? ' (the Fields Town bank pays better)' : ' — the best rate in the colony'}.`,
+          `Gold today: ${formatMoney(rate)} the ounce${atPort ? ' (the Slateford bank pays better)' : ' — the best rate in the colony'}.`,
           rateTrendPhrase(state),
           `You hold ${formatGold(state.goldCentiOz)} and ${formatMoney(state.moneyPence)}.`,
           `On deposit: ${formatMoney(state.bankPence)}.`,
@@ -1028,13 +1050,13 @@ export function getView(state: GameState): ScreenView {
     case 'ftown-store':
       return {
         screen: 'ftown-store',
-        title: "BRIGGS' STORE, FIELDS TOWN",
+        title: "BELL'S OUTFITTERS, SLATEFORD",
         body: [
-          'Briggs\' Supplies is a gold mine in itself. Demand is so great that the supply',
+          "Bell's Outfitters is a gold mine in itself. Demand is so great that the supply",
           'cannot keep up, and the storekeepers can charge what they like.',
           '',
           briggsDiscountLabel(state),
-          ...(state.legal === 'honest' ? [] : [`Your ${state.legal} standing adds a visible risk premium to Briggs' prices.`]),
+          ...(state.legal === 'honest' ? [] : [`Your ${state.legal} standing adds a visible risk premium to Bell's prices.`]),
         ],
         menu: storeMenu(state, 'ftown'),
         aside: storeAside(state),
@@ -1132,10 +1154,10 @@ export function getView(state: GameState): ScreenView {
       menu.push(back('ftown'));
       return {
         screen: 'ftown-work',
-        title: 'WORK IN FIELDS TOWN',
+        title: 'WORK IN SLATEFORD',
         body: [
           'If you are wondering where to begin to make your fortune, consider trying',
-          'short-term work in Fields Town. No licence is wanted for honest wages.',
+          'short-term work in Slateford. No licence is wanted for honest wages.',
         ],
         menu,
       };
@@ -1144,7 +1166,7 @@ export function getView(state: GameState): ScreenView {
     case 'ftown-hospital':
       return {
         screen: 'ftown-hospital',
-        title: 'CALICO HOUSE',
+        title: 'CANVAS HOUSE',
         body: [
           'A collection of tents packed with stretchers on earthen floors. My advice to',
           'diggers is not to get sick.',
@@ -1165,10 +1187,10 @@ export function getView(state: GameState): ScreenView {
     case 'ftown-hotel':
       return {
         screen: 'ftown-hotel',
-        title: 'THE SHAMROCK HOTEL',
+        title: 'THE CROWN & CRADLE',
         body: [
-          'Briggs Street is lined on both sides with buildings, and they centre on the',
-          'Shamrock. Half the town does not dig at all; a good deal of what it knows is',
+          'Bell Street is lined on both sides with buildings, and they centre on the',
+          'Crown & Cradle. Half the town does not dig at all; a good deal of what it knows is',
           'known here first.',
           '',
           receptionLine(state),
@@ -1205,7 +1227,7 @@ export function getView(state: GameState): ScreenView {
       menu.push(back('ftown-hotel'));
       return {
         screen: 'ftown-gamble',
-        title: 'THE YARD BEHIND THE SHAMROCK',
+        title: 'THE YARD BEHIND THE CROWN & CRADLE',
         body: [
           'Diggers come to town to exchange their gold, then spend up big — gambling and',
           'carousing, often losing a small fortune overnight.',
@@ -1250,11 +1272,11 @@ export function getView(state: GameState): ScreenView {
       return {
         screen: 'ftown-cards',
         title: 'A HAND OF CARDS',
-        body: [hand, tell, '', `The stake is ${formatMoney(g?.stake ?? 0)}. A raise risks another stake and pays two if it comes home.`],
+        body: [hand, tell, '', `The stake is ${formatMoney(g?.stake ?? 0)}. A winning hand returns seven shillings for every five risked.`],
         menu: [
           item('1', 'Fold', { type: 'cardsDecision', choice: 'fold' }, 'lose half the stake and keep the rest'),
           item('2', 'Call', { type: 'cardsDecision', choice: 'call' }, 'show the hands for the original stake'),
-          item('3', 'Raise', { type: 'cardsDecision', choice: 'raise' }, 'stronger reward, but another stake at risk', !g || state.moneyPence < g.stake * 2),
+          item('3', 'Raise', { type: 'cardsDecision', choice: 'raise' }, 'the same rate of return, with another stake at risk', !g || state.moneyPence < g.stake),
           item('4', 'Bluff', { type: 'cardsDecision', choice: 'bluff' }, 'best against a weak-looking opponent; costly when called'),
         ],
       };
@@ -1300,19 +1322,19 @@ export function getView(state: GameState): ScreenView {
         );
       }
       if (isCamp(state.location)) {
-        menu.push(item(String(n++), 'Back to Fields Town', { type: 'travelTo', place: 'fields-town' }));
+        menu.push(item(String(n++), 'Back to Slateford', { type: 'travelTo', place: 'fields-town' }));
       }
       if (state.secret && !state.secret.chased) {
         menu.push(
-          item(String(n++), 'Follow the talk of a secret mine', { type: 'followRumour' }, `${SECRET_TRAVEL_DAYS} days out, and it may be nothing at all`),
+          item(String(n++), "Follow the talk of Widow's Reef", { type: 'followRumour' }, `${SECRET_TRAVEL_DAYS} days out, and it may be nothing at all`),
         );
       }
-      menu.push(item(String(n++), 'Back to Suze Port on foot', { type: 'travel', route: 'trickeys', mode: state.horse !== 'none' ? 'horse' : 'walk' }));
+      menu.push(item(String(n++), 'Back to Port Gannet on foot', { type: 'travel', route: 'trickeys', mode: state.horse !== 'none' ? 'horse' : 'walk' }));
       menu.push(back(isCamp(state.location) ? 'camp' : 'ftown'));
       return {
         screen: 'ftown-depart',
         title: 'OUT TO THE DIGGINGS',
-        body: ['In the scattered mining camps around Goldfields the work is tough, but there is always a chance to make a fortune.'],
+        body: ['In the scattered camps of the Slate River diggings the work is tough, but there is always a chance to make a fortune.'],
         menu,
       };
     }
@@ -1335,6 +1357,7 @@ export function getView(state: GameState): ScreenView {
           'There is no camp here: no store, troopers, claims or company office. Only the',
           'abandoned holes and the story of The Southern Cross—a nugget said to be so large',
           'that two men could scarcely lift it from the earth.',
+          'It is open desert, with no water within forty miles.',
           '',
           clues[Math.min(4, trail)],
           ...(e?.nuggetFound ? ['', 'The great nugget is yours. Nothing here can equal that moment again.'] : []),
@@ -1345,7 +1368,7 @@ export function getView(state: GameState): ScreenView {
           item('2', 'Dig the black leader for The Southern Cross', { type: 'searchSecret', approach: 'dig' }, trail >= 4 ? 'the promised bed is found' : 'you have not followed the trail far enough', trail < 4 || !!e?.exhausted || !!e?.nuggetFound),
           item('3', 'Winnow a little dry dirt by hand', { type: 'searchSecret', approach: 'winnow' }, 'a small side chance for ordinary gold, not the purpose of the expedition', !!e?.exhausted),
           item('4', 'Rest for a day', { type: 'rest', days: 1 }, 'save your strength, but water and food still go'),
-          item('5', 'Turn back towards Fields Town', { type: 'travelTo', place: 'fields-town' }, `${localTravelDays(state, 'fields-town')} days away`),
+          item('5', 'Turn back towards Slateford', { type: 'travelTo', place: 'fields-town' }, `${localTravelDays(state, 'fields-town')} days away`),
         ],
       };
     }
@@ -1389,7 +1412,7 @@ export function getView(state: GameState): ScreenView {
         item('5', 'Rest a spell', { type: 'rest', days: state.spellDays }, `${state.spellDays} days`),
         item('6', `A camp "doctor" — ${formatMoney(QUACK_FEE)}`, { type: 'quack' }, 'a butcher by trade; I would rather be treated by a horse-coper', state.moneyPence < QUACK_FEE),
         item('7', 'Move on', { type: 'goto', screen: 'ftown-depart' }),
-        item('8', 'Back to Fields Town', { type: 'travelTo', place: 'fields-town' }),
+        item('8', 'Back to Slateford', { type: 'travelTo', place: 'fields-town' }),
         item('P', 'Try the ground with a dish', { type: 'prospect' }, state.items.pan < 1 ? 'you want a pan for it' : claim ? 'a day spent learning what your claim is worth' : 'a day spent learning what the field has left', state.items.pan < 1),
       ];
       if (claim) {
@@ -1403,7 +1426,7 @@ export function getView(state: GameState): ScreenView {
       } else {
         menu.push(
           item('N', 'Go mates with a digger', { type: 'takePartner' },
-            state.standing >= STANDING_PARTNER ? 'no wage, but a quarter of the gold' : 'no man here knows you well enough yet',
+            state.standing >= STANDING_PARTNER ? 'no wage, but half the gold' : 'no man here knows you well enough yet',
             state.standing < STANDING_PARTNER),
         );
       }
@@ -1437,9 +1460,9 @@ export function getView(state: GameState): ScreenView {
         menu.push(item('X', 'Abandon the shaft', { type: 'abandonShaft' }, 'and start afresh somewhere else on your ground'));
       }
       if (state.secret && !state.secret.chased) {
-        menu.push(item('S', 'Follow the talk of a secret mine', { type: 'followRumour' }, 'it may be a hoax'));
+        menu.push(item('S', "Follow the talk of Widow's Reef", { type: 'followRumour' }, 'it may be a hoax'));
       }
-      if (state.items.journal > 0) menu.push(item('J', 'Read A Goldfields Journal', { type: 'readJournal' }));
+      if (state.items.journal > 0) menu.push(item('J', "Read The New Chum's Companion", { type: 'readJournal' }));
       menu.push(estateEntry(state, 'E'));
       menu.push(banditEntry(state, 'B'));
       menu.push(item('D', 'Length of a spell of work', { type: 'cycleSpell' }, `${state.spellDays} days`));
@@ -1524,7 +1547,7 @@ export function getView(state: GameState): ScreenView {
     case 'camp-shares':
       return {
         screen: 'camp-shares',
-        title: 'THE COMPANY OFFICE, DEEP MOUNTAINS',
+        title: 'THE COMPANY OFFICE, BLACKCAP RANGES',
         body: [
           'Big mines need many workers and plenty of money. Large companies are taking',
           'over from diggers as the main extractors of gold. A man may buy a share in one,',
@@ -1533,8 +1556,8 @@ export function getView(state: GameState): ScreenView {
           `You hold ${state.shares} of a possible ${MAX_SHARES} shares.`,
         ],
         menu: [
-          item('1', `Buy one share — ${formatMoney(SHARE_PRICE)}`, { type: 'buyShares', n: 1 }, 'a dividend at year end, if the company does well', state.shares >= MAX_SHARES || state.moneyPence < SHARE_PRICE),
-          item('2', `Buy three shares — ${formatMoney(SHARE_PRICE * 3)}`, { type: 'buyShares', n: 3 }, undefined, state.shares > 0 || state.moneyPence < SHARE_PRICE * 3),
+          item('1', `Buy one share — ${formatMoney(SHARE_PRICE)}`, { type: 'buyShares', n: 1 }, 'must be held thirty days to qualify for a year-end dividend', state.shares >= MAX_SHARES || state.moneyPence < SHARE_PRICE),
+          item('2', `Buy three shares — ${formatMoney(SHARE_PRICE * 3)}`, { type: 'buyShares', n: 3 }, 'must be held thirty days to qualify for a year-end dividend', state.shares > 0 || state.moneyPence < SHARE_PRICE * 3),
           item('3', 'Take a shift on wages', { type: 'mine', method: 'company', days: state.spellDays }),
           item(
             '4',
@@ -1683,7 +1706,7 @@ export function getView(state: GameState): ScreenView {
     case 'obituary':
       return {
         screen: 'obituary',
-        title: 'THE ANGUS GAZETTE — DEATHS',
+        title: 'THE SLATEFORD TIMES — DEATHS',
         body: [
           deathNotice(state),
           '',
@@ -1726,7 +1749,7 @@ function bushArticle(rank: BushRank): string {
 }
 
 function roadName(route: Route): string {
-  return route === 'pass' ? 'the Pass Road' : "Trickey's Track";
+  return route === 'pass' ? 'the Razorback Road' : "Mercer's Track";
 }
 
 /** What a man's papers are worth to a harbourer, put in a line (§23.4). */
@@ -1746,8 +1769,8 @@ function intelLine(state: GameState): string | null {
 /** The heat books, in the words a shanty keeper would use. */
 function heatLines(state: GameState): string[] {
   const zones: [HeatZone, string][] = [
-    ['trickeys', "Trickey's Track"],
-    ['pass', 'the Pass Road'],
+    ['trickeys', "Mercer's Track"],
+    ['pass', 'the Razorback Road'],
     ['town', 'the two towns'],
     ['camps', 'the camps and ranges'],
   ];
@@ -1766,7 +1789,7 @@ export function banditView(state: GameState): ScreenView {
   body.push(
     camp || state.location === 'hideout'
       ? 'The sly-grog shanty at the back of the gully keeps no licence and no ledger, and the men in it have all been somewhere they would rather not name.'
-      : 'There is a room behind the Shamrock where the talk stops when a stranger comes in, and a harbourer who will sell a word to a man he knows.',
+      : 'There is a room behind the Crown & Cradle where the talk stops when a stranger comes in, and a harbourer who will sell a word to a man he knows.',
   );
   body.push('');
   body.push(`The colony reckons you ${notorietyPhrase(state.notoriety)}.`);
@@ -1819,12 +1842,12 @@ export function banditView(state: GameState): ScreenView {
   }
   if (state.location === 'deep-mountains' || !state.hideout) {
     menu.push(
-      item('5', 'Make a camp in the ranges', { type: 'makeHideout' }, hide.note, !hide.ok),
+      item('5', 'Make camp at Split Rock', { type: 'makeHideout' }, hide.note, !hide.ok),
     );
   }
   if (state.hideout && state.location !== 'hideout') {
     menu.push(
-      item('6', 'Ride up to the camp in the ranges', { type: 'travelTo', place: 'hideout' }, 'safe sleep, and the stash under the stone'),
+      item('6', 'Ride up to Split Rock Camp', { type: 'travelTo', place: 'hideout' }, 'safe sleep, and the stash under the stone'),
     );
   }
   if (state.location === 'fields-town') {
@@ -1835,7 +1858,7 @@ export function banditView(state: GameState): ScreenView {
   menu.push(
     item(
       '8',
-      "Take the gold escort on Trickey's Track",
+      "Take the gold escort on Mercer's Track",
       { type: 'robEscort' },
       !job.ok
         ? job.note
@@ -1974,13 +1997,13 @@ export function hideoutView(state: GameState): ScreenView {
     item('1', 'The stash under the stone', { type: 'goto', screen: 'stash' }, h ? `${formatMoney(stashWorth(state))} buried` : undefined),
     item('2', 'Lie up a spell', { type: 'rest', days: state.spellDays }, `${state.spellDays} days, and the heat going off the districts`),
     item('3', 'Business of another kind', { type: 'goto', screen: 'bandit' }),
-    item('4', 'Ride down to the Deep Mountains', { type: 'travelTo', place: 'deep-mountains' }),
-    item('5', 'Ride down to Fields Town', { type: 'travelTo', place: 'fields-town' }),
+    item('4', 'Ride down to the Blackcap Ranges', { type: 'travelTo', place: 'deep-mountains' }),
+    item('5', 'Ride down to Slateford', { type: 'travelTo', place: 'fields-town' }),
     item('D', 'Length of a spell of work', { type: 'cycleSpell' }, `${state.spellDays} days`),
   ];
   return {
     screen: 'hideout',
-    title: 'THE CAMP IN THE RANGES',
+    title: 'SPLIT ROCK CAMP',
     subtitle: `${formatDate(state.day)} · ${titleCase(seasonPhrase(state.day))}`,
     body,
     menu,
@@ -2116,7 +2139,7 @@ function assizesView(state: GameState): ScreenView {
   const canBreak = canBreakGaol(state);
   return {
     screen: 'encounter',
-    title: 'THE FIELDS TOWN LOCK-UP',
+    title: 'THE SLATEFORD LOCK-UP',
     body: [
       'A slab hut with a chain running through it and a trooper on the door. The',
       'monthly magistrate is not mentioned; you are for the assizes, and a judge is',
@@ -2192,7 +2215,7 @@ function campCharacter(state: GameState, camp: CampId): string[] {
       break;
     case 'secret-mine':
       lines.push(
-        'There is no water within forty miles. Dryblowing is the only way of it here, and the desert takes its price out of you daily.',
+        'There is no water within forty miles. A little dirt may be winnowed by hand, but the legendary nugget is the reason to be here.',
       );
       break;
     default:
@@ -2227,7 +2250,7 @@ export function estateView(state: GameState): ScreenView {
   const camp = isCamp(state.location) ? (state.location as CampId) : null;
   const body: string[] = [
     'Half the men on this field dig, and the other half supply the men who dig,',
-    'and it is not the diggers who are buying land at Suze Port. What follows is',
+    'and it is not the diggers who are buying land at Port Gannet. What follows is',
     'bought with clean money, and pays in something other than gold.',
     '',
   ];
@@ -2246,14 +2269,14 @@ export function estateView(state: GameState): ScreenView {
   }
   if (e.jpSince !== null) {
     body.push('');
-    body.push(`Gazetted a Justice of the Peace on day ${e.jpSince}. The court sits at Fields Town on day ${e.nextCourtDay}.`);
+    body.push(`Gazetted a Justice of the Peace on day ${e.jpSince}. The court sits at Slateford on day ${e.nextCourtDay}.`);
   }
 
   const menu: MenuItem[] = [];
   if (!e.shamrock) {
     const unmet = shamrockRequirements(state).filter((r) => !r.met);
     menu.push(
-      item('1', `Buy the Shamrock Hotel — ${formatMoney(SHAMROCK_PRICE)}`, { type: 'buyShamrock' },
+      item('1', `Buy the Crown & Cradle — ${formatMoney(SHAMROCK_PRICE)}`, { type: 'buyShamrock' },
         unmet.length === 0
           ? 'Mrs. Doyle stays on to run it; every rumour on this field crosses that bar'
           : `wants ${unmet[0].text}`,
@@ -2289,18 +2312,18 @@ export function estateView(state: GameState): ScreenView {
   if (!e.gazetteShare) {
     const unmet = gazetteRequirements(state).filter((r) => !r.met);
     menu.push(
-      item('3', `Buy a half-share in The Angus Gazette — ${formatMoney(GAZETTE_SHARE_PRICE)}`, { type: 'buyGazetteShare' },
+      item('3', `Buy a half-share in The Slateford Times — ${formatMoney(GAZETTE_SHARE_PRICE)}`, { type: 'buyGazetteShare' },
         unmet.length === 0 ? 'a pound a week, and the ear of eleven thousand men' : `wants ${unmet[0].text}`,
         unmet.length > 0),
     );
   } else {
     menu.push(
-      item('P', 'The Angus office — set a story', { type: 'goto', screen: 'press' },
+      item('P', 'The Times office — set a story', { type: 'goto', screen: 'press' },
         inTown
           ? storyDue(state)
             ? 'the press is idle and the type is standing'
             : `the next story in ${daysToNextStory(state)} day${daysToNextStory(state) === 1 ? '' : 's'}`
-          : 'copy is set in Briggs Street, not shouted across forty miles of scrub',
+          : 'copy is set in Bell Street, not shouted across forty miles of scrub',
         !inTown || !storyDue(state)),
     );
   }
@@ -2316,10 +2339,10 @@ export function estateView(state: GameState): ScreenView {
   };
 }
 
-/** The Angus office: a flatbed press, and the ear of the whole field. */
+/** The Times office: a flatbed press, and the ear of the whole field. */
 export function pressView(state: GameState): ScreenView {
   const body: string[] = [
-    'Mr. Angus sets the type himself when the boy is drunk, which is on Fridays.',
+    'Mr. Vale sets the type himself when the boy is drunk, which is on Fridays.',
     'The paper goes out on Saturday to every camp on the field, and what it says',
     'is believed by more men than have ever met a proprietor of it.',
     '',
@@ -2339,12 +2362,12 @@ export function pressView(state: GameState): ScreenView {
   menu.push(
     item('6', 'Kill a notice concerning yourself', { type: 'placeStory', kind: 'killNotice' },
       state.estate.noticeKillUsed
-        ? 'Angus has done that for you once this year, and has a memory'
+        ? 'Mr. Vale has done that for you once this year, and has a memory'
         : 'a fortnight in which the Camp is not reminded of you',
       !ready || state.estate.noticeKillUsed || state.outlawed),
   );
   menu.push(back('estate'));
-  return { screen: 'press', title: 'THE ANGUS GAZETTE, BRIGGS STREET', body, menu };
+  return { screen: 'press', title: 'THE SLATEFORD TIMES, BELL STREET', body, menu };
 }
 
 /** The Local Court, in the Council's main hall, with the field at the back of it. */
@@ -2363,7 +2386,7 @@ export function courtView(state: GameState): ScreenView {
   }
   return {
     screen: 'court',
-    title: 'THE LOCAL COURT, FIELDS TOWN',
+    title: 'THE LOCAL COURT, SLATEFORD',
     subtitle: `${formatDate(state.day)} · ${docket.length} cases`,
     body,
     menu: [
@@ -2602,8 +2625,9 @@ export function worthChartLines(state: GameState): string[] {
   ];
 }
 
-function lodgingWord(state: GameState): string {
-  switch (state.lodging) {
+function lodgingWord(state: GameState, location: 'suze-port' | 'fields-town'): string {
+  const lodging = location === 'fields-town' ? state.slatefordLodging : state.lodging;
+  switch (lodging) {
     case 'inn':
       return 'the inn dormitory, 10s a night';
     case 'stable':
@@ -2628,7 +2652,7 @@ function deathNotice(state: GameState): string {
 }
 
 /**
- * What the Gazette prints under an outlaw's death notice when he is known to
+ * What the Times prints under an outlaw's death notice when he is known to
  * have had a camp in the ranges and nothing on him worth the naming: the
  * rumour of buried gold, which outlives every man it is told of (§24).
  */
@@ -2649,7 +2673,7 @@ function tally(label: string, value: string): string {
 function outlawEndPhrase(state: GameState): string | null {
   switch (state.outlawEnd) {
     case 'hanged':
-      return 'hanged at the Fields Town assizes';
+      return 'hanged at the Slateford assizes';
     case 'hulks':
       return 'years of it, and the road ends in the hulks';
     case 'california':
@@ -2698,7 +2722,7 @@ function otherLedgerLines(state: GameState): string[] {
   out.push(
     tally(
       'On your head',
-      reward > 0 ? `${formatMoney(reward)}, and printed in the Angus` : 'nothing the Crown will pay for',
+      reward > 0 ? `${formatMoney(reward)}, and printed in the Times` : 'nothing the Crown will pay for',
     ),
   );
   if (state.gang.length > 0) {
@@ -2735,7 +2759,7 @@ function estateLedgerLines(state: GameState): string[] {
   }
   if (isJP(state)) {
     out.push(tally('Commission', `Justice of the Peace, gazetted day ${e.jpSince}`));
-    out.push('    Arrived a new chum; sits on the Fields Town bench now.');
+    out.push('    Arrived a new chum; sits on the Slateford bench now.');
   }
   return out;
 }

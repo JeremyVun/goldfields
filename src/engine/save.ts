@@ -1,5 +1,5 @@
 import { COMPANY_SHARE_PRICE, GANG_MAX } from './constants';
-import { SAVE_VERSION, createInitialState, emptyEstate, emptyHeat } from './state';
+import { SAVE_VERSION, createInitialState, emptyEstate, emptyHearth, emptyHeat } from './state';
 import {
   CAMPS,
   type CampId,
@@ -8,12 +8,18 @@ import {
   type Estate,
   type GameState,
   type GangMember,
+  type Hearth,
+  type HearthEvent,
   type Hideout,
+  type Intended,
+  type Lease,
   type RushNews,
 } from './types';
 
-export const SAVE_PREFIX = 'goldfields.game.';
-export const LAST_KEY = 'goldfields.last';
+export const SAVE_PREFIX = 'goldrush.game.';
+export const LAST_KEY = 'goldrush.last';
+const LEGACY_SAVE_PREFIX = 'goldfields.game.';
+const LEGACY_LAST_KEY = 'goldfields.last';
 
 export interface SaveStore {
   getItem(key: string): string | null;
@@ -79,6 +85,48 @@ function numberList(raw: unknown, fallback: number | undefined): number[] {
   return fallback === undefined ? [] : [fallback];
 }
 
+/** The names given to ground brought forward from a save written before §19.4. */
+const MIGRATED_MINE_NAMES = ['the North Star', 'the Perseverance', 'the Welcome', 'the Caledonia'];
+
+/**
+ * A lease off disk. A §19.2 save held `{ quality, workedDays, proven }`: that
+ * ground comes back as a named mine bottomed at the first level, its reef the
+ * old quality and its face whatever the old wear had left in it.
+ */
+function migrateLease(raw: unknown, index: number): Lease {
+  const l = (raw ?? {}) as Partial<Lease> & { quality?: number; workedDays?: number };
+  if (typeof l.reef === 'number' || typeof l.name === 'string') {
+    return {
+      name: l.name ?? MIGRATED_MINE_NAMES[index % MIGRATED_MINE_NAMES.length],
+      reef: l.reef ?? 100,
+      level: l.level ?? 1,
+      face: Math.max(0, l.face ?? 0),
+      yieldNow: l.yieldNow ?? l.reef ?? 100,
+      wet: l.wet ?? false,
+      pump: l.pump ?? false,
+      timbered: l.timbered ?? false,
+      flooded: l.flooded ?? false,
+      progress: Math.max(0, l.progress ?? 0),
+      plan: l.plan === 'sink' || l.plan === 'drive' ? l.plan : null,
+    };
+  }
+  const quality = l.quality ?? 100;
+  const worked = l.workedDays ?? 0;
+  return {
+    name: MIGRATED_MINE_NAMES[index % MIGRATED_MINE_NAMES.length],
+    reef: quality,
+    level: 1,
+    face: Math.max(0, 5 - Math.floor(worked / 12)),
+    yieldNow: quality,
+    wet: false,
+    pump: false,
+    timbered: false,
+    flooded: false,
+    progress: 0,
+    plan: null,
+  };
+}
+
 /** A company read back off disk, with every book it needs to keep. */
 function migrateCompany(raw: unknown): Company | null {
   if (!raw || typeof raw !== 'object') return null;
@@ -91,18 +139,20 @@ function migrateCompany(raw: unknown): Company | null {
     sharesPublic: c.sharesPublic ?? 0,
     sharesUnsold: c.sharesUnsold ?? 0,
     sharePrice: c.sharePrice ?? COMPANY_SHARE_PRICE,
-    crews: (c.crews ?? []).map((k) => ({ task: k.task === 'prospect' ? 'prospect' : 'mine' })),
-    leases: (c.leases ?? []).map((l) => ({
-      quality: l.quality ?? 100,
-      workedDays: l.workedDays ?? 0,
-      proven: l.proven ?? true,
+    crews: (c.crews ?? []).map((k) => ({
+      task: k.task === 'prospect' || k.task === 'develop' ? k.task : 'mine',
+      lease: typeof k.lease === 'number' ? k.lease : undefined,
     })),
+    leases: (c.leases ?? []).map((l, i) => migrateLease(l, i)),
     weekProfit: c.weekProfit ?? [],
     lastWeekGold: c.lastWeekGold ?? 0,
     foundedOn: c.foundedOn ?? 1,
     lastDividendDay: c.lastDividendDay ?? 0,
     relations: c.relations ?? 0,
     supplyContractUntilDay: c.supplyContractUntilDay ?? 0,
+    battery: c.battery ?? false,
+    driving: c.driving === 'cautious' || c.driving === 'hard' ? c.driving : 'ordinary',
+    lastWeek: c.lastWeek ?? null,
   };
 }
 
@@ -146,6 +196,42 @@ function migrateEstate(raw: unknown): Estate {
   };
 }
 
+function migrateIntended(raw: unknown): Intended | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const i = raw as Partial<Intended>;
+  if (typeof i.name !== 'string') return null;
+  return {
+    name: i.name,
+    trade: i.trade ?? 'storekeeper',
+    manner: typeof i.manner === 'string' ? i.manner : 'dry wit',
+    metOn: i.metOn ?? 1,
+    metAt: i.metAt ?? 'ball',
+    callsKept: i.callsKept ?? 0,
+    lavishGifts: i.lavishGifts ?? 0,
+    lastGiftOn: i.lastGiftOn ?? 0,
+  };
+}
+
+/**
+ * A save written before the hearth was kept comes back a single man with
+ * nobody in the colony to write to (§32).
+ */
+function migrateHearth(raw: unknown): Hearth {
+  const base = emptyHearth();
+  if (!raw || typeof raw !== 'object') return base;
+  const h = raw as Partial<Hearth>;
+  return {
+    ...base,
+    ...h,
+    intended: migrateIntended(h.intended),
+    nextEvent: h.nextEvent && typeof h.nextEvent === 'object' ? { ...h.nextEvent } as HearthEvent : null,
+    letters: Array.isArray(h.letters) ? h.letters.filter((l) => l && typeof l === 'object') : [],
+    homeStashPence: Math.max(0, h.homeStashPence ?? 0),
+    homeStashGold: Math.max(0, h.homeStashGold ?? 0),
+    cottagePaid: Math.max(0, h.cottagePaid ?? 0),
+  };
+}
+
 /** Tolerant of older saves: anything missing falls back to a fresh game's value. */
 export function deserialise(text: string): GameState | null {
   try {
@@ -165,6 +251,8 @@ export function deserialise(text: string): GameState | null {
       skill: { ...base.skill, ...(raw.skill ?? {}) },
       standing: raw.standing ?? 0,
       partner: raw.partner ?? false,
+      slatefordLodging: raw.slatefordLodging ?? 'rough',
+      slatefordTentGroundPaidUntil: raw.slatefordTentGroundPaidUntil ?? 0,
       horseInspection: { ...base.horseInspection, ...(raw.horseInspection ?? {}) },
       // A save written before either ledger was kept starts both afresh, at
       // whatever the rate and the man are worth today.
@@ -176,6 +264,7 @@ export function deserialise(text: string): GameState | null {
       company: migrateCompany(raw.company),
       soldOut: raw.soldOut ?? null,
       estate: migrateEstate(raw.estate),
+      hearth: migrateHearth(raw.hearth),
       agitation: raw.agitation ?? 0,
       meetingDone: raw.meetingDone ?? false,
       meetingAttended: raw.meetingAttended ?? false,
@@ -217,22 +306,24 @@ export function saveGame(state: GameState, store: SaveStore = defaultStore()): s
 }
 
 export function loadGame(id: string, store: SaveStore = defaultStore()): GameState | null {
-  const text = store.getItem(SAVE_PREFIX + id.trim());
+  const cleanId = id.trim();
+  const text = store.getItem(SAVE_PREFIX + cleanId) ?? store.getItem(LEGACY_SAVE_PREFIX + cleanId);
   return text ? deserialise(text) : null;
 }
 
 export function lastGameId(store: SaveStore = defaultStore()): string | null {
-  return store.getItem(LAST_KEY);
+  return store.getItem(LAST_KEY) ?? store.getItem(LEGACY_LAST_KEY);
 }
 
 export function listSaves(store: SaveStore = defaultStore()): string[] {
   const g = globalThis as unknown as { localStorage?: Storage };
   const ls = g.localStorage;
   if (!ls || store !== (ls as unknown as SaveStore)) return [];
-  const ids: string[] = [];
+  const ids = new Set<string>();
   for (let i = 0; i < ls.length; i++) {
     const k = ls.key(i);
-    if (k && k.startsWith(SAVE_PREFIX)) ids.push(k.slice(SAVE_PREFIX.length));
+    if (k?.startsWith(SAVE_PREFIX)) ids.add(k.slice(SAVE_PREFIX.length));
+    else if (k?.startsWith(LEGACY_SAVE_PREFIX)) ids.add(k.slice(LEGACY_SAVE_PREFIX.length));
   }
-  return ids.sort();
+  return [...ids].sort();
 }

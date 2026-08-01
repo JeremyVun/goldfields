@@ -11,7 +11,7 @@ import {
 } from './constants';
 import type { Log } from './narrate';
 import type { RNG } from './rng';
-import { addJournal, checkYearEnd, hasWork, isCamp } from './state';
+import { addJournal, checkYearEnd, hasWork, isCamp, lodgingAt } from './state';
 import { season } from './time';
 import type { GameState, IllnessId } from './types';
 
@@ -108,7 +108,7 @@ export function contract(
 }
 
 /**
- * What Calico House asks a day. A man who endowed the ward is never charged in
+ * What Canvas House asks a day. A man who endowed the ward is never charged in
  * it, and the field pays half of what it used to (§27) — of which the player
  * only ever feels his own half of the bargain.
  */
@@ -125,9 +125,10 @@ export function sicknessRisk(state: GameState): number {
   const raced = isCamp(state.location) && hasWork(state, 'waterRace', state.location);
 
   if (state.location === 'suze-port' || state.location === 'fields-town') {
-    if (state.lodging === 'rough') risk += 0.014;
-    else if (state.lodging === 'stable') risk += 0.008;
-    else if (state.lodging === 'tentground') risk += 0.005;
+    const lodging = lodgingAt(state);
+    if (lodging === 'rough') risk += 0.014;
+    else if (lodging === 'stable') risk += 0.008;
+    else if (lodging === 'tentground') risk += 0.005;
     else risk += 0.002;
   } else if (isCamp(state.location)) {
     risk += 0.011 * CAMP_DEFS[state.location].squalor;
@@ -137,7 +138,7 @@ export function sicknessRisk(state: GameState): number {
   }
 
   if (state.provisionDays <= 0) risk += 0.012;
-  if (state.waterDays <= 0 && s === 'summer') risk += 0.01 * (raced ? RACE_SUMMER_FACTOR : 1);
+  if (state.waterDays <= 0 && s === 'summer' && !raced) risk += 0.01;
   if (s === 'summer') risk += 0.005 * (raced ? RACE_SUMMER_FACTOR : 1);
   if (s === 'winter') risk += 0.006;
   if (state.health < 50) risk *= 1.6;
@@ -191,7 +192,7 @@ export function nightlyHealth(state: GameState, rng: RNG, log: Log): void {
   } else {
     // Health mends slowly of its own accord, given food and a roof.
     if (state.health < HEALTH_MAX && state.provisionDays > 0) {
-      heal(state, state.lodging === 'rough' && !isCamp(state.location) ? 2 : 3);
+      heal(state, lodgingAt(state) === 'rough' && !isCamp(state.location) ? 2 : 3);
     }
   }
 
@@ -216,7 +217,7 @@ export function nightlyHealth(state: GameState, rng: RNG, log: Log): void {
     log.say('works.ward.absence', undefined, 'good');
   }
 
-  if (s === 'winter' && state.lodging === 'rough' && state.items.swag < 1) {
+  if (s === 'winter' && lodgingAt(state) === 'rough' && state.items.swag < 1) {
     damage(state, 2, 'exposure');
     log.say('day.cold.rough', undefined, 'bad');
   }
@@ -224,7 +225,7 @@ export function nightlyHealth(state: GameState, rng: RNG, log: Log): void {
 
 /**
  * A man at death's door ought to be told so, plainly, while there is still time
- * to rest or pay for a bed at Calico House. Called at the close of every day,
+ * to rest or pay for a bed at Canvas House. Called at the close of every day,
  * after the night's mischief has had its turn.
  */
 export function warnIfGrave(state: GameState, log: Log): void {
@@ -235,10 +236,15 @@ export function warnIfGrave(state: GameState, log: Log): void {
 }
 
 /**
- * Gravely ill away from town: the diggers cart you to Calico House whether you
+ * Gravely ill away from town: the diggers cart you to Canvas House whether you
  * will or no, and the fees come out of your pocket (faithful).
  */
-export function checkGrave(state: GameState, rng: RNG, log: Log): boolean {
+export function checkGrave(
+  state: GameState,
+  rng: RNG,
+  log: Log,
+  advanceKept: (days: number) => void = (days) => { state.day += days; },
+): boolean {
   if (state.gameOver) return false;
   if (state.health > AUTO_HOSPITAL_HEALTH) return false;
   // Only from the diggings and the road: the towns have their own doctors.
@@ -259,24 +265,24 @@ export function checkGrave(state: GameState, rng: RNG, log: Log): boolean {
   state.location = 'fields-town';
   state.screen = 'ftown';
   state.journey = null;
-  state.day += days;
+  advanceKept(days);
   heal(state, rng.int(22, 38));
   if (state.illness && rng.chance(0.75)) state.illness = null;
   state.fatigue = 0;
-  addJournal(state, `Carted insensible to Calico House; ${days} days lost.`, 'bad');
+  addJournal(state, `Carted insensible to Canvas House; ${days} days lost.`, 'bad');
   checkYearEnd(state);
   return true;
 }
 
 /**
- * A stay at Calico House. Returns the number of days actually spent under care,
+ * A stay at Canvas House. Returns the number of days actually spent under care,
  * which is what the caller must advance the calendar by: a man who can only pay
  * for one day is turned out after one day, not kept (and charged) for seven.
  */
 export function hospitalStay(state: GameState, rng: RNG, log: Log, days: number): number {
   const perDay = hospitalFee(state);
   if (state.moneyPence < perDay) {
-    log.raw('Calico House is charity in name only. Without ten shillings for the day, they cannot take you in.', 'bad');
+    log.raw('Canvas House is charity in name only. Without ten shillings for the day, they cannot take you in.', 'bad');
     return 0;
   }
   const affordable = perDay === 0 ? days : Math.floor(state.moneyPence / perDay);

@@ -3,6 +3,7 @@ import { agitationTick } from './agitation';
 import { banditDayTick, banditWeek } from './bandit';
 import { companyWeek } from './company';
 import { estateDay, estateWeek } from './estate';
+import { hearthDay } from './hearth';
 import { CAMP_DEFS, LODGING, STARVATION_HEALTH, THIRST_HEALTH_OTHER, THIRST_HEALTH_SUMMER } from './constants';
 import { damage, nightlyHealth, warnIfGrave } from './health';
 import { cleanDayTick, toTheLogs } from './law';
@@ -10,7 +11,7 @@ import { walkRate } from './market';
 import type { Log } from './narrate';
 import { nightAtCamp, nightInTown, newsTick, pursuitTick, weatherTick } from './events';
 import type { RNG } from './rng';
-import { checkYearEnd, isCamp, recordWorth } from './state';
+import { checkYearEnd, hasWork, isCamp, lodgingAt, recordWorth } from './state';
 import type { GameState } from './types';
 
 export { checkYearEnd };
@@ -28,30 +29,41 @@ export interface DayCtx {
 
 function payLodging(state: GameState, log: Log): boolean {
   if (state.location !== 'suze-port' && state.location !== 'fields-town') return false;
-  if (state.lodging === 'rough') return false;
+  const slateford = state.location === 'fields-town';
+  const lodging = lodgingAt(state);
+  const setLodging = (kind: GameState['lodging']): void => {
+    if (slateford) state.slatefordLodging = kind;
+    else state.lodging = kind;
+  };
+  const paidUntil = slateford ? state.slatefordTentGroundPaidUntil : state.tentGroundPaidUntil;
+  const setPaidUntil = (day: number): void => {
+    if (slateford) state.slatefordTentGroundPaidUntil = day;
+    else state.tentGroundPaidUntil = day;
+  };
+  if (lodging === 'rough') return false;
 
-  if (state.lodging === 'tentground') {
+  if (lodging === 'tentground') {
     if (state.items.tent < 1) {
-      state.lodging = 'rough';
+      setLodging('rough');
       log.raw('You have no tent to pitch on your rented patch, so you sleep in the open.', 'bad');
       return false;
     }
-    if (state.tentGroundPaidUntil < state.day) {
+    if (paidUntil < state.day) {
       const rent = LODGING.tentground.weekly;
       if (state.moneyPence < rent) {
-        state.lodging = 'rough';
+        setLodging('rough');
         log.raw('The ground-agent wants his five shillings and you have not got it.', 'bad');
         return false;
       }
       state.moneyPence -= rent;
-      state.tentGroundPaidUntil = state.day + 6;
+      setPaidUntil(state.day + 6);
     }
     return false;
   }
 
-  const nightly = state.lodging === 'inn' ? LODGING.inn.nightly : LODGING.stable.nightly;
+  const nightly = lodging === 'inn' ? LODGING.inn.nightly : LODGING.stable.nightly;
   if (state.moneyPence < nightly) {
-    state.lodging = 'rough';
+    setLodging('rough');
     log.raw('There is no bed for a man without the money for it. You sleep rough.', 'bad');
     return false;
   }
@@ -84,6 +96,7 @@ function claimsDay(state: GameState, rng: RNG): void {
  */
 export function endDay(state: GameState, rng: RNG, log: Log, ctx: DayCtx = {}): void {
   if (state.gameOver) return;
+  const dayAtStart = state.day;
   const s = season(state.day);
 
   weatherTick(state, rng, log, ctx.verbose || rng.chance(0.14));
@@ -104,7 +117,9 @@ export function endDay(state: GameState, rng: RNG, log: Log, ctx: DayCtx = {}): 
   state.fedToday = false;
 
   // --- water ----------------------------------------------------------
-  const needsWater = ctx.travelling || state.location === 'secret-mine';
+  const inMajorTown = state.location === 'suze-port' || state.location === 'fields-town';
+  const suppliedByRace = isCamp(state.location) && hasWork(state, 'waterRace', state.location);
+  const needsWater = !inMajorTown && !suppliedByRace;
   if (needsWater && !ctx.kept) {
     if (state.waterDays > 0) {
       state.waterDays -= 1;
@@ -157,7 +172,10 @@ export function endDay(state: GameState, rng: RNG, log: Log, ctx: DayCtx = {}): 
       // A proclaimed man is put to his choice: stand, run, or give himself up.
       if (!state.pending) state.pending = { kind: 'patrol', data: { where: 'lodging' } };
     } else if (rng.chance(0.45)) {
-      toTheLogs(state, rng, log);
+      toTheLogs(state, rng, log, (days) => passKeptDays(state, rng, log, days));
+      // The detention callback has already turned the world for every elapsed
+      // day, including this one. Do not run this outer day a second time.
+      if (state.day !== dayAtStart) return;
       if (state.gameOver || state.endOfYear) return;
     } else {
       log.raw(
@@ -184,9 +202,10 @@ export function endDay(state: GameState, rng: RNG, log: Log, ctx: DayCtx = {}): 
     banditWeek(state, rng, log);
     recordWorth(state);
   }
-  agitationTick(state, log);
+  agitationTick(state, log, !ctx.kept);
   banditDayTick(state, log);
   estateDay(state, log);
+  hearthDay(state, rng, log);
   claimsDay(state, rng);
 
   state.day += 1;

@@ -4,10 +4,10 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 # --- config (override via env) ----------------------------------------------
-: "${VITE_ASSET_ORIGIN:=https://goldfields.syd1.cdn.digitaloceanspaces.com}"
+: "${VITE_ASSET_ORIGIN:=https://goldrush.syd1.cdn.digitaloceanspaces.com}"
 : "${VITE_ANALYTICS_URL=https://analytics.jeremyvun.com}"
-: "${SPACES_URI:=s3://goldfields/}"
-: "${CF_PAGES_PROJECT:=goldfields}"
+: "${SPACES_URI:=s3://goldrush/}"
+: "${CF_PAGES_PROJECT:=goldrush}"
 SPACES_URI="${SPACES_URI%/}"
 
 PAGES_DIR=dist

@@ -34,10 +34,12 @@ import {
   type Company,
   type Estate,
   type GameState,
+  type Hearth,
   type HeatZone,
   type ItemId,
   type LegalStatus,
   type LocationId,
+  type Lodging,
   type Route,
   type SkillRank,
   type Tone,
@@ -45,7 +47,33 @@ import {
 } from './types';
 
 /** The save format the engine writes. */
-export const SAVE_VERSION = 5;
+export const SAVE_VERSION = 6;
+
+/** A man fresh off the boat, with nobody in the colony to write to (§32). */
+export function emptyHearth(): Hearth {
+  return {
+    intended: null,
+    rung: 'none',
+    cottage: false,
+    cottagePaid: 0,
+    nextEvent: null,
+    eventsKept: 0,
+    eventsMissed: 0,
+    missedRun: 0,
+    homeStashPence: 0,
+    homeStashGold: 0,
+    letters: [],
+    nextBallDay: 0,
+    courtshipBurnedOn: 0,
+    herDecision: false,
+    reconciliationUsed: false,
+    weddingDay: 0,
+    remittedPence: 0,
+    childBorn: false,
+    sickbedDone: false,
+    collisionDone: false,
+  };
+}
 
 /** A man fresh off the boat holds nothing and no town knows his name. */
 export function emptyEstate(): Estate {
@@ -148,6 +176,8 @@ export function createInitialState(seed: number): GameState {
     horseInspection: { brumby: 0, hack: 0 },
     lodging: 'rough',
     tentGroundPaidUntil: 0,
+    slatefordLodging: 'rough',
+    slatefordTentGroundPaidUntil: 0,
     salvage: 0,
     fedToday: false,
 
@@ -182,11 +212,14 @@ export function createInitialState(seed: number): GameState {
 
     employment: null,
     shares: 0,
+    sharesBoughtOn: 0,
 
     company: null,
     soldOut: null,
 
     estate: emptyEstate(),
+
+    hearth: emptyHearth(),
 
     agitation: 0,
     meetingDone: false,
@@ -240,6 +273,11 @@ export function createInitialState(seed: number): GameState {
   };
 }
 
+/** The lodging selected in a major town; Port keeps the original save fields. */
+export function lodgingAt(state: GameState, location: LocationId = state.location): Lodging {
+  return location === 'fields-town' ? state.slatefordLodging : state.lodging;
+}
+
 export function cloneClaims(claims: Record<CampId, Claim | null>): Record<CampId, Claim | null> {
   const out = {} as Record<CampId, Claim | null>;
   for (const c of CAMPS) out[c] = claims[c] ? { ...(claims[c] as Claim) } : null;
@@ -266,6 +304,12 @@ export function clone(state: GameState): GameState {
       ...state.estate,
       store: state.estate.store ? { ...state.estate.store } : null,
       works: state.estate.works.map((w) => ({ ...w })),
+    },
+    hearth: {
+      ...state.hearth,
+      intended: state.hearth.intended ? { ...state.hearth.intended } : null,
+      nextEvent: state.hearth.nextEvent ? { ...state.hearth.nextEvent } : null,
+      letters: state.hearth.letters.map((l) => ({ ...l })),
     },
     claims: cloneClaims(state.claims),
     freshness: { ...state.freshness },
@@ -361,7 +405,7 @@ export function shaftRank(state: GameState): SkillRank {
 /** What the field would say of you, if asked. */
 export function standingPhrase(standing: number): string {
   if (standing >= 80) return 'an old identity of the diggings';
-  if (standing >= 60) return 'a name Briggs himself knows';
+  if (standing >= 60) return 'a name Bell himself knows';
   if (standing >= 45) return 'well spoken of about the camps';
   if (standing >= 30) return 'a man others will go mates with';
   if (standing >= 15) return 'a face they have begun to know';
@@ -385,7 +429,7 @@ export function bushRankOf(state: GameState): BushRank {
 /** What the colony would call him, if it were asked at a bar. */
 export function notorietyPhrase(notoriety: number): string {
   if (notoriety >= 80) return 'a name to frighten children with';
-  if (notoriety >= 60) return 'the man the Gazette prints of';
+  if (notoriety >= 60) return 'the man the Times prints of';
   if (notoriety >= 45) return 'talked of at every grog tent on the field';
   if (notoriety >= 30) return 'known to the traps by name';
   if (notoriety >= 15) return 'a face the police camp has begun to know';
@@ -481,13 +525,13 @@ export function isCamp(loc: LocationId): loc is CampId {
 export function locationName(loc: LocationId): string {
   switch (loc) {
     case 'suze-port':
-      return 'Suze Port';
+      return 'Port Gannet';
     case 'on-road':
       return 'the road';
     case 'fields-town':
-      return 'Fields Town';
+      return 'Slateford';
     case 'hideout':
-      return 'the camp in the ranges';
+      return 'Split Rock Camp';
     default:
       return CAMP_DEFS[loc as CampId].name;
   }
@@ -526,8 +570,8 @@ export function statusLine(state: GameState): string {
     formatMoney(state.moneyPence),
     formatGold(state.goldCentiOz),
     `Health: ${healthWord(state.health)}`,
-    reward > 0 ? `${legal} ${formatMoney(reward)}` : legal,
-    fatigueWord(state.fatigue),
+    `Law: ${reward > 0 ? `${legal} ${formatMoney(reward)}` : legal}`,
+    `Fatigue: ${fatigueWord(state.fatigue)}`,
   ];
   if (isCamp(state.location) && !state.outlawed) bits.push(licenceStatus(state));
   return bits.join(' · ');
@@ -570,6 +614,12 @@ export function estateWorth(state: GameState): number {
   return worth;
 }
 
+/** The cottage at its deed price, and what is laid by under its floor (§32.2). */
+export function hearthWorth(state: GameState): number {
+  const h = state.hearth;
+  return h.cottagePaid + h.homeStashPence + goldValue(h.homeStashGold, state.bankRate);
+}
+
 /** Everything the player is worth, valued at today's bank rate. */
 export function netWorth(state: GameState): number {
   return (
@@ -578,7 +628,8 @@ export function netWorth(state: GameState): number {
     goldValue(state.goldCentiOz, state.bankRate) +
     companyWorth(state) +
     stashWorth(state) +
-    estateWorth(state)
+    estateWorth(state) +
+    hearthWorth(state)
   );
 }
 

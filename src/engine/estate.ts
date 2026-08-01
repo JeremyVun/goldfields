@@ -146,7 +146,7 @@ function coolHeat(state: GameState, zone: 'town' | 'camps', amount: number): voi
 
 export function shamrockRequirements(state: GameState): Requirement[] {
   return [
-    { met: state.location === 'fields-town', text: 'a word with Mrs. Doyle at the Shamrock itself' },
+    { met: state.location === 'fields-town', text: 'a word with Mrs. Doyle at the Crown & Cradle itself' },
     {
       met: state.standing >= SHAMROCK_STANDING,
       text: `standing of ${SHAMROCK_STANDING}/100 on the field (you have ${Math.floor(state.standing)}/100)`,
@@ -170,7 +170,7 @@ export function buyShamrock(state: GameState, log: Log): boolean {
   state.estate.shamrock = true;
   addStanding(state, 5);
   log.say('estate.shamrock.buy', { amount: formatMoney(SHAMROCK_PRICE) }, 'good');
-  addJournal(state, `Bought the Shamrock Hotel for ${formatMoney(SHAMROCK_PRICE)}.`, 'good');
+  addJournal(state, `Bought the Crown & Cradle for ${formatMoney(SHAMROCK_PRICE)}.`, 'good');
   return true;
 }
 
@@ -179,9 +179,9 @@ export function storeRequirements(state: GameState, camp: CampId): Requirement[]
     { met: state.location === camp, text: `a tent standing at ${CAMP_DEFS[camp].name} and a man on the ground` },
     {
       met: state.standing >= STORE_STANDING,
-      text: `standing of ${STORE_STANDING}/100 (you have ${Math.floor(state.standing)}/100); Briggs will not supply a stranger`,
+      text: `standing of ${STORE_STANDING}/100 (you have ${Math.floor(state.standing)}/100); Bell will not supply a stranger`,
     },
-    { met: respectable(state), text: 'a character Briggs will give credit to' },
+    { met: respectable(state), text: 'a character Bell will give credit to' },
     {
       met: purse(state) >= STORE_PRICE + STORE_STOCK_PRICE,
       text: `${formatMoney(STORE_PRICE)} for the tent and licence and ${formatMoney(STORE_STOCK_PRICE)} for the opening stock`,
@@ -227,7 +227,7 @@ export function setStorePolicy(state: GameState, log: Log, policy: StorePolicy):
 
 export function gazetteRequirements(state: GameState): Requirement[] {
   return [
-    { met: state.location === 'fields-town', text: 'the Angus office in Briggs Street, and Mr. Angus at his desk' },
+    { met: state.location === 'fields-town', text: 'the Times office in Bell Street, and Mr. Vale at his desk' },
     {
       met: state.standing >= GAZETTE_STANDING,
       text: `standing of ${GAZETTE_STANDING}/100 (you have ${Math.floor(state.standing)}/100); a paper is known by its proprietors`,
@@ -239,7 +239,7 @@ export function gazetteRequirements(state: GameState): Requirement[] {
 
 export function buyGazetteShare(state: GameState, log: Log): boolean {
   if (state.estate.gazetteShare) {
-    log.raw('You hold half the paper already, and Angus will not part with the other half.', 'neutral');
+    log.raw('You hold half the paper already, and Mr. Vale will not part with the other half.', 'neutral');
     return false;
   }
   const unmet = gazetteRequirements(state).filter((r) => !r.met);
@@ -251,7 +251,7 @@ export function buyGazetteShare(state: GameState, log: Log): boolean {
   state.estate.gazetteShare = true;
   addStanding(state, 5);
   log.say('estate.gazette.buy', { amount: formatMoney(GAZETTE_SHARE_PRICE) }, 'good');
-  addJournal(state, 'Bought a half-share in The Angus Gazette.', 'good');
+  addJournal(state, 'Bought a half-share in The Slateford Times.', 'good');
   return true;
 }
 
@@ -270,7 +270,7 @@ export function daysToNextStory(state: GameState): number {
 /**
  * A rush the paper called, told apart from a rush the field found: it begins
  * exactly two days after the story was set, and at the paper's own modest
- * factor. Nothing is written down that a reader of the Angus could not work
+ * factor. Nothing is written down that a reader of the Times could not work
  * out for himself.
  */
 export function calledRush(state: GameState): boolean {
@@ -291,16 +291,16 @@ export function placeStory(
 ): boolean {
   const e = state.estate;
   if (!e.gazetteShare) {
-    log.raw('The Angus prints what its proprietors please, and you are not one of them.', 'bad');
+    log.raw('The Times prints what its proprietors please, and you are not one of them.', 'bad');
     return false;
   }
   if (state.location !== 'fields-town') {
-    log.raw('Copy is set in Briggs Street, not shouted across forty miles of scrub.', 'bad');
+    log.raw('Copy is set in Bell Street, not shouted across forty miles of scrub.', 'bad');
     return false;
   }
   if (!storyDue(state)) {
     log.raw(
-      `The Angus is a weekly with a small press and a smaller stock of paper. It will take your next story in ${daysToNextStory(state)} day${daysToNextStory(state) === 1 ? '' : 's'}.`,
+      `The Times is a weekly with a small press and a smaller stock of paper. It will take your next story in ${daysToNextStory(state)} day${daysToNextStory(state) === 1 ? '' : 's'}.`,
       'neutral',
     );
     return false;
@@ -335,7 +335,7 @@ export function placeStory(
         base,
       };
       log.say('estate.press.talkup', { camp: CAMP_DEFS[camp].name }, 'good');
-      addJournal(state, `Set the Angus to cry a strike at ${CAMP_DEFS[camp].name}.`, 'neutral');
+      addJournal(state, `Set the Times to cry a strike at ${CAMP_DEFS[camp].name}.`, 'neutral');
       return true;
     }
 
@@ -376,14 +376,14 @@ export function placeStory(
         return false;
       }
       if (e.noticeKillUsed) {
-        log.raw('You have had that favour of the paper once this year, and Angus has a memory.', 'bad');
+        log.raw('You have had that favour of the paper once this year, and Mr. Vale has a memory.', 'bad');
         return false;
       }
       e.storyPlacedOn = state.day;
       e.noticeKillUsed = true;
       e.noticeKillUntilDay = state.day + KILL_NOTICE_DAYS;
       log.say('estate.press.killnotice', undefined, 'good');
-      addJournal(state, 'What I have been up to did not appear in the Angus this week.', 'neutral');
+      addJournal(state, 'What I have been up to did not appear in the Times this week.', 'neutral');
       return true;
     }
   }
@@ -394,10 +394,10 @@ export function placeStory(
 // ---------------------------------------------------------------------------
 
 export const WORK_NAMES: Record<WorkId, string> = {
-  bridge: 'a bridge over the Blue River',
+  bridge: 'a bridge over the Slate River',
   waterRace: 'a water race',
-  ward: 'a ward at Calico House',
-  school: 'a school at Fields Town',
+  ward: 'a ward at Canvas House',
+  school: 'a school at Slateford',
 };
 
 /** What the Council puts on the plaque, and the epilogue reads back (§27). */
@@ -405,13 +405,13 @@ export function plaqueLine(state: GameState, id: WorkId): string {
   const race = state.estate.works.find((w) => w.id === 'waterRace');
   switch (id) {
     case 'bridge':
-      return 'THE BLUE RIVER BRIDGE — erected by public subscription, 1854, the list headed by a digger of this field.';
+      return 'THE SLATE RIVER BRIDGE — erected by public subscription, 1854, the list headed by a digger of this field.';
     case 'waterRace':
       return `THE WATER RACE TO ${(race?.camp ? CAMP_DEFS[race.camp].name : 'THE DIGGINGS').toUpperCase()} — cut by subscription, 1854. Water where there was dust.`;
     case 'ward':
-      return 'THE SUBSCRIBERS\' WARD, CALICO HOUSE — for the sick of the diggings, without distinction of purse.';
+      return 'THE SUBSCRIBERS\' WARD, CANVAS HOUSE — for the sick of the diggings, without distinction of purse.';
     default:
-      return 'THE FIELDS TOWN SCHOOL — that the children of this place may be something other than diggers.';
+      return 'THE SLATEFORD SCHOOL — that the children of this place may be something other than diggers.';
   }
 }
 
@@ -488,7 +488,7 @@ export function acceptCommission(state: GameState, log: Log): boolean {
   state.estate.nextCourtDay = state.day;
   addStanding(state, 5);
   log.say('estate.jp.gazetted', { amount: formatMoney(JP_FEE) }, 'good');
-  addJournal(state, 'Gazetted a Justice of the Peace for the Fields Town district.', 'good');
+  addJournal(state, 'Gazetted a Justice of the Peace for the Slateford district.', 'good');
   return true;
 }
 
@@ -499,7 +499,7 @@ export function forfeitCommission(state: GameState, log: Log): void {
   state.estate.nextCourtDay = 0;
   addStanding(state, -JP_FORFEIT_STANDING);
   log.say('estate.jp.forfeit', undefined, 'bad');
-  addJournal(state, 'Struck off the commission of the peace, and the Angus on the front page about it.', 'bad');
+  addJournal(state, 'Struck off the commission of the peace, and the Times on the front page about it.', 'bad');
 }
 
 export function isJP(state: GameState): boolean {
@@ -549,7 +549,7 @@ export function holdCourt(state: GameState, log: Log): boolean {
     return false;
   }
   if (state.location !== 'fields-town') {
-    log.raw('The Local Court sits in the Council\'s main hall at Fields Town.', 'bad');
+    log.raw('The Local Court sits in the Council\'s main hall at Slateford.', 'bad');
     return false;
   }
   if (!courtDue(state)) {
@@ -633,7 +633,7 @@ export function buyShanty(state: GameState, log: Log, camp: CampId): boolean {
 
 export function retainLawyer(state: GameState, log: Log): boolean {
   if (!state.estate.shanty) {
-    log.raw('No attorney in Briggs Street takes that sort of client off the street; it wants an introduction.', 'bad');
+    log.raw('No attorney in Bell Street takes that sort of client off the street; it wants an introduction.', 'bad');
     return false;
   }
   if (state.moneyPence < LAWYER_FEE) {
@@ -659,7 +659,7 @@ export function hasLawyer(state: GameState): boolean {
 function shamrockWeek(state: GameState, rng: RNG, log: Log): void {
   if (!state.estate.shamrock) return;
   const rush = !!state.rush && state.rush.since <= state.day && state.rush.untilDay >= state.day;
-  // Only a spree held at the Shamrock itself fills the Shamrock (§30.2).
+  // Only a spree held at the Crown & Cradle itself fills the Crown & Cradle (§30.2).
   const houseSpree = state.estate.houseSpreeOn;
   const flush = houseSpree > 0 && state.day <= houseSpree + FLUSH_DAYS;
   let takings = rng.int(SHAMROCK_TAKINGS.lo, SHAMROCK_TAKINGS.hi);
@@ -757,8 +757,8 @@ function shantyWeek(state: GameState, rng: RNG, log: Log): void {
 
 /**
  * What a man of property is told at the close of a day. The landlord of the
- * Shamrock has word of a strike the evening it is made, two days before the
- * Angus can set it (§26) — which is the whole use of the house.
+ * Crown & Cradle has word of a strike the evening it is made, two days before the
+ * Times can set it (§26) — which is the whole use of the house.
  */
 export function estateDay(state: GameState, log: Log): void {
   calledRushDay(state, log);
@@ -795,13 +795,13 @@ export function estateWeek(state: GameState, rng: RNG, log: Log): void {
 export function estateDeeds(state: GameState): string[] {
   const e = state.estate;
   const out: string[] = [];
-  if (e.shamrock) out.push(`The Shamrock Hotel, Fields Town — ${formatMoney(SHAMROCK_PRICE)}`);
+  if (e.shamrock) out.push(`The Crown & Cradle, Slateford — ${formatMoney(SHAMROCK_PRICE)}`);
   if (e.store) {
     out.push(
       `A store at ${CAMP_DEFS[e.store.camp].name} — ${formatMoney(STORE_PRICE)}, ${e.store.policy === 'fair' ? 'fair dealing' : 'and the prices what the rush will bear'}`,
     );
   }
-  if (e.gazetteShare) out.push(`A half-share in The Angus Gazette — ${formatMoney(GAZETTE_SHARE_PRICE)}`);
+  if (e.gazetteShare) out.push(`A half-share in The Slateford Times — ${formatMoney(GAZETTE_SHARE_PRICE)}`);
   if (e.shanty) out.push(`The sly-grog shanty at ${CAMP_DEFS[e.shanty].name} — ${formatMoney(SHANTY_PRICE)}, and no deed for it anywhere`);
   return out;
 }

@@ -192,7 +192,7 @@ export function escapeChance(state: GameState): number {
 // The reward notice (§23.2)
 // ---------------------------------------------------------------------------
 
-/** The Gazette prints the notice when it is first offered, and when it rises. */
+/** The Times prints the notice when it is first offered, and when it rises. */
 export function rewardNotice(state: GameState, log: Log): void {
   const reward = rewardFor(state);
   if (reward <= state.rewardPrinted) return;
@@ -209,7 +209,7 @@ export function makeOutlaw(state: GameState, log: Log): void {
   state.cleanDays = 0;
   log.say('bandit.outlawed', undefined, 'grave');
   addJournal(state, 'Proclaimed an outlaw. There is no going back from this one.', 'grave');
-  // A man who bought the Angus's silence finds the rival sheet printing that
+  // A man who bought the Times' silence finds the rival sheet printing that
   // he bought it, the moment he is worth printing about (§26).
   if (state.estate.noticeKillUsed) {
     addNotoriety(state, KILL_NOTICE_EXPOSED_NOTORIETY);
@@ -246,12 +246,12 @@ export function canBailUp(state: GameState): Gate {
 }
 
 export function canMakeHideout(state: GameState): Gate {
-  if (state.hideout) return gate(false, 'you have a camp in the ranges already');
+  if (state.hideout) return gate(false, 'you have made Split Rock Camp already');
   if (state.notoriety < NOTORIETY_HIDEOUT_GATE) {
     return gate(false, 'nobody would keep such a place quiet for you yet');
   }
   if (state.location !== 'deep-mountains') {
-    return gate(false, 'the ranges beyond the Deep Mountains are where such a camp is made');
+    return gate(false, 'the ranges beyond the Blackcap Ranges are where such a camp is made');
   }
   if (state.items.tent < 1) return gate(false, 'you would want a tent for it');
   if (state.provisionDays < 7) return gate(false, 'and a week of flour to carry up');
@@ -448,7 +448,7 @@ export function resolveBailUp(
   } else if (res.taken > 0 || res.gold > 0) {
     addJournal(
       state,
-      `Stopped a traveller on ${route === 'pass' ? 'the Pass Road' : "Trickey's Track"} and took ${formatMoney(res.taken)}.`,
+      `Stopped a traveller on ${route === 'pass' ? 'the Razorback Road' : "Mercer's Track"} and took ${formatMoney(res.taken)}.`,
       'neutral',
     );
   }
@@ -473,7 +473,7 @@ export function makeHideout(state: GameState, log: Log): boolean {
   }
   state.hideout = { stashPence: 0, stashGold: 0, discovered: false, madeOn: state.day };
   log.say('bandit.hideout.make', undefined, 'good');
-  addJournal(state, 'Made a camp in the ranges that no map shows.', 'good');
+  addJournal(state, 'Made Split Rock Camp beyond the surveyed country.', 'good');
   return true;
 }
 
@@ -563,7 +563,7 @@ export function hideoutWeek(state: GameState, rng: RNG, log: Log): void {
   h.stashGold = 0;
   state.hideout = null;
   log.say('bandit.hideout.found', { amount: formatMoney(lost) }, 'bad');
-  addJournal(state, `The traps found the camp in the ranges and took ${formatMoney(lost)} out of it.`, 'bad');
+  addJournal(state, `The traps found Split Rock Camp and took ${formatMoney(lost)} out of it.`, 'bad');
 }
 
 // ---------------------------------------------------------------------------
@@ -631,7 +631,7 @@ export function gangWeek(state: GameState, rng: RNG, log: Log): void {
     state.gang.splice(i, 1);
     state.ambush = true;
     log.say('bandit.gang.inform', { name: man.name }, 'bad');
-    addJournal(state, `${man.name} has gone into Fields Town and sold me.`, 'bad');
+    addJournal(state, `${man.name} has gone into Slateford and sold me.`, 'bad');
     return;
   }
 }
@@ -641,7 +641,7 @@ export function gangWeek(state: GameState, rng: RNG, log: Log): void {
 // ---------------------------------------------------------------------------
 
 export function intelCost(state: GameState): number {
-  // The keeper of the shanty and the landlord of the Shamrock both hear it
+  // The keeper of the shanty and the landlord of the Crown & Cradle both hear it
   // all for nothing; it is said across their own counters (§26, §28.3).
   if (state.estate.shanty || state.estate.shamrock) return 0;
   return BUSH_INTEL_COST[bushRankOf(state)];
@@ -702,7 +702,7 @@ export function gatherIntelligence(state: GameState, rng: RNG, log: Log): boolea
   };
   log.say(
     'bandit.intel.traveller',
-    { road: route === 'pass' ? 'the Pass Road' : "Trickey's Track" },
+    { road: route === 'pass' ? 'the Razorback Road' : "Mercer's Track" },
     'good',
   );
   return true;
@@ -762,14 +762,19 @@ function splitAmong(state: GameState, log: Log, amount: number): number {
   return Math.floor(amount / parts);
 }
 
-export function robBank(state: GameState, rng: RNG, log: Log): boolean {
+export function robBank(
+  state: GameState,
+  rng: RNG,
+  log: Log,
+  advanceKept?: (days: number) => void,
+): boolean {
   const g = canBigJob(state);
   if (!g.ok) {
     log.raw(`${g.note.charAt(0).toUpperCase()}${g.note.slice(1)}.`, 'bad');
     return false;
   }
   if (state.location !== 'fields-town') {
-    log.raw('The Bank of Australasia stands in Fields Town and nowhere else.', 'bad');
+    log.raw('The Bank of Australasia stands in Slateford and nowhere else.', 'bad');
     return false;
   }
   state.stats.bigJobs += 1;
@@ -787,7 +792,7 @@ export function robBank(state: GameState, rng: RNG, log: Log): boolean {
     damage(state, rng.int(8, 30), 'a bank clerk with a pistol');
     if (state.gameOver) return true;
     if (rng.chance(ROB_BANK_CAPTURE)) {
-      captured(state, rng, log, 'town');
+      captured(state, rng, log, 'town', advanceKept);
       return true;
     }
     log.say('bandit.job.bolted', undefined, 'neutral');
@@ -811,7 +816,12 @@ export function robBank(state: GameState, rng: RNG, log: Log): boolean {
   return true;
 }
 
-export function robEscort(state: GameState, rng: RNG, log: Log): boolean {
+export function robEscort(
+  state: GameState,
+  rng: RNG,
+  log: Log,
+  advanceKept?: (days: number) => void,
+): boolean {
   const g = canBigJob(state);
   if (!g.ok) {
     log.raw(`${g.note.charAt(0).toUpperCase()}${g.note.slice(1)}.`, 'bad');
@@ -853,8 +863,8 @@ export function robEscort(state: GameState, rng: RNG, log: Log): boolean {
     }
     if (rng.chance(ROB_ESCORT_KILLED)) {
       log.say('bandit.escort.killed', undefined, 'grave');
-      addJournal(state, 'Shot off my horse on Trickey’s Track, with the escort’s gold in sight.', 'grave');
-      damage(state, 999, 'a carbine ball on Trickey’s Track');
+      addJournal(state, 'Shot off my horse on Mercer’s Track, with the escort’s gold in sight.', 'grave');
+      damage(state, 999, 'a carbine ball on Mercer’s Track');
       return true;
     }
     if (rng.chance(ROB_ESCORT_WOUNDED)) {
@@ -864,7 +874,7 @@ export function robEscort(state: GameState, rng: RNG, log: Log): boolean {
       if (state.gameOver) return true;
     }
     if (rng.chance(ROB_ESCORT_CAPTURE)) {
-      captured(state, rng, log, 'trickeys');
+      captured(state, rng, log, 'trickeys', advanceKept);
       return true;
     }
     log.say('bandit.job.bolted', undefined, 'neutral');
@@ -883,7 +893,7 @@ export function robEscort(state: GameState, rng: RNG, log: Log): boolean {
   rewardNotice(state, log);
   gainBush(state, log, ROB_ESCORT_DAYS);
   log.say('bandit.escort.success', { amount: formatMoney(mine), gross: formatMoney(take) }, 'good');
-  addJournal(state, `Took the gold escort on Trickey’s Track: ${formatMoney(take)} in all.`, 'good');
+  addJournal(state, `Took the gold escort on Mercer’s Track: ${formatMoney(take)} in all.`, 'good');
   return true;
 }
 
@@ -904,17 +914,22 @@ export function pursuitChance(state: GameState): number {
   );
 }
 
-/** Taken, and held for the assizes at Fields Town. */
-export function captured(state: GameState, rng: RNG, log: Log, zone: HeatZone): void {
+/** Taken, and held for the assizes at Slateford. */
+export function captured(
+  state: GameState,
+  rng: RNG,
+  log: Log,
+  zone: HeatZone,
+  advanceKept: (days: number) => void = (days) => { state.day += days; },
+): void {
   void zone;
   state.stats.timesArrested += 1;
   state.journey = null;
   state.location = 'fields-town';
   log.say('bandit.taken', undefined, 'grave');
   const held = rng.int(4, 14);
-  state.day += held;
-  state.provisionDays = Math.max(0, state.provisionDays - held);
-  damage(state, Math.round(held * 0.4), 'the lock-up at Fields Town');
+  advanceKept(held);
+  damage(state, Math.round(held * 0.4), 'the lock-up at Slateford');
   checkYearEnd(state);
   if (state.gameOver) return;
   state.pending = { kind: 'assizes' };
@@ -946,10 +961,16 @@ export function breakGaol(state: GameState, rng: RNG, log: Log): boolean {
 }
 
 /**
- * The assizes at Fields Town: hanged where blood was shed, and years in the
+ * The assizes at Slateford: hanged where blood was shed, and years in the
  * hulks otherwise. Either way the Crown takes everything it can lay hands on.
  */
-export function assizes(state: GameState, log: Log, doubled = false, rng?: RNG): void {
+export function assizes(
+  state: GameState,
+  log: Log,
+  doubled = false,
+  rng?: RNG,
+  advanceKept: (days: number) => void = (days) => { state.day += days; },
+): void {
   state.pending = null;
   // Sixty pounds the quarter buys a defence instead of a plea. Hanging is
   // never lawyered away: blood is blood (§28.3).
@@ -958,7 +979,7 @@ export function assizes(state: GameState, log: Log, doubled = false, rng?: RNG):
       addNotoriety(state, LAWYER_ACQUIT_NOTORIETY);
       state.location = 'fields-town';
       log.say('estate.lawyer.acquit', undefined, 'good');
-      addJournal(state, 'Acquitted at the Fields Town assizes, and walked out into the sunlight.', 'good');
+      addJournal(state, 'Acquitted at the Slateford assizes, and walked out into the sunlight.', 'good');
       return;
     }
     log.say('estate.lawyer.fail', undefined, 'bad');
@@ -980,10 +1001,10 @@ export function assizes(state: GameState, log: Log, doubled = false, rng?: RNG):
       state.hideout.stashGold = 0;
     }
     log.say('bandit.assizes.hanged', undefined, 'grave');
-    addJournal(state, 'Hanged at the Fields Town assizes, before a great crowd.', 'grave');
+    addJournal(state, 'Hanged at the Slateford assizes, before a great crowd.', 'grave');
     state.health = 0;
     state.gameOver = 'dead';
-    state.causeOfDeath = 'hanged at the Fields Town assizes';
+    state.causeOfDeath = 'hanged at the Slateford assizes';
     return;
   }
 
@@ -994,7 +1015,7 @@ export function assizes(state: GameState, log: Log, doubled = false, rng?: RNG):
     'bad',
   );
   addJournal(state, 'Sentenced at the assizes: years of it, in the hulks.', 'grave');
-  state.day += HARD_LABOUR_DAYS;
+  advanceKept(HARD_LABOUR_DAYS);
   checkYearEnd(state);
   state.gameOver = 'finished';
 }
@@ -1004,7 +1025,7 @@ export function assizes(state: GameState, log: Log, doubled = false, rng?: RNG):
 // ---------------------------------------------------------------------------
 
 export function canBuyPassage(state: GameState): Gate {
-  if (state.location !== 'suze-port') return gate(false, 'ships sail from Suze Port and nowhere else');
+  if (state.location !== 'suze-port') return gate(false, 'ships sail from Port Gannet and nowhere else');
   if (!crimeVisible(state)) return gate(false, 'there is nothing you need to run from');
   if (state.moneyPence < PASSAGE_FARE) {
     return gate(false, `the master wants ${formatMoney(PASSAGE_FARE)}, under whatever name you like`);
@@ -1017,7 +1038,12 @@ export function canBuyPassage(state: GameState): Gate {
  * keeps: the bank holds whatever was left in it, and the claims go to whoever
  * pulls the pegs (§24).
  */
-export function buyPassage(state: GameState, rng: RNG, log: Log): boolean {
+export function buyPassage(
+  state: GameState,
+  rng: RNG,
+  log: Log,
+  advanceKept?: (days: number) => void,
+): boolean {
   const g = canBuyPassage(state);
   if (!g.ok) {
     log.raw(`${g.note.charAt(0).toUpperCase()}${g.note.slice(1)}.`, 'bad');
@@ -1029,7 +1055,7 @@ export function buyPassage(state: GameState, rng: RNG, log: Log): boolean {
   if (rng.chance(recognition)) {
     log.say('bandit.passage.recognised', undefined, 'grave');
     if (state.outlawed) {
-      captured(state, rng, log, 'town');
+      captured(state, rng, log, 'town', advanceKept);
     } else {
       log.say('bandit.passage.turnedback', undefined, 'bad');
     }
@@ -1103,4 +1129,3 @@ export function banditWeek(state: GameState, rng: RNG, log: Log): void {
   gangWeek(state, rng, log);
   hideoutWeek(state, rng, log);
 }
-

@@ -22,6 +22,7 @@ import {
   PUDDLER_RENT,
   PUDDLER_SKIM,
   PUDDLER_SKIM_CHANCE,
+  PUMPMAN_FEE,
   SHAFT_BONANZA_CHANCE,
   SHAFT_BONANZA_MULT,
   SHAFT_DEPTH,
@@ -60,7 +61,7 @@ export const METHOD_NAMES: Record<MiningMethod, string> = {
   cradle: 'Work the cradle',
   puddle: 'Rent the puddling machine',
   shaft: 'Sink and work a shaft',
-  dryblow: 'Dryblow the desert dirt',
+  dryblow: 'Winnow dry dirt by hand',
   company: 'Take a shift for the company',
 };
 
@@ -85,12 +86,12 @@ export function checkMethod(state: GameState, method: MiningMethod): MethodCheck
       return { ok: true };
     case 'puddle':
       if (camp !== 'snakey-gully')
-        return { ok: false, reason: 'The puddling machine is at Snakey Gully.' };
+        return { ok: false, reason: 'The puddling machine is at Copperhead Gully.' };
       if (state.items.shovel < 1) return { ok: false, reason: 'You have no shovel to puddle with.' };
       return { ok: true };
     case 'dryblow':
       if (camp !== 'secret-mine')
-        return { ok: false, reason: 'Dryblowing is for desert country, where no water runs.' };
+        return { ok: false, reason: 'Hand winnowing is for desert country, where no water runs.' };
       if (state.items.shovel < 1 || state.items.pick < 1)
         return { ok: false, reason: 'You want a pick and a shovel for this work.' };
       return { ok: true };
@@ -103,7 +104,7 @@ export function checkMethod(state: GameState, method: MiningMethod): MethodCheck
       return { ok: true };
     case 'company':
       if (camp !== 'deep-mountains')
-        return { ok: false, reason: 'The big company mines are in the Deep Mountains.' };
+        return { ok: false, reason: 'The big company mines are in the Blackcap Ranges.' };
       return { ok: true };
   }
 }
@@ -180,7 +181,7 @@ export function hasMate(state: GameState): boolean {
   return state.partner || state.mateUntilDay >= state.day;
 }
 
-/** A partner draws no wage but takes a quarter of everything won (§18.2). */
+/** A partner draws no wage but takes half of everything won (§18.2). */
 function partnerCut(state: GameState, log: Log, gold: number): number {
   if (!state.partner || gold <= 0) return gold;
   const share = Math.round(gold * PARTNER_SHARE);
@@ -357,6 +358,30 @@ function shaftHazards(state: GameState, rng: RNG, log: Log): boolean {
     }
   }
   return false;
+}
+
+/**
+ * Bell sells pumps no more (§19.4): a digger with a wet shaft engages the
+ * pump-man at the Blackcap Ranges camp, and the shaft is kept dry for its life.
+ */
+export function hirePumpman(state: GameState, log: Log): boolean {
+  const shaft = state.shaft;
+  if (!shaft || state.location !== shaft.camp) {
+    log.raw('The pump-man wants a shaft to keep dry before he wants your money.', 'neutral');
+    return false;
+  }
+  if (shaft.pumped) {
+    log.raw('The pump-man is already on your shaft.', 'neutral');
+    return false;
+  }
+  if (state.moneyPence < PUMPMAN_FEE) {
+    log.raw('The pump-man is not a charity.', 'bad');
+    return false;
+  }
+  state.moneyPence -= PUMPMAN_FEE;
+  shaft.pumped = true;
+  log.say('mine.pumpman', undefined, 'good');
+  return true;
 }
 
 /** One day at the diggings. The caller runs the day's upkeep afterwards. */

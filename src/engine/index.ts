@@ -7,6 +7,7 @@ export * from './constants';
 export { step, finalWorth, screenForLocation } from './reduce';
 export { getView, kittyView, mapView, endView } from './menus';
 export { gazetteFor, campTalk } from './news';
+export * from './hearth';
 export {
   saveGame,
   loadGame,

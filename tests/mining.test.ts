@@ -86,7 +86,7 @@ describe('what each method wants', () => {
     expect(checkMethod(state, 'shaft').ok).toBe(false);
   });
 
-  it('the puddling machine is at Snakey Gully; dryblowing is for the desert', () => {
+  it('the puddling machine is at Copperhead Gully; dryblowing is for the desert', () => {
     const { state } = atCamp('damp-camp');
     state.items.shovel = 1;
     expect(checkMethod(state, 'puddle').ok).toBe(false);
@@ -98,7 +98,7 @@ describe('what each method wants', () => {
     expect(checkMethod(state, 'dryblow').ok).toBe(true);
   });
 
-  it('company work is only in the Deep Mountains', () => {
+  it('company work is only in the Blackcap Ranges', () => {
     const { state } = atCamp('snakey-gully');
     expect(checkMethod(state, 'company').ok).toBe(false);
     state.location = 'deep-mountains';

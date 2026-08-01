@@ -1,5 +1,5 @@
 /**
- * Life at the Shamrock (§30) — the room reads the player's name back at him.
+ * Life at the Crown & Cradle (§30) — the room reads the player's name back at him.
  *
  * Everything a man buys over a counter in this game is bought here: the drink
  * table of §31.4, the reception tiers of §30.1, and shouting the bar (§30.2),
@@ -134,14 +134,14 @@ export function receptionLine(state: GameState): string {
 // ---------------------------------------------------------------------------
 
 /**
- * A Gazette-grade item, three days before the Gazette has it (§30.1). Drawn
+ * A newspaper-grade item, three days before the Times has it (§30.1). Drawn
  * from what is actually true of the world, so the word is worth having.
  */
 export function houseNews(state: GameState, rng: RNG, avoid?: string): string {
   const items: string[] = [];
   // The room only knows of a rush once it is running: the two days before it
   // are the landlord's own, and are told him at his own bar and nowhere else
-  // (§26, the Shamrock lead).
+  // (§26, the Crown & Cradle lead).
   if (state.rush && state.rush.since <= state.day && state.rush.untilDay >= state.day) {
     items.push(
       `Word at the good end of the room is of the rush at ${CAMP_DEFS[state.rush.camp].name}: drays on the road all night, and the ground going as fast as men can drive a stake.`,
@@ -167,8 +167,8 @@ export function houseNews(state: GameState, rng: RNG, avoid?: string): string {
   const worst = camps.reduce((a, b) => (state.freshness[a] <= state.freshness[b] ? a : b));
   items.push(
     `The talk turns to which ground is worth pegging. The men who have been everywhere say ${CAMP_DEFS[best].name}, and they are not selling anything, which is a recommendation.`,
-    `A party in from ${CAMP_DEFS[worst].name} says the wash there is going off and half of them mean to shift. They tell you before they tell the Angus, which is the whole use of standing here.`,
-    `The price of flour is gone over in detail by three men who all buy from Briggs and all hate him. What comes of it is that a week's provisions at the diggings costs what a labourer in the towns earns in three.`,
+    `A party in from ${CAMP_DEFS[worst].name} says the wash there is going off and half of them mean to shift. They tell you before they tell the Times, which is the whole use of standing here.`,
+    `The price of flour is gone over in detail by three men who all buy from Bell and all hate him. What comes of it is that a week's provisions at the diggings costs what a labourer in the towns earns in three.`,
     `Somebody has the licence question again, and the arithmetic of it: thirty shillings the month, one shilling the day, eighteen pounds the year. The room has heard it a hundred times and listens every time.`,
   );
   if (state.agitation >= 40) {
@@ -186,7 +186,7 @@ export function houseNews(state: GameState, rng: RNG, avoid?: string): string {
  * the traps are — the same table, the same fee, and it is nothing either way.
  */
 export function landlordsTable(state: GameState, rng: RNG, log: Log, said?: string): boolean {
-  // There is one landlord's table on this field and it is in Briggs Street.
+  // There is one landlord's table on this field and it is in Bell Street.
   // A bark-roofed tent has no such institution, and at his own sly-grog shanty
   // the player is himself the landlord (§30.1; the shanty's own word is §28.3).
   if (venueFor(state) !== 'shamrock') return false;
@@ -219,7 +219,7 @@ export function landlordsTable(state: GameState, rng: RNG, log: Log, said?: stri
       state.intel = { kind: 'traveller', learnedOn: state.day, untilDay: state.day + 3, route };
       log.say(
         'shamrock.landlord.traveller',
-        { road: route === 'pass' ? 'the Pass Road' : "Trickey's Track" },
+        { road: route === 'pass' ? 'the Razorback Road' : "Mercer's Track" },
         'good',
       );
     }
@@ -449,7 +449,7 @@ function spreeNight(
   if (ownsThisHouse(state)) state.estate.houseSpreeOn = state.day;
   addJournal(
     state,
-    `Shouted champagne for the whole house at ${venueFor(state) === 'shamrock' ? 'the Shamrock' : 'the grog tent'} — ${formatMoney(cost)} gone in a night, and worth it at the time.`,
+    `Shouted champagne for the whole house at ${venueFor(state) === 'shamrock' ? 'the Crown & Cradle' : 'the grog tent'} — ${formatMoney(cost)} gone in a night, and worth it at the time.`,
     'neutral',
   );
   talkOfTheRoom(state, rng, log);

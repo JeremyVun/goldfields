@@ -45,7 +45,7 @@ import {
 declare const process: { env: Record<string, string | undefined> } | undefined;
 
 const RUNS = Number(
-  (typeof process !== 'undefined' ? process?.env?.GOLDFIELDS_RUNS : undefined) ?? 300,
+  (typeof process !== 'undefined' ? process?.env?.GOLDRUSH_RUNS : undefined) ?? 300,
 );
 
 function report(s: Summary): string {
@@ -71,17 +71,17 @@ function report(s: Summary): string {
 const summaries: Summary[] = [];
 
 describe('balance targets (§14)', () => {
-  it('steady port work is a viable living but not a company fortune (£60-£100)', () => {
+  it('steady wharf work is a viable living but not a fortune (£15-£30)', () => {
     const s = summarise(idler, runBot(idler, RUNS, 11));
     summaries.push(s);
     console.log(report(s));
-    expect(s.median).toBeGreaterThanOrEqual(pounds(60));
-    expect(s.median).toBeLessThanOrEqual(pounds(100));
-    expect(s.p90).toBeLessThan(pounds(120));
+    expect(s.median).toBeGreaterThanOrEqual(pounds(15));
+    expect(s.median).toBeLessThanOrEqual(pounds(30));
+    expect(s.p90).toBeLessThan(pounds(40));
     expect(s.deathRate).toBeLessThan(0.1);
   });
 
-  it('a cautious licensed panner at Damp Camp typically ends with £50-£250', () => {
+  it('a cautious licensed panner at Reedbank Camp typically ends with £50-£250', () => {
     const s = summarise(cautiousPanner, runBot(cautiousPanner, RUNS, 101));
     summaries.push(s);
     console.log(report(s));
@@ -394,8 +394,8 @@ interface CalledRushRun {
 }
 
 /**
- * A proprietor of the Angus with a worked-over claim under him and thirty days
- * to spend. Either he cries up the ground at Snakey Gully and walks over to
+ * A proprietor of the Times with a worked-over claim under him and thirty days
+ * to spend. Either he cries up the ground at Copperhead Gully and walks over to
  * peg it himself, or he says nothing and keeps working what he has.
  */
 function calledRushCohort(seed: number, freshness: number, call: boolean): CalledRushRun {
@@ -492,7 +492,7 @@ function campNights(seed: number, camp: CampId, day: number, works: PublicWork[]
   return tally(log);
 }
 
-/** The winter crossing of the Blue River, by dray, with and without the bridge. */
+/** The winter crossing of the Slate River, by dray, with and without the bridge. */
 function winterCrossing(seed: number, bridge: boolean): Record<string, number> {
   const rng = makeRng(seed);
   const s = scenario(seed, 190, 'on-road'); // the depth of winter
@@ -524,7 +524,7 @@ function totalOver(counts: Record<string, number>[], keys: string[]): number {
 describe('the works strike their rules out of the dice (§27, §29)', () => {
   const N = 300;
 
-  it('the bridge takes the winter out of the Damp Camp road', () => {
+  it('the bridge takes the winter out of the Reedbank Camp road', () => {
     const without: Record<string, number>[] = [];
     const with_: Record<string, number>[] = [];
     for (let i = 0; i < N; i++) {
@@ -626,7 +626,7 @@ describe('price relativities (§31)', () => {
   it('a day at the wash is worth the town wage and not three times it', () => {
     // What the Journal argues about: digging must tempt a man off the wharves
     // without being a certainty (§31.1, §31.6).
-    const wage = Math.round((JOBS.clerk.lo + JOBS.clerk.hi) / 2); // 4s the day in Fields Town
+    const wage = Math.round((JOBS.clerk.lo + JOBS.clerk.hi) / 2); // 4s the day in Slateford
     // The wage is what one man earns in a day, so the take is reckoned the same
     // way: a cradle is two men's work and its gold is two men's gold (§18, §31.1).
     for (const [bot, seedBase, hands] of [
@@ -658,7 +658,7 @@ describe('price relativities (§31)', () => {
       }
     }
     console.log(
-      `camp provisions floor=${formatMoney(cheapest)} against Suze Port at ${formatMoney(PROVISIONS_WEEK.suze)} the week`,
+      `camp provisions floor=${formatMoney(cheapest)} against Port Gannet at ${formatMoney(PROVISIONS_WEEK.suze)} the week`,
     );
     expect(cheapest).toBeGreaterThanOrEqual(PROVISIONS_WEEK.suze * 2);
   });

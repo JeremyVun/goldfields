@@ -1,7 +1,7 @@
 /**
  * Every tuning knob in the simulation lives here.
  *
- * Prices marked (faithful) are lifted straight from A Goldfields Journal or the
+ * Prices marked (faithful) are lifted straight from The New Chum's Companion or the
  * Teacher's Guide. The rest are period-plausible inventions tuned against the
  * balance targets in GAME_SPEC.md §14 by the strategy-bot harness.
  */
@@ -35,9 +35,9 @@ const P = (s: number, f: number, c: number): PriceRow => ({ suze: s, fields: f, 
 export const PRICES: Record<ItemId, PriceRow> = {
   pan: P(shillings(8), lsd(1, 4), lsd(1, 12)), // (faithful spec table)
   cradle: P(pounds(2), pounds(5), pounds(6)),
-  pick: P(shillings(6), shillings(18), shillings(24)),
-  shovel: P(shillings(5), shillings(15), shillings(20)),
-  ropeBucket: P(shillings(8), lsd(1, 4), lsd(1, 12)),
+  pick: P(shillings(8), shillings(18), shillings(24)),
+  shovel: P(shillings(7), shillings(15), shillings(20)),
+  ropeBucket: P(shillings(11), lsd(1, 4), lsd(1, 12)),
   tent: P(lsd(1, 10), pounds(4), lsd(4, 10)),
   swag: P(shillings(6), shillings(15), shillings(18)),
   gun: P(lsd(1, 10), pounds(3), lsd(3, 10)),
@@ -55,7 +55,7 @@ export const WATER_FILL = { suze: pence(6), fields: shillings(1), camp: shilling
 export const HORSE_PRICE = { brumby: pounds(15), hack: pounds(25) }; // (faithful spec table)
 
 /**
- * Briggs' occasionally gouges shamefully — The Angus recorded a miner's pan
+ * Bell's occasionally gouges shamefully — The Times recorded a miner's pan
  * selling for £16 (faithful). Rare, and only at the diggings.
  */
 export const GOUGE_CHANCE = 0.04;
@@ -90,8 +90,8 @@ export const JOBS: Record<JobId, JobDef> = {
     id: 'wharf',
     name: 'Labouring on the wharves',
     where: 'suze-port',
-    lo: shillings(5),
-    hi: shillings(7),
+    lo: shillings(2),
+    hi: shillings(3),
     blurb: 'Humping cargo off the ships. Hard on the back; a hot meal comes with a full shift.',
   },
   town: {
@@ -104,23 +104,23 @@ export const JOBS: Record<JobId, JobDef> = {
   },
   orderly: {
     id: 'orderly',
-    name: 'Hospital orderly at Calico House',
+    name: 'Hospital orderly at Canvas House',
     where: 'fields-town',
     lo: shillings(3),
     hi: shillings(5),
-    blurb: 'Carrying stretchers and boiling linen. You learn what keeps a man alive.',
+    blurb: 'Carrying stretchers and boiling linen. A plain staff meal comes with a full shift.',
   },
   clerk: {
     id: 'clerk',
-    name: "Store clerk at Briggs'",
+    name: "Store clerk at Bell's",
     where: 'fields-town',
     lo: shillings(3),
     hi: shillings(5),
-    blurb: 'Weighing flour and arguing over prices. Briggs allows his man a discount.',
+    blurb: 'Weighing flour and arguing over prices. Bell allows his man a discount.',
   },
   barman: {
     id: 'barman',
-    name: 'Barman at the Shamrock Hotel',
+    name: 'Barman at the Crown & Cradle',
     where: 'fields-town',
     lo: shillings(4),
     hi: shillings(6),
@@ -190,7 +190,7 @@ export const WORTH_SPARK_WIDTH = 52;
 
 /** Camp storekeepers pay poorly (faithful) — a fraction of the bank's rate. */
 export const CAMP_RATE_FACTOR = { lo: 0.7, hi: 0.83 };
-export const STORE_RATE_FACTOR = { lo: 0.79, hi: 0.9 }; // Briggs' in Fields Town
+export const STORE_RATE_FACTOR = { lo: 0.79, hi: 0.9 }; // Bell's in Slateford
 export const SHORT_WEIGHT_CHANCE = 0.22;
 export const SHORT_WEIGHT_CHANCE_WATCHED = 0.05;
 export const SHORT_WEIGHT_LOSS = { lo: 0.06, hi: 0.22 };
@@ -224,7 +224,7 @@ export const DUFFER_CHANCE: Record<MiningMethod, number> = {
 export interface CampDef {
   id: CampId;
   name: string;
-  /** Days from Fields Town on foot. */
+  /** Days from Slateford on foot. */
   daysFromTown: number;
   alluvial: number;
   reef: number;
@@ -238,17 +238,17 @@ export interface CampDef {
 export const CAMP_DEFS: Record<CampId, CampDef> = {
   'damp-camp': {
     id: 'damp-camp',
-    name: 'Damp Camp',
+    name: 'Reedbank Camp',
     daysFromTown: 1,
     alluvial: 1.0,
     reef: 0.5,
     crime: 0.7,
     squalor: 1.15,
-    blurb: 'The nearest camp to Fields Town; a wet creek flat, modest but steady.',
+    blurb: 'The nearest camp to Slateford; a wet creek flat, modest but steady.',
   },
   'snakey-gully': {
     id: 'snakey-gully',
-    name: 'Snakey Gully',
+    name: 'Copperhead Gully',
     daysFromTown: 1,
     alluvial: 1.2,
     reef: 0.65,
@@ -258,7 +258,7 @@ export const CAMP_DEFS: Record<CampId, CampDef> = {
   },
   'deep-mountains': {
     id: 'deep-mountains',
-    name: 'Deep Mountains',
+    name: 'Blackcap Ranges',
     daysFromTown: 2,
     alluvial: 0.55,
     reef: 1.0,
@@ -268,13 +268,13 @@ export const CAMP_DEFS: Record<CampId, CampDef> = {
   },
   'secret-mine': {
     id: 'secret-mine',
-    name: 'the secret mine',
+    name: "Widow's Reef",
     daysFromTown: 5,
     alluvial: 1.5,
     reef: 1.35,
     crime: 0.4,
     squalor: 1.0,
-    blurb: 'A desert working known to a handful of men. No water; dryblowing only.',
+    blurb: 'An abandoned desert reef known to a handful of men, and a trail towards a legendary nugget.',
   },
 };
 
@@ -383,9 +383,9 @@ export const STANDING_COUNCIL_JOB = 25;
 export const STANDING_PARTNER = 30;
 export const STANDING_DISCOUNT = 60;
 
-/** A partner draws no wage, and a quarter of the gold. */
-export const PARTNER_SHARE = 0.25;
-/** Briggs knows your name: a tenth off the goods, and not a penny off the flour. */
+/** A partner draws no wage: the pair divide the gold share and share alike. */
+export const PARTNER_SHARE = 0.5;
+/** Bell knows your name: a tenth off the goods, and not a penny off the flour. */
 export const STORE_DISCOUNT = 0.1;
 
 // ---------------------------------------------------------------------------
@@ -404,13 +404,56 @@ export const COMPANY_SHARE_PRICE = pounds(10);
 export const COMPANY_SUBSCRIPTIONS = [8, 12, 16];
 
 export const COMPANY_MAX_CREWS = 3;
-export const COMPANY_MAX_LEASES = 4;
+/** Two named mines, worked deep, are the game; churning ground is not (§19.4). */
+export const COMPANY_MAX_LEASES = 2;
 /** Four wages-men to the crew, six pounds the week. */
 export const COMPANY_CREW_WAGES = pounds(6);
 /** What a crew wins in a week on ordinary ground, before luck. */
 export const COMPANY_CREW_WEEK = pounds(22);
-/** Deeper ground wears at half a digger's rate: half of seven days. */
-export const COMPANY_LEASE_WEAR = 3.5;
+
+// --- the mine goes down (§19.4) --------------------------------------------
+/** Timber and powder: what a crew-week of sinking costs the treasury. */
+export const COMPANY_SINK_COST = pounds(8);
+/** Crew-weeks to bottom the next level: base + floor(level/2). */
+export const COMPANY_SINK_BASE_WEEKS = 2;
+/** Richer with every level sunk: yield factor 1 + bonus × (level − 1). */
+export const COMPANY_DEPTH_BONUS = 0.22;
+/** Crew-weeks of stone a freshly bottomed level carries. */
+export const COMPANY_FACE_WEEKS = { lo: 4, hi: 7 };
+/** A drive along the level: one crew-week of work, and its price in timber. */
+export const COMPANY_DRIVE_COST = pounds(4);
+export const COMPANY_DRIVE_YIELD = 0.85;
+export const COMPANY_DRIVE_FACE = { lo: 2, hi: 4 };
+export const COMPANY_DRIVE_DUFFER = 0.2;
+/** Chance freshly found ground is wet; below this level all ground counts wet. */
+export const COMPANY_LEASE_WET = 0.4;
+export const COMPANY_WET_LEVEL = 2;
+/** Winter, weekly, per unpumped wet-or-deep lease. */
+export const COMPANY_FLOOD_CHANCE = 0.1;
+export const COMPANY_PUMP_BREAK = 0.03;
+export const COMPANY_PUMP_REPAIR = { lo: pounds(8), hi: pounds(15) };
+export const COMPANY_DEWATER_WEEKS = 2;
+/** Per-lease plant, from the treasury (§19.4). */
+export const COMPANY_PUMP_PLANT = pounds(35);
+export const COMPANY_TIMBER_PLANT = pounds(20);
+/** The big capital decision the share float exists to finance. */
+export const COMPANY_BATTERY_COST = pounds(150);
+export const COMPANY_BATTERY_UPKEEP = pounds(3);
+/** Until the battery is owned, the public battery takes this off every gross. */
+export const COMPANY_CRUSH_FEE = 0.15;
+/** Registering a prospecting crew's find with the Council. */
+export const COMPANY_TAKEUP_FEE = pounds(5);
+/** Output ×, cave-in ×, face wear × — cautious / ordinary / hard (§19.4). */
+export const COMPANY_DRIVING: Record<
+  'cautious' | 'ordinary' | 'hard',
+  { out: number; cavein: number; wear: number }
+> = {
+  cautious: { out: 0.8, cavein: 0.5, wear: 0.8 },
+  ordinary: { out: 1, cavein: 1, wear: 1 },
+  hard: { out: 1.3, cavein: 2, wear: 1.45 },
+};
+/** The pump-man engaged on a digger's own shaft, Bell selling pumps no more. */
+export const PUMPMAN_FEE = lsd(2, 10);
 
 export const COMPANY_CAVEIN_CHANCE = 0.04;
 export const COMPANY_CAVEIN_COST = { lo: pounds(10), hi: pounds(30) };
@@ -491,7 +534,7 @@ export const CLEAN_DAYS_TO_REFORM = 90;
 
 export const ROUTES = {
   trickeys: {
-    name: "Trickey's Track",
+    name: "Mercer's Track",
     walkDays: 8, // (faithful spec: the longer, better, crowded road)
     wagonDays: 5,
     horseDays: 3,
@@ -499,7 +542,7 @@ export const ROUTES = {
     blurb: 'The better and more popular road; crowded, cluttered with broken drays.',
   },
   pass: {
-    name: 'the Pass Road',
+    name: 'the Razorback Road',
     walkDays: 5,
     wagonDays: 4,
     horseDays: 3,
@@ -509,7 +552,7 @@ export const ROUTES = {
 } as const;
 
 export const WAGON_FARE = shillings(12);
-export const COACH_FARE = pounds(2); // Cobb & Co. to Suze Port (faithful)
+export const COACH_FARE = pounds(2); // Cobb & Co. to Port Gannet (faithful)
 export const COACH_DAYS = 2;
 
 // ---------------------------------------------------------------------------
@@ -607,7 +650,7 @@ export interface VictimDef {
   money: { lo: number; hi: number };
   /** Centi-ounces about him. */
   gold: { lo: number; hi: number };
-  /** Chests and swag worth selling at Suze Port. */
+  /** Chests and swag worth selling at Port Gannet. */
   salvage?: number;
   resist: number;
   /** A digger's pile. The field never forgives the man who takes one (§23.5). */
@@ -758,9 +801,10 @@ export const PASSAGE_RECOGNITION = 200;
 
 export const TWOUP_WIN = 0.47;
 /**
- * A cards win pays CARDS_PAYOUT times the stake; a loss costs the stake. The
- * house only keeps its edge while CARDS_WIN × best odds factor stays under
- * 1/(1+CARDS_PAYOUT) ≈ 0.4167 — at 0.42 the parlour was a money pump.
+ * The playable hand returns CARDS_PAYOUT times everything risked. Across the
+ * ten hands, three tells and optimal fold/call/raise/bluff decisions, 1.4 leaves
+ * the table a 2.13% edge. CARDS_WIN remains the aggregate-action compatibility
+ * chance, where the same figure is net winnings rather than a returned stake.
  */
 export const CARDS_WIN = 0.38;
 export const CARDS_PAYOUT = 1.4;
@@ -775,7 +819,7 @@ export const SHAMROCK_PRICE = pounds(250);
 export const SHAMROCK_STANDING = 40;
 export const SHAMROCK_TAKINGS = { lo: pounds(2), hi: pounds(6) }; // weekly
 export const SHAMROCK_RUSH_FACTOR = 1.5;
-/** Rush news reaches the landlord this many days before the Gazette prints it. */
+/** Rush news reaches the landlord this many days before the Times prints it. */
 export const SHAMROCK_RUSH_LEAD_DAYS = 2;
 export const SHAMROCK_BRAWL_CHANCE = 0.2; // per week
 export const SHAMROCK_BRAWL_COST = { lo: pounds(1), hi: pounds(5) };
@@ -862,7 +906,7 @@ export const LAWYER_ACQUIT_CHANCE = 0.35;
 export const LAWYER_ACQUIT_NOTORIETY = 8;
 
 // ---------------------------------------------------------------------------
-// Life at the Shamrock (§30)
+// Life at the Crown & Cradle (§30)
 // ---------------------------------------------------------------------------
 
 /** What the room costs, by house (§31 drink table). */
@@ -936,3 +980,57 @@ export const PROVISIONS_DEAR = shillings(21);
 export const PROVISIONS_CHEAP = shillings(13);
 /** The colonial baseline the Journal measures every price against (§31.1). */
 export const LABOURER_WEEK = shillings(5);
+
+// ---------------------------------------------------------------------------
+// Hearth & kin — the courtship anchor (§32)
+// ---------------------------------------------------------------------------
+
+/** A subscription ball at Slateford: the ticket, and the standing to be received. */
+export const BALL_TICKET = shillings(5);
+export const BALL_STANDING = 25;
+/** The Crown & Cradle's respected corner will make an introduction at this name (§30.1). */
+export const SHAMROCK_MEETING_STANDING = 40;
+/** Balls a year, announced in the Times. */
+export const BALLS_PER_YEAR = 3;
+/** Evening calls at Port Gannet: the window, and how far apart they come. */
+export const CALL_WINDOW_DAYS = 5;
+export const CALL_GAP_DAYS = 24;
+/** Kept calls before she will hear a proposal; her consent is hers (§32.1). */
+export const CALLS_BEFORE_BANNS = 3;
+/** A small gift from her trade's wants; anything past this cools it (§32.1). */
+export const GIFT_SMALL_MAX = shillings(5);
+/** The wedding at Port Gannet (§32.1). */
+export const WEDDING_COST = pounds(15);
+export const WEDDING_STANDING = 3;
+/** The cottage, by size (§32.1). */
+export const COTTAGE_PRICE_SMALL = pounds(60);
+export const COTTAGE_PRICE_LARGE = pounds(120);
+/** A broken courtship: no new introduction for sixty days (§32.1). */
+export const COURTSHIP_BURN_DAYS = 60;
+/** Hearth convalescence: the best bed in the colony (§32.2). */
+export const HEARTH_HEAL_PER_DAY = 6;
+/** The nurse's hearth heals one better (§32.2). */
+export const HEARTH_HEAL_NURSE_BONUS = 1;
+/** Bell's Freight freight on a consignment to the port (§32.2). */
+export const CONSIGN_FREIGHT = shillings(2);
+/** Hiring within this many days of a ship docking finds the pick of the wharf. */
+export const SHIP_HIRE_DAYS = 7;
+/** Christmas at the hearth (§32.3). */
+export const CHRISTMAS_DAY = 359;
+/** The sickbed's honest doctor (§32.3). */
+export const SICKBED_DOCTOR_FEE = pounds(5);
+/** Two missed events running is an estrangement (§32.3). */
+export const MISSED_RUN_ESTRANGED = 2;
+/** Visiting the cottage while wanted: the chance per visit the traps trail him,
+ *  scaled by town heat (§32.5). */
+export const HARBOUR_TRAIL_SCALE = 0.2;
+/** Bail when the household is taken up for harbouring (§32.5). */
+export const HARBOUR_BAIL = pounds(20);
+/** Passage out for the household, a head (§32.5). */
+export const FAMILY_PASSAGE_HEAD = pounds(20);
+/** A lavish gift lands as generosity only from a name she knows (§32.1)… */
+export const GIFT_LAVISH_STANDING = 30;
+/** …and only rarely: a second inside the month reads as purchase (§32.1). */
+export const GIFT_LAVISH_GAP_DAYS = 30;
+/** What a lavish gift runs to. */
+export const GIFT_LAVISH_COST = pounds(2);

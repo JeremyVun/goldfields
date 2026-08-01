@@ -12,7 +12,7 @@ export const TEXT: Record<string, string[]> = {
     'The waterbag is dry and the sun is merciless. Travellers have died of thirst on tracks no worse than this one; you press on, mouth like ash.',
     'Every creek you pass is a bed of cracked mud. In this heat a man can perish for want of a quart of water, and you have not found one.',
     'Your water is gone and the summer wind is an oven door left open. You have heard of footsloggers found dead beside the track for less than this.',
-    'No water since noon, and the flies will not leave your cracked lips alone. This is how the thirst stories in the Angus generally begin.',
+    'No water since noon, and the flies will not leave your cracked lips alone. This is how the thirst stories in the Times generally begin.',
     'The heat presses down like a hand and your throat is dust. Water, water — there is none, and none in sight.',
   ],
   'day.thirsty': [
@@ -84,7 +84,7 @@ export const TEXT: Record<string, string[]> = {
     'A dull fever and an aching head announce themselves; typhoid, the same fever that emptied whole families at Cromwell.',
     'You go hot, then cold, then hot again. Typhoid, most likely, and no comfort in the diagnosis.',
     'The fever comes on slow and mean. By nightfall you know it for typhoid.',
-    'Your skin burns and your thoughts wander. Typhoid has you now, the same sickness the Angus reports by the column-inch.',
+    'Your skin burns and your thoughts wander. Typhoid has you now, the same sickness the Times reports by the column-inch.',
   ],
   'ill.scurvy': [
     'Months without a fresh vegetable have caught you out. Your gums bleed and your joints ache: scurvy.',
@@ -148,7 +148,7 @@ export const TEXT: Record<string, string[]> = {
     'Whatever else this year holds, today you are free of {illness}.',
   ],
   'ill.worse': [
-    '{Illness} deepens, and you begin to understand why Calico House is never short of custom.',
+    '{Illness} deepens, and you begin to understand why Canvas House is never short of custom.',
     'Far from mending, {illness} tightens its hold overnight.',
     'You are worse, not better; {illness} shows no sign of easing.',
     '{Illness} has taken a turn you do not like the look of.',
@@ -169,10 +169,10 @@ export const TEXT: Record<string, string[]> = {
     'You are as ill as you have ever been in your life, and there is no doctor worth the name for miles.',
   ],
   'health.carted': [
-    'You are found insensible and carted to Calico House on a plank between two strangers; the fee {fee} is taken from what you carry.',
-    'They tell you afterwards that you were carried in on a stretcher, unaware of anything; Calico House charges {fee} for the privilege.',
-    'You remember nothing of the journey, only waking under canvas at Calico House, {fee} lighter for the carting.',
-    'Someone has the decency to cart you to Calico House when you go down; it costs you {fee}, insensible or not.',
+    'You are found insensible and carted to Canvas House on a plank between two strangers; the fee {fee} is taken from what you carry.',
+    'They tell you afterwards that you were carried in on a stretcher, unaware of anything; Canvas House charges {fee} for the privilege.',
+    'You remember nothing of the journey, only waking under canvas at Canvas House, {fee} lighter for the carting.',
+    'Someone has the decency to cart you to Canvas House when you go down; it costs you {fee}, insensible or not.',
   ],
   'health.rest': [
     'You lie up and rest {days} days, doing nothing but mend.',
@@ -181,10 +181,10 @@ export const TEXT: Record<string, string[]> = {
     'Rest is the only medicine on offer. {days} days pass before you are fit to rise.',
   ],
   'health.hospital': [
-    'Calico House takes you in: {days} days under canvas on an earthen floor, and {fee} the poorer for it.',
-    'You spend {days} days among the stretchers of Calico House, paying {fee} for the tents, the flies and the company of the dying.',
-    'A stay at Calico House costs you {fee} and {days} days of your year, and you are glad of even that much roof.',
-    '{days} days at Calico House, {fee} spent, and you come out thinner than you went in.',
+    'Canvas House takes you in: {days} days under canvas on an earthen floor, and {fee} the poorer for it.',
+    'You spend {days} days among the stretchers of Canvas House, paying {fee} for the tents, the flies and the company of the dying.',
+    'A stay at Canvas House costs you {fee} and {days} days of your year, and you are glad of even that much roof.',
+    '{days} days at Canvas House, {fee} spent, and you come out thinner than you went in.',
   ],
   'health.quack.good': [
     'A camp "doctor" — a butcher by his true trade — charges you {fee} and, against all sense, you mend.',
@@ -227,10 +227,10 @@ export const TEXT: Record<string, string[]> = {
     'You hear footsteps that do not belong; a loaded piece by your hand is argument enough to see them go elsewhere.',
   ],
   'night.snakey.din': [
-    'It is one of the famous Snakey Gully nights: revolvers cracking at nothing, drunken singing in three keys at once, and a man screaming because he has fallen down his own hole.',
-    'Snakey Gully in full voice: shots in the dark, songs that do not agree with each other, and somewhere a fellow shouting that he cannot find his own tent.',
+    'It is one of the famous Copperhead Gully nights: revolvers cracking at nothing, drunken singing in three keys at once, and a man screaming because he has fallen down his own hole.',
+    'Copperhead Gully in full voice: shots in the dark, songs that do not agree with each other, and somewhere a fellow shouting that he cannot find his own tent.',
     'You lie still and let the night have its way. Guns crack, drunks sing, and one poor soul falls into his own shaft and howls about it until dawn.',
-    'A typical Snakey Gully racket: pistols, ballads, curses, and a man who has tumbled into his own hole and cannot climb out of it, or his temper.',
+    'A typical Copperhead Gully racket: pistols, ballads, curses, and a man who has tumbled into his own hole and cannot climb out of it, or his temper.',
   ],
   'night.fire': [
     'A spark from a cooking fire catches your tent; you save what you can, and lose {loss} worth of goods to the flames.',
@@ -286,16 +286,16 @@ export const TEXT: Record<string, string[]> = {
     'A morning weeding Lin Wu\'s garden earns you a bundle of fresh greens rather than coin, and no bad bargain either.',
   ],
   'work.barman.brawl': [
-    'A brawl breaks out in the bar of the Shamrock, and you spend more of the shift breaking up chairs than pouring drinks.',
-    'Behind the bar of the Shamrock, two diggers come to blows over a game of cards, and you are caught in the middle of it.',
-    'A quiet evening at the Shamrock turns into a fist-fight over nothing at all, and you are the one left sweeping up.',
-    'You are tending bar at the Shamrock when a dispute over the price of rum ends in broken glass and bruised knuckles.',
+    'A brawl breaks out in the bar of the Crown & Cradle, and you spend more of the shift breaking up chairs than pouring drinks.',
+    'Behind the bar of the Crown & Cradle, two diggers come to blows over a game of cards, and you are caught in the middle of it.',
+    'A quiet evening at the Crown & Cradle turns into a fist-fight over nothing at all, and you are the one left sweeping up.',
+    'You are tending bar at the Crown & Cradle when a dispute over the price of rum ends in broken glass and bruised knuckles.',
   ],
   'work.clerk.discount': [
-    'Working the counter for Briggs, you find he allows his own man something off the price of goods.',
-    'A day clerking for Briggs earns you the usual wage, and a quiet discount on your own supplies besides.',
-    'Briggs is not a generous man, but he does knock a little off the price for those who work his counter.',
-    'You spend the day tallying stock for Briggs, and he lets you take your own purchases a shade cheaper for it.',
+    'Working the counter for Bell, you find he allows his own man something off the price of goods.',
+    'A day clerking for Bell earns you the usual wage, and a quiet discount on your own supplies besides.',
+    'Bell is not a generous man, but he does knock a little off the price for those who work his counter.',
+    'You spend the day tallying stock for Bell, and he lets you take your own purchases a shade cheaper for it.',
   ],
   'work.council.refused': [
     'The Council will not employ a man with a record against his name, however honest his intentions now.',
@@ -310,30 +310,30 @@ export const TEXT: Record<string, string[]> = {
     'They are civil enough about it: the Council does not put an unknown man near its ledgers.',
   ],
   'work.orderly.lesson': [
-    'A day as an orderly at Calico House teaches you, if nothing else, the value of clean water.',
-    'Working among the sick at Calico House, you learn quickly what dirty water and unwashed hands can do to a man.',
-    'The doctor at Calico House has little time for lessons, but you learn plenty just by watching what carelessness costs.',
-    'A shift at Calico House shows you, better than any journal could, why filth and fever travel together.',
+    'A day as an orderly at Canvas House teaches you, if nothing else, the value of clean water.',
+    'Working among the sick at Canvas House, you learn quickly what dirty water and unwashed hands can do to a man.',
+    'The doctor at Canvas House has little time for lessons, but you learn plenty just by watching what carelessness costs.',
+    'A shift at Canvas House shows you, better than any journal could, why filth and fever travel together.',
   ],
 
   // ───────────────────────── TRAVEL ─────────────────────────
 
   'travel.depart.trickeys': [
-    'You shoulder your swag and set off up Trickey\'s Track, the better and more crowded of the two roads.',
-    'Trickey\'s Track it is: the popular road, rutted by ten thousand feet before yours.',
-    'You fall in with the crowd heading up Trickey\'s Track, dust already rising ahead of you.',
-    'The broad, busy way: you take Trickey\'s Track, same as most who pass through Suze Port.',
+    'You shoulder your swag and set off up Mercer\'s Track, the better and more crowded of the two roads.',
+    'Mercer\'s Track it is: the popular road, rutted by ten thousand feet before yours.',
+    'You fall in with the crowd heading up Mercer\'s Track, dust already rising ahead of you.',
+    'The broad, busy way: you take Mercer\'s Track, same as most who pass through Port Gannet.',
   ],
   'travel.depart.pass': [
-    'You turn instead down the Pass Road, the shorter route that few travellers choose.',
-    'Few take the Pass Road, on account of its poor surface, but you set off down it regardless.',
-    'You strike out along the Pass Road, quieter and rougher than Trickey\'s Track, and glad of the solitude.',
-    'The Pass Road is the lonelier way, but the shorter, and you take it.',
+    'You turn instead down the Razorback Road, the shorter route that few travellers choose.',
+    'Few take the Razorback Road, on account of its poor surface, but you set off down it regardless.',
+    'You strike out along the Razorback Road, quieter and rougher than Mercer\'s Track, and glad of the solitude.',
+    'The Razorback Road is the lonelier way, but the shorter, and you take it.',
   ],
   'travel.walk.day': [
     'A day humping your swag, one boot after the other, the track unwinding slowly ahead.',
     'You walk from first light to last, swag chafing your shoulders, the diggings no closer than they feel.',
-    'Another day\'s footslogging, the dust of Trickey\'s Track settling into every crease of your clothes.',
+    'Another day\'s footslogging, the dust of Mercer\'s Track settling into every crease of your clothes.',
     'You trudge on with your worldly goods on your back, counting the miles by the ache in your feet.',
     'A long day on foot, the road stretching out flat and indifferent before you.',
   ],
@@ -378,10 +378,10 @@ export const TEXT: Record<string, string[]> = {
     'You watch the brumby dig at the sand of a dry creek until water pools in the hollow. A useful trick, that.',
   ],
   'travel.hack.suffers': [
-    'The showy hack, bred for city streets, founders badly in this rough country.',
-    'Your fine-boned hack is no bushman\'s horse; the hard going tells on it cruelly today.',
-    'A horse meant for parading, not prospecting, struggles through country a brumby would barely notice.',
-    'The hack was a handsome buy in Suze Port; out here, on rock and root, it shows its poor breeding.',
+    'The tall chestnut, bred for made roads, founders badly in this rough country.',
+    'Your fine-boned chestnut is no bushman\'s horse; the hard going tells on it cruelly today.',
+    'A horse meant for parading, not prospecting, struggles through broken country.',
+    'The chestnut was a handsome buy in Port Gannet; out here, on rock and root, its limits show.',
   ],
   'travel.salvage': [
     'Beside the track lie abandoned goods: {item}, left by some earlier traveller who had carried too much.',
@@ -402,16 +402,16 @@ export const TEXT: Record<string, string[]> = {
     'You see a woman slumped against her bundle, past walking, and pass on with the rest, ashamed and hurrying all the same.',
   ],
   'travel.arrive.ftown': [
-    'The track drops away and there below you lies Fields Town, strung out along Blue River in a mile of tin, tent and rough-hewn wood. Briggs Street runs the length of it, wide enough to turn a bullock team, the Shamrock Hotel standing proud among the stores and calico-tented offices.\n\nSmoke rises from a hundred cooking fires, and the din of the place reaches you before you have set foot in it: hammers, shouted prices, a fiddle somewhere, a dog barking at nothing. Six months ago, they say, this was a quiet bush valley. Now it is the largest settlement in Goldfields, and no one who lives here quite believes it either.\n\nYou walk in with the dust of the road still on you, one more new arrival among thousands, and go looking for a place to make your fortune.',
-    'You come down off the ridge and Fields Town opens out before you: a mile of Briggs Street lined with tin-roofed stores, the Shamrock Hotel at its heart, and beyond it nothing but tents stretching to the treeline along Blue River. The noise hits you first — hawkers, hammers, the low roar of a town too busy to be quiet — and then the smell of woodsmoke and mutton fat.\n\nHalf the people here have never swung a pick; they keep the store, the bar, the barber\'s chair, the ledger books that the diggers never trouble to read. You thread your way down the crowded street, past a paper-swell arguing with a clerk over a claim, past a bullocky cursing his team through the mud, and understand at once why men call this the beacon on the map.\n\nWhatever else happens this year, it will happen here as much as anywhere.',
-    'Fields Town announces itself long before you reach it: smoke over the ridgeline, then the ring of picks on stone, then at last the town itself, a mile of Briggs Street strung out beside Blue River in tin, canvas and rough timber. The Shamrock Hotel stands at the centre of it all, the closest thing this place has to a town square.\n\nYou push through a street thick with diggers, storekeepers and paper-swells hurrying between the licensing hall and the bank, all of them certain their business is the most urgent in town. Calico House sits off to one side, tents pitched close together on the earth, a reminder that not every arrival here ends well.\n\nSix months ago this was nothing but bush and a quiet stretch of river. You walk in now to find a town that has decided, all at once, to exist.',
-    'The road tips down towards Blue River and there is Fields Town, sprawled along the water in a jumble of tin roofs and calico that has grown too fast to make any sense of. Briggs Street cuts through the middle of it, wide enough for a bullock team to turn, busy enough that turning one takes patience.\n\nYou walk past the Shamrock Hotel with its noise already spilling into the street at this hour, past Briggs\' Store with its impossible prices chalked up outside, past clerks and diggers and washerwomen all going about a town business that did not exist a year ago.\n\nWhatever brought you here — gold, work, or simple need — Fields Town has room for one more arrival, same as it always does.',
+    'The track drops away and there below you lies Slateford, strung out along Slate River in a mile of tin, tent and rough-hewn wood. Bell Street runs the length of it, wide enough to turn a bullock team, the Crown & Cradle standing proud among the stores and calico-tented offices.\n\nSmoke rises from a hundred cooking fires, and the din of the place reaches you before you have set foot in it: hammers, shouted prices, a fiddle somewhere, a dog barking at nothing. Six months ago, they say, this was a quiet bush valley. Now it is the largest settlement on the Slate River diggings, and no one who lives here quite believes it either.\n\nYou walk in with the dust of the road still on you, one more new arrival among thousands, and go looking for a place to make your fortune.',
+    'You come down off the ridge and Slateford opens out before you: a mile of Bell Street lined with tin-roofed stores, the Crown & Cradle at its heart, and beyond it nothing but tents stretching to the treeline along Slate River. The noise hits you first — hawkers, hammers, the low roar of a town too busy to be quiet — and then the smell of woodsmoke and mutton fat.\n\nHalf the people here have never swung a pick; they keep the store, the bar, the barber\'s chair, the ledger books that the diggers never trouble to read. You thread your way down the crowded street, past a paper-swell arguing with a clerk over a claim, past a bullocky cursing his team through the mud, and understand at once why men call this the beacon on the map.\n\nWhatever else happens this year, it will happen here as much as anywhere.',
+    'Slateford announces itself long before you reach it: smoke over the ridgeline, then the ring of picks on stone, then at last the town itself, a mile of Bell Street strung out beside Slate River in tin, canvas and rough timber. The Crown & Cradle stands at the centre of it all, the closest thing this place has to a town square.\n\nYou push through a street thick with diggers, storekeepers and paper-swells hurrying between the licensing hall and the bank, all of them certain their business is the most urgent in town. Canvas House sits off to one side, tents pitched close together on the earth, a reminder that not every arrival here ends well.\n\nSix months ago this was nothing but bush and a quiet stretch of river. You walk in now to find a town that has decided, all at once, to exist.',
+    "The road tips down towards Slate River and there is Slateford, sprawled along the water in a jumble of tin roofs and calico that has grown too fast to make any sense of. Bell Street cuts through the middle of it, wide enough for a bullock team to turn, busy enough that turning one takes patience.\n\nYou walk past the Crown & Cradle with its noise already spilling into the street at this hour, past Bell's Outfitters with its impossible prices chalked up outside, past clerks and diggers and washerwomen all going about a town business that did not exist a year ago.\n\nWhatever brought you here — gold, work, or simple need — Slateford has room for one more arrival, same as it always does.",
   ],
   'travel.arrive.suze': [
-    'You come back down into Suze Port, the harbour opening out below with its forest of masts and its jetty jammed as ever with carters. The town has not slowed in your absence; if anything the tent rows have spread further along the beach.\n\nIt still has the raw, unfinished look of a place built in a hurry for a purpose that might not last. You walk the crowded, unlit streets, past the garish shop-signs and the horses hitched three deep, glad all the same to be back among brick and glass after the diggings.',
-    'The masts of Suze Port harbour come into view again, and with them the noise and stink and hurry of the busiest town in the colony. Nothing here is ever quite finished; new buildings go up as fast as old ones fall down, and the streets remain what they have always been — dirt tracks pretending otherwise.\n\nYou make your way down towards Main Street, past importers and lawyers and printers all shouting from behind flimsy signs, back among the crowds who have not yet, or will never, make it to the fields.',
-    'Suze Port greets you the way it greets everyone: with noise, mud or dust depending on the season, and a jetty too crowded for its own good. The harbour is as thick with shipping as ever, more than one captain, no doubt, still short a crew that has run off to the diggings.\n\nYou walk streets you half remember now, past the Puddler\'s Arms and the printers opposite it, glad of solid ground and proper walls after however long you have spent under canvas.',
-    'The harbour opens out below you again, Suze Port sprawled along the beach exactly as raw and busy as you left it. Ships still crowd the anchorage, carters still fight over every trunk that comes off a gangplank, and the town still has the look of a place thrown up faster than anyone could plan for.\n\nYou walk back into Main Street with the dust of the diggings still on your boots, one more digger among the crowds who never quite decide whether they are coming or going.',
+    'You come back down into Port Gannet, the harbour opening out below with its forest of masts and its jetty jammed as ever with carters. The town has not slowed in your absence; if anything the tent rows have spread further along the beach.\n\nIt still has the raw, unfinished look of a place built in a hurry for a purpose that might not last. You walk the crowded, unlit streets, past the garish shop-signs and the horses hitched three deep, glad all the same to be back among brick and glass after the diggings.',
+    'The masts of Port Gannet harbour come into view again, and with them the noise and stink and hurry of the busiest town in the colony. Nothing here is ever quite finished; new buildings go up as fast as old ones fall down, and the streets remain what they have always been — dirt tracks pretending otherwise.\n\nYou make your way down towards Main Street, past importers and lawyers and printers all shouting from behind flimsy signs, back among the crowds who have not yet, or will never, make it to the fields.',
+    "Port Gannet greets you the way it greets everyone: with noise, mud or dust depending on the season, and a jetty too crowded for its own good. The harbour is as thick with shipping as ever, more than one captain, no doubt, still short a crew that has run off to the diggings.\n\nYou walk streets you half remember now, past the Bullock's Rest and the printers opposite it, glad of solid ground and proper walls after however long you have spent under canvas.",
+    'The harbour opens out below you again, Port Gannet sprawled along the beach exactly as raw and busy as you left it. Ships still crowd the anchorage, carters still fight over every trunk that comes off a gangplank, and the town still has the look of a place thrown up faster than anyone could plan for.\n\nYou walk back into Main Street with the dust of the diggings still on your boots, one more digger among the crowds who never quite decide whether they are coming or going.',
   ],
   'travel.arrive.camp': [
     'You walk into {camp}, another scatter of tents and mullock heaps along a creek that a month ago was nameless to you.',
@@ -507,7 +507,7 @@ export const TEXT: Record<string, string[]> = {
   ],
   'court.magistrate': [
     'The travelling magistrate arrives at last, weeks later than promised, to hear the waiting cases.',
-    'Word comes that the magistrate has finally reached Fields Town; your case will be heard today.',
+    'Word comes that the magistrate has finally reached Slateford; your case will be heard today.',
     'After a long wait chained to the logs, the magistrate\'s arrival means your case is finally called.',
     'The magistrate sets up his court in the Council hall, and your name is read out among the accused.',
   ],
@@ -629,7 +629,7 @@ export const TEXT: Record<string, string[]> = {
     'The pick breaks through into something extraordinary: a pocket of gold richer than any story told round the campfire.',
     'You cut into a bonanza — gold thick in the wash, more than you have seen in your whole time on the fields.',
     'The drive opens suddenly into a pocket so rich you have to sit down and look at it twice before you believe your eyes.',
-    'You strike it at last, properly: a bonanza that will be the talk of every camp from here to Fields Town by the week\'s end.',
+    'You strike it at last, properly: a bonanza that will be the talk of every camp from here to Slateford by the week\'s end.',
   ],
   'mine.cavein.injury': [
     'The drive collapses without warning; your mates dig you out hurt but alive.',
@@ -675,9 +675,9 @@ export const TEXT: Record<string, string[]> = {
   ],
   'mine.dryblow': [
     'You work the two iron dishes in the desert wind, tossing worked earth skyward and letting the wind carry the dust away.',
-    'Dryblowing today: no water for miles, only the wind, the dust, and two dishes tipped back and forth.',
-    'You spend the day dryblowing, arms aching from holding the dish aloft while the wind does the winnowing.',
-    'In this dry country there is no washing to be done, only dryblowing: dust in the wind and gold at your feet, if you are lucky.',
+    'Hand winnowing today: no water for miles, only the wind, the dust, and two dishes tipped back and forth.',
+    'You spend the day winnowing by hand, arms aching from holding the dish aloft.',
+    'In this dry country there is no washing to be done, only wind and dust and colour at your feet, if you are lucky.',
   ],
   'mine.company.shift': [
     'You work a shift underground for the company, timbered drives and steam pumps doing what no lone digger could manage.',
@@ -704,7 +704,7 @@ export const TEXT: Record<string, string[]> = {
     'Fair wash. Not a fortune, but honest ground that will pay a working man.',
     'The dish comes up with a decent tail of colour. Fair ground, and worth the working.',
     'You try it in three places and get much the same each time: fair wash, steady and unremarkable.',
-    'Nothing to write to the Angus about, but fair dirt, and fair dirt has kept many a digger fed.',
+    'Nothing to write to the Times about, but fair dirt, and fair dirt has kept many a digger fed.',
   ],
   'prospect.promising': [
     'The colour comes up thick in the dish. This is promising ground, and you would not swap it.',
@@ -746,10 +746,10 @@ export const TEXT: Record<string, string[]> = {
   // ───────────────────────── THE CAMPS, EACH ITS OWN PLACE ─────────────────────────
 
   'camp.damp-camp.lead': [
-    'Damp Camp is the nearest of the diggings to Fields Town, and the quietest of them: a creek flat of grey gravel, a hundred tents pitched anyhow, and a cradle rocking at every second hole.',
-    'A creek that runs the year round, willows the diggers have not yet burnt, and washdirt that never made a man rich and never quite let him starve. That is Damp Camp.',
+    'Reedbank Camp is the nearest of the diggings to Slateford, and the quietest of them: a creek flat of grey gravel, a hundred tents pitched anyhow, and a cradle rocking at every second hole.',
+    'A creek that runs the year round, willows the diggers have not yet burnt, and washdirt that never made a man rich and never quite let him starve. That is Reedbank Camp.',
     'The creek here is the whole of the camp. Men work it shoulder to shoulder from the crossing to the bend, and the water runs the colour of milky tea from morning to night.',
-    'Damp Camp: a day out of Fields Town, a creek to wash in, and ground that pays a steady wage to a steady man. Nobody comes here for a fortune.',
+    'Reedbank Camp: a day out of Slateford, a creek to wash in, and ground that pays a steady wage to a steady man. Nobody comes here for a fortune.',
   ],
   'camp.damp-camp.winter': [
     'The creek is up and the colour of a ploughed paddock. Every winter it comes over the flat and takes tents, tools and a man\'s temper with it.',
@@ -761,22 +761,22 @@ export const TEXT: Record<string, string[]> = {
     'Low water. The cradles stand idle half the day for want of anything to pour through them, and the dust hangs over the flat until dark.',
   ],
   'camp.snakey-gully.lead': [
-    'Snakey Gully never stops making a noise: cradles rocking, windlasses squealing, dogs, fiddles, and a thousand men talking at once between steep sides that throw all of it back at you.',
+    'Copperhead Gully never stops making a noise: cradles rocking, windlasses squealing, dogs, fiddles, and a thousand men talking at once between steep sides that throw all of it back at you.',
     'A crowded, rowdy gully with tents up both slopes and not a level yard between them. The din begins before daylight and does not properly leave off.',
     'The biggest and worst-behaved camp on the field. Good dirt, bad neighbours, and snakes in the grass that gave the place its name.',
-    'Every hole in Snakey Gully has three men in it and an argument going on over the pegs. It is the noisiest ground in the colony and some of the richest.',
+    'Every hole in Copperhead Gully has three men in it and an argument going on over the pegs. It is the noisiest ground in the colony and some of the richest.',
   ],
   'camp.snakey-gully.winter': [
     'The gully runs like a millrace after rain, and a flash flood came down it last month and took two tents and a windlass with it.',
     'Water everywhere, which suits the puddlers and nobody else. The gully carries the whole hillside down it when the rain sets in.',
   ],
   'camp.snakey-gully.summer': [
-    'Heat, dust, and snakes out of the grass into the tents. Two men were bitten on the flat this month, and one of them is still at Calico House.',
+    'Heat, dust, and snakes out of the grass into the tents. Two men were bitten on the flat this month, and one of them is still at Canvas House.',
     'The gully bakes. The creek is a string of mud holes and the flies are past all bearing.',
   ],
   'camp.deep-mountains.lead': [
     'Reef country: no creek, no cradles, and no easy gold. Poppet heads and windlasses stand along the ridge, and the ground goes down eighty feet before it says a word to you.',
-    'The Deep Mountains are all quartz and hard rock. What is got here is got by sinking, and by companies with money enough to sink where a lone man cannot.',
+    'The Blackcap Ranges are all quartz and hard rock. What is got here is got by sinking, and by companies with money enough to sink where a lone man cannot.',
     'Timbered slopes, a crushing battery thumping somewhere below, and shafts going down all along the lead. This is the great lottery of the field.',
     'A cold, high camp of shafts and mullock heaps, where the big companies have taken up all the ground a man of means can want, and are always after more.',
   ],
@@ -799,7 +799,7 @@ export const TEXT: Record<string, string[]> = {
 
   'partner.take': [
     'A digger you have crossed on the field offers to go mates with you: no wages either way, and share and share alike on the gold.',
-    'A man whose name you know, and who knows yours, proposes a partnership. No wage; a quarter of everything won.',
+    'A man whose name you know, and who knows yours, proposes a partnership. No wage; half of everything won.',
     'You shake hands on a mateship in the old way. Neither man pays the other; the gold is divided as it comes.',
     'Going mates is how half the fortunes on this field were made. A steady man offers, and you take him.',
   ],
@@ -814,7 +814,7 @@ export const TEXT: Record<string, string[]> = {
     'You shake hands and go your separate ways, each to his own hole.',
   ],
   'partner.share': [
-    'Your partner takes his quarter — {gold} — and neither of you counts it twice.',
+    'Your partner takes his half — {gold} — share and share alike.',
     '{gold} goes to your mate, as agreed at the outset.',
     'The gold is divided at the tent flap; {gold} of it is your partner\'s.',
   ],
@@ -846,7 +846,7 @@ export const TEXT: Record<string, string[]> = {
 
   'sell.bank': [
     'The Bank of Australasia weighs your {gold} and pays out {money}, the fair rate a bank affords.',
-    'You take {gold} to the bank in Fields Town, and are paid {money} for it, better than any camp storekeeper would give.',
+    'You take {gold} to the bank in Slateford, and are paid {money} for it, better than any camp storekeeper would give.',
     'The bank\'s scales are true; {gold} brings you {money}.',
     'A trip to the Bank of Australasia is rewarded with {money} for {gold}, the best rate on the fields.',
   ],
@@ -857,10 +857,10 @@ export const TEXT: Record<string, string[]> = {
     '{money} is what the storekeeper offers for {gold}, and he offers it as though doing you a favour.',
   ],
   'sell.store': [
-    'Briggs weighs out your {gold} on his own scales and pays {money}.',
-    'You take {gold} to Briggs\' Store, where it is weighed and {money} counted out to you.',
-    'Briggs handles the {gold} himself, careful as ever, and pays {money}.',
-    'At Briggs\' counter, {gold} becomes {money}, weighed and paid without much ceremony.',
+    'Bell weighs out your {gold} on his own scales and pays {money}.',
+    "You take {gold} to Bell's Outfitters, where it is weighed and {money} counted out to you.",
+    'Bell handles the {gold} himself, careful as ever, and pays {money}.',
+    "At Bell's counter, {gold} becomes {money}, weighed and paid without much ceremony.",
   ],
   'sell.shortweight': [
     'You discover too late that the scales were doctored; the weighing was never as fair as it looked.',
@@ -919,8 +919,8 @@ export const TEXT: Record<string, string[]> = {
   // A licensed house is not a tent with a plank in it (§31.4).
   'drink.good.house': [
     'You take your drink standing at the counter and listen to the room, and the evening does you the good an evening is supposed to do.',
-    'The measure is honest, the glass has been washed this week, and you go out into Briggs Street in better temper than you came in.',
-    'A quiet hour at the bar of the Shamrock, in the company of men who are neither working you nor fighting you. It is worth the shilling.',
+    'The measure is honest, the glass has been washed this week, and you go out into Bell Street in better temper than you came in.',
+    'A quiet hour at the bar of the Crown & Cradle, in the company of men who are neither working you nor fighting you. It is worth the shilling.',
     'The house keeps decent liquor for those who ask for it, and you sleep the better for having asked.',
   ],
   'drink.bad.house': [
@@ -962,7 +962,7 @@ export const TEXT: Record<string, string[]> = {
     'You play on past good judgment, and {amount} goes with the cards.',
   ],
 
-  // ───────────────────── LIFE AT THE SHAMROCK (§30) ─────────────────────
+  // ─────────────────── LIFE AT THE CROWN & CRADLE (§30) ──────────────────
   // How the room takes a man, which is the only mirror the field keeps.
 
   'shamrock.recv.chum': [
@@ -976,14 +976,14 @@ export const TEXT: Record<string, string[]> = {
     'Somebody along the counter says your name to somebody else, without malice and without much interest. That is how a man learns he belongs somewhere.',
   ],
   'shamrock.recv.respected': [
-    'Mrs. Doyle takes you through to the settlers\' corner, where the squatters and the warders sit. What is said there on Monday the Angus prints on Thursday, and not always as well.',
+    'Mrs. Doyle takes you through to the settlers\' corner, where the squatters and the warders sit. What is said there on Monday the Times prints on Thursday, and not always as well.',
     'Room is made for you at the good end of the room. Men who have no reason to be civil to a digger are civil to you, and mean you to notice it.',
     'You are shown to the parlour without having to ask. They play for pounds in there, and they play straight, which is not at all the same thing as safe.',
   ],
   'shamrock.recv.own': [
     'The room knows you before the door has finished swinging. There is a place kept at the landlord\'s own table, and whatever he has heard this week he will tell you across it.',
     'A man you have never seen stands up and says your name to the whole bar, and the whole bar answers him. It is worth more than the drink and it costs you nothing at all.',
-    'The Shamrock has decided that you are one of its own. The measures are generous, the landlord is confiding, and nobody thinks to ask what you did to deserve it.',
+    'The Crown & Cradle has decided that you are one of its own. The measures are generous, the landlord is confiding, and nobody thinks to ask what you did to deserve it.',
   ],
   'shamrock.recv.feared': [
     'The talk goes out of the room a bench at a time as you cross the floor, the way water goes out of a creek. The barman serves you first and looks at nothing whatever.',
@@ -1059,8 +1059,8 @@ export const TEXT: Record<string, string[]> = {
   // Shouting the bar (§30.2) — the worst money-for-standing in the colony,
   // and what every man in the sources did with his first good week.
   'shout.town': [
-    'You put your hand up and call the house on. {heads} men turn round at once, and {cost} goes across the counter to a cheer that is heard in Briggs Street.',
-    'Drinks all round, and the Shamrock says so. {heads} glasses filled at your word and {cost} gone, and for the length of one evening you are the best-liked man on the field.',
+    'You put your hand up and call the house on. {heads} men turn round at once, and {cost} goes across the counter to a cheer that is heard in Bell Street.',
+    'Drinks all round, and the Crown & Cradle says so. {heads} glasses filled at your word and {cost} gone, and for the length of one evening you are the best-liked man on the field.',
     'You shout the room — {heads} of them, {cost} the lot — and the room shouts your name back, which is the exchange rate on generosity in this colony.',
   ],
   'shout.camp': [
@@ -1101,10 +1101,10 @@ export const TEXT: Record<string, string[]> = {
   // ───────────────────────── NEWS AND RUMOUR ─────────────────────────
 
   'rumour.secret': [
-    'Talk goes round the camp of a secret mine, days out beyond {camp}, kept quiet by whoever found it.',
+    "Talk goes round the camp of Widow's Reef, days out beyond {camp}, kept quiet by whoever found it.",
     'You hear whispers of a hidden working somewhere past {camp}, rich enough that its finders will not speak of it.',
     'A story does the rounds of a secret strike far out beyond {camp}. Nobody quite says who told them.',
-    'There is talk, low and careful, of a secret mine somewhere beyond {camp} that a lucky few are keeping to themselves.',
+    "There is talk, low and careful, of Widow's Reef somewhere beyond {camp}, kept quiet by a lucky few.",
   ],
   'rumour.hoax': [
     'The rumour proves a hoax; you have wasted a day chasing another man\'s shadow, like the digger who once ran four miles after nothing at all.',
@@ -1121,7 +1121,7 @@ export const TEXT: Record<string, string[]> = {
   'rush.news': [
     'Word arrives of a rush at {camp}; half the camp is already packing to chase it.',
     'News breaks of a strike at {camp}, and diggers are dropping their tools to join the stampede.',
-    'A rush is on at {camp}; the Angus will no doubt have it in tomorrow\'s columns.',
+    'A rush is on at {camp}; the Times will no doubt have it in tomorrow\'s columns.',
     'The camp is alive with news of a rush at {camp}. Whether you go is your own decision to make.',
   ],
   'hunt.warning': [
@@ -1155,28 +1155,28 @@ export const TEXT: Record<string, string[]> = {
   // ───────────────────────── ARRIVAL AND FRAMING ─────────────────────────
 
   'intro.arrival': [
-    'The Anna edges into harbour among a forest of masts and rigging, a hundred other vessels crowded at anchor around her. You lean on the rail with the rest of the passengers, straining for a first look at the land of fortune: stunted, grey-green forest running down to a sandy shore, shimmering already in a heat you have not felt before. The smell of eucalypt reaches you long before the gangplank does, nothing like the ordered hedgerows and fields you have left behind.\n\nWhen the Anna finally ties up, you step onto a jetty thick with carters, all shouting over one another for the chance to carry your baggage for a shilling. Suze Port itself is rough and hastily made — storage sheds, shops and shelters thrown up along the beach, with only a scattering of proper brick and stone among them. It is not hard to imagine how small and quiet this port must have been before the gold was found and everything changed at once.\n\nYou have ten shillings in your pocket, a swag not yet packed, and a year, if you are lucky, to make of yourself something more than a new chum.',
-    'After months at sea, the Anna finally noses her way into Suze Port harbour, threading between vessels of every flag and rig, so many that the water itself seems roofed with masts. The coastline is nothing like home: dull grey-green scrub instead of hedgerow, sand instead of meadow, and a heat rising off the land that reaches you even before you touch the shore. You breathe in eucalypt for the first time and know at once you are somewhere entirely new.\n\nThe jetty, when you finally step onto it, is a crush of carters and porters, all bidding loudly for your custom and your baggage alike. Beyond them Suze Port sprawls along the beach in a jumble of tin, canvas and raw timber, thrown up faster than anyone could plan it. Somewhere under all this haste, you are told, there was once a sleepy little harbour town; you find it hard to picture.\n\nYou step off the gangplank with ten shillings, a trunk you can barely carry, and twelve months in which to become something other than the new chum you plainly are.',
-    'The forest of masts thickens as the Anna works her way into Suze Port, past ships whose crews, you will soon learn, have mostly deserted for the diggings and left their captains to curse the gold rush from an empty deck. The land itself comes as a shock after so many weeks of grey ocean: dry, pale scrub, a shimmering heat, and a smell of eucalypt that clings to everything from the first breath.\n\nThe jetty is bedlam, carters fighting over your trunk before your feet have properly found the boards. Suze Port beyond it is no more than a boom town wearing the clothes of a real one — flimsy signs, dirt streets, buildings that look built in a week because most of them were. Six months ago, they say, none of this existed.\n\nYou carry ten shillings and a swag you have not yet learned to pack properly, and somewhere out past this raw little town, a year\'s worth of goldfields is waiting to test both.',
-    'You have crossed half the world to reach this harbour, and the sight of it — masts crowding the water, carters swarming the jetty, a town that looks built overnight because it was — makes the crossing feel suddenly very small. The Anna ties up at last among a hundred other hulls, and the passengers press to the rail for their first look at a coastline unlike anything in England: scrubby, sun-bleached, and already hot enough to raise a sweat before you have set foot on it.\n\nSuze Port itself does not pretend to be more than it is. Sheds, shops and shelters crowd the sand in no particular order, a handful of proper buildings scattered among them like an afterthought. Word on deck was that half the town\'s own workers keep abandoning their jobs the moment news comes of another rich find inland.\n\nYou step ashore a new chum with ten shillings, a swag, and a year ahead of you to prove yourself something more.',
+    'The Anna edges into harbour among a forest of masts and rigging, a hundred other vessels crowded at anchor around her. You lean on the rail with the rest of the passengers, straining for a first look at the land of fortune: stunted, grey-green forest running down to a sandy shore, shimmering already in a heat you have not felt before. The smell of eucalypt reaches you long before the gangplank does, nothing like the ordered hedgerows and fields you have left behind.\n\nWhen the Anna finally ties up, you step onto a jetty thick with carters, all shouting over one another for the chance to carry your baggage for a shilling. Port Gannet itself is rough and hastily made — storage sheds, shops and shelters thrown up along the beach, with only a scattering of proper brick and stone among them. It is not hard to imagine how small and quiet this port must have been before the gold was found and everything changed at once.\n\nYou have ten shillings in your pocket, a swag not yet packed, and a year, if you are lucky, to make of yourself something more than a new chum.',
+    'After months at sea, the Anna finally noses her way into Port Gannet harbour, threading between vessels of every flag and rig, so many that the water itself seems roofed with masts. The coastline is nothing like home: dull grey-green scrub instead of hedgerow, sand instead of meadow, and a heat rising off the land that reaches you even before you touch the shore. You breathe in eucalypt for the first time and know at once you are somewhere entirely new.\n\nThe jetty, when you finally step onto it, is a crush of carters and porters, all bidding loudly for your custom and your baggage alike. Beyond them Port Gannet sprawls along the beach in a jumble of tin, canvas and raw timber, thrown up faster than anyone could plan it. Somewhere under all this haste, you are told, there was once a sleepy little harbour town; you find it hard to picture.\n\nYou step off the gangplank with ten shillings, a trunk you can barely carry, and twelve months in which to become something other than the new chum you plainly are.',
+    'The forest of masts thickens as the Anna works her way into Port Gannet, past ships whose crews, you will soon learn, have mostly deserted for the diggings and left their captains to curse the gold rush from an empty deck. The land itself comes as a shock after so many weeks of grey ocean: dry, pale scrub, a shimmering heat, and a smell of eucalypt that clings to everything from the first breath.\n\nThe jetty is bedlam, carters fighting over your trunk before your feet have properly found the boards. Port Gannet beyond it is no more than a boom town wearing the clothes of a real one — flimsy signs, dirt streets, buildings that look built in a week because most of them were. Six months ago, they say, none of this existed.\n\nYou carry ten shillings and a swag you have not yet learned to pack properly, and somewhere out past this raw little town, a year\'s worth of goldfields is waiting to test both.',
+    'You have crossed half the world to reach this harbour, and the sight of it — masts crowding the water, carters swarming the jetty, a town that looks built overnight because it was — makes the crossing feel suddenly very small. The Anna ties up at last among a hundred other hulls, and the passengers press to the rail for their first look at a coastline unlike anything in England: scrubby, sun-bleached, and already hot enough to raise a sweat before you have set foot on it.\n\nPort Gannet itself does not pretend to be more than it is. Sheds, shops and shelters crowd the sand in no particular order, a handful of proper buildings scattered among them like an afterthought. Word on deck was that half the town\'s own workers keep abandoning their jobs the moment news comes of another rich find inland.\n\nYou step ashore a new chum with ten shillings, a swag, and a year ahead of you to prove yourself something more.',
   ],
   'intro.newchum': [
-    'You are a new chum, fresh off the Anna, with ten shillings to your name and twelve months to make a fortune or lose everything trying. It will be three years, they say, before anyone stops calling you that, three years of sun and dust before your skin browns and your city manners wear off entirely.\n\nEverything you own could be carried on your own back, and most of it is unsuited to a goldfield in any case — office clothes, city boots, a soft pair of hands that have never held a pick. Suze Port is full of men exactly like you, all certain their own case will be the exception.\n\nWhatever you decide to do first — walk, ride, work a season in the port before you go — the twelve months start now, and they will not wait for you to feel ready.',
-    'Ten shillings, a borrowed swag, and a year: that is the whole of your fortune as you stand on the wharf at Suze Port. Around you the crowd is thick with men just like yourself, new chums fresh off half a dozen ships, all certain that the goldfields owe them something.\n\nYou have never swung a pick in your life. Your hands are soft, your boots are wrong, and your coat marks you out as a stranger before you have said a word. None of that will matter much longer, one way or the other.\n\nThe old chums say it takes three years to stop being a new chum at all. You do not have three years. You have one, and it starts the moment you step off this jetty.',
-    'A new chum is easy enough to spot: shiny boots, a starched collar, and a face that has not yet learned to squint against the glare. You are that man today, standing on the wharf with ten shillings and a swag you packed badly, watching old chums stride past in moleskins and cabbage-tree hats as though they own the colony.\n\nYou have a year. Twelve months to learn what those old chums took three years to learn, or to fail trying, same as most who step off these ships. Nobody at Suze Port will tell you which it will be. Nobody ever does.\n\nThe road to the diggings, one way or another, starts from exactly where you are standing now.',
+    'You are a new chum, fresh off the Anna, with ten shillings to your name and twelve months to make a fortune or lose everything trying. It will be three years, they say, before anyone stops calling you that, three years of sun and dust before your skin browns and your city manners wear off entirely.\n\nEverything you own could be carried on your own back, and most of it is unsuited to a goldfield in any case — office clothes, city boots, a soft pair of hands that have never held a pick. Port Gannet is full of men exactly like you, all certain their own case will be the exception.\n\nWhatever you decide to do first — walk, ride, work a season in the port before you go — the twelve months start now, and they will not wait for you to feel ready.',
+    'Ten shillings, a borrowed swag, and a year: that is the whole of your fortune as you stand on the wharf at Port Gannet. Around you the crowd is thick with men just like yourself, new chums fresh off half a dozen ships, all certain that the goldfields owe them something.\n\nYou have never swung a pick in your life. Your hands are soft, your boots are wrong, and your coat marks you out as a stranger before you have said a word. None of that will matter much longer, one way or the other.\n\nThe old chums say it takes three years to stop being a new chum at all. You do not have three years. You have one, and it starts the moment you step off this jetty.',
+    'A new chum is easy enough to spot: shiny boots, a starched collar, and a face that has not yet learned to squint against the glare. You are that man today, standing on the wharf with ten shillings and a swag you packed badly, watching old chums stride past in moleskins and cabbage-tree hats as though they own the colony.\n\nYou have a year. Twelve months to learn what those old chums took three years to learn, or to fail trying, same as most who step off these ships. Nobody at Port Gannet will tell you which it will be. Nobody ever does.\n\nThe road to the diggings, one way or another, starts from exactly where you are standing now.',
     'Ten shillings does not go far in a town where a loaf of bread can run to five shillings once it reaches the fields, but ten shillings is what you have, along with a swag, a head full of half-formed plans, and twelve months in which to make something of them. Everyone on the wharf seems to know more than you do, which is not difficult, since you know almost nothing at all.\n\nThey call men like you new chums, not unkindly, though not kindly either. Your hands have not held a pick, your boots were made for pavement, and your year has just begun whether you feel ready for it or not.\n\nWhat you do next — and how well you have read your Journal before doing it — will decide a great deal of what this year makes of you.',
   ],
   'end.summary': [
-    'The year is out. Whatever you have made of it — fortune, ruin, or something in between — it is time now to reckon up your kitty and see what a twelvemonth on the goldfields has left you.\n\nSome men who stepped off the Anna beside you are dead. Some are rich beyond anything they dreamed on the wharf at Suze Port. Most are simply still here, still digging, no better and no worse than when they started. Whichever of these you have become, the reckoning is due.',
-    'Three hundred and sixty-five days have passed since you first set foot in Suze Port with ten shillings and a head full of gold fever. The year is done now, for better or worse, and the kitty must be counted.\n\nFew who came out with you can say exactly how their year went; fewer still expected the year that actually happened. Now it falls to you to see what you have to show for it — in gold, in money, in health, and in the man or woman the diggings have made of you.',
-    'A year on the fields is a long time by any measure, and yours has now run its course. The tally is due: gold washed and sold, money earned and spent, health kept or lost, and whatever standing you have left with the law after twelve months of decisions made in the dust and heat of Goldfields.\n\nSome new chums who arrived when you did have already gone home poorer than they came. Others will never leave at all. Where you stand between those two is what the kitty is about to tell you.',
-    'Twelve months ago you were a new chum on the wharf at Suze Port with ten shillings and no notion of what lay ahead. That year is finished now, spent in shafts and camps and long days on the road, and there is nothing left to do but count what remains of it.\n\nThe goldfields do not care whether you prospered or merely survived; both are common enough outcomes, and neither is guaranteed. What you have to show for the year — for good or ill — is about to be set down plainly.',
+    'The year is out. Whatever you have made of it — fortune, ruin, or something in between — it is time now to reckon up your kitty and see what a twelvemonth on the goldfields has left you.\n\nSome men who stepped off the Anna beside you are dead. Some are rich beyond anything they dreamed on the wharf at Port Gannet. Most are simply still here, still digging, no better and no worse than when they started. Whichever of these you have become, the reckoning is due.',
+    'Three hundred and sixty-five days have passed since you first set foot in Port Gannet with ten shillings and a head full of gold fever. The year is done now, for better or worse, and the kitty must be counted.\n\nFew who came out with you can say exactly how their year went; fewer still expected the year that actually happened. Now it falls to you to see what you have to show for it — in gold, in money, in health, and in the man or woman the diggings have made of you.',
+    'A year on the fields is a long time by any measure, and yours has now run its course. The tally is due: gold washed and sold, money earned and spent, health kept or lost, and whatever standing you have left with the law after twelve months of decisions made in the dust and heat of the Slate River diggings.\n\nSome new chums who arrived when you did have already gone home poorer than they came. Others will never leave at all. Where you stand between those two is what the kitty is about to tell you.',
+    'Twelve months ago you were a new chum on the wharf at Port Gannet with ten shillings and no notion of what lay ahead. That year is finished now, spent in shafts and camps and long days on the road, and there is nothing left to do but count what remains of it.\n\nThe goldfields do not care whether you prospered or merely survived; both are common enough outcomes, and neither is guaranteed. What you have to show for the year — for good or ill — is about to be set down plainly.',
   ],
   'end.obituary': [
-    'The Angus Gazette carries a short notice today, tucked between the shipping news and an advertisement for Stephens\' Blistering Ointment: another digger, unnamed to most but not to those who knew him, has died on the fields far from anyone who loved him.\n\nThere will be no headstone worth the name, only a mound of red earth and a wooden peg where a claim number used to be. The goldfields keep no ledger of the men they take, only of the gold. Somewhere in England, or Ireland, or a hundred other places, a family waits for a letter that will now never come.',
-    'Among the columns of the Angus Gazette, wedged between a report of a rich strike at Snakey Gully and a notice for Peek Frean\'s biscuits, a single line records a death on the diggings — one more name added to a list nobody keeps properly, in a place that has already forgotten the sound of it.\n\nThe fields do not pause for the dead. Somewhere close by, another man is already pegging the ground, and the gold, if there was any to be had, waits for him instead.',
-    'The obituary column of the Angus Gazette is never short of material, and today it is yours. A few brief lines record where you were found, and by whom, and note that no family could be reached — the usual formula for a digger who came out alone and stayed that way to the end.\n\nBy tomorrow the notice will be forgotten under fresher news, a rush somewhere, a robbery somewhere else. The ground you worked will be pegged again within the week, by someone who never knew your name at all.',
-    'Calico House could do nothing in the end, and the Angus Gazette records the fact in the smallest type it keeps, wedged between a shipping notice and an advertisement for Cobb & Co. There is no family listed, no address to write to, only a name and a date and the plain word "digger" where an occupation ought to go.\n\nThe goldfields have claimed another of the thousands who came out chasing fortune. Nobody stops digging on account of it. Nobody ever does.',
+    'The Slateford Times carries a short notice today, tucked between the shipping news and an advertisement for Stephens\' Blistering Ointment: another digger, unnamed to most but not to those who knew him, has died on the fields far from anyone who loved him.\n\nThere will be no headstone worth the name, only a mound of red earth and a wooden peg where a claim number used to be. The goldfields keep no ledger of the men they take, only of the gold. Somewhere in England, or Ireland, or a hundred other places, a family waits for a letter that will now never come.',
+    'Among the columns of the Slateford Times, wedged between a report of a rich strike at Copperhead Gully and a notice for Peek Frean\'s biscuits, a single line records a death on the diggings — one more name added to a list nobody keeps properly, in a place that has already forgotten the sound of it.\n\nThe fields do not pause for the dead. Somewhere close by, another man is already pegging the ground, and the gold, if there was any to be had, waits for him instead.',
+    'The obituary column of the Slateford Times is never short of material, and today it is yours. A few brief lines record where you were found, and by whom, and note that no family could be reached — the usual formula for a digger who came out alone and stayed that way to the end.\n\nBy tomorrow the notice will be forgotten under fresher news, a rush somewhere, a robbery somewhere else. The ground you worked will be pegged again within the week, by someone who never knew your name at all.',
+    'Canvas House could do nothing in the end, and the Slateford Times records the fact in the smallest type it keeps, wedged between a shipping notice and an advertisement for Cobb & Co. There is no family listed, no address to write to, only a name and a date and the plain word "digger" where an occupation ought to go.\n\nThe goldfields have claimed another of the thousands who came out chasing fortune. Nobody stops digging on account of it. Nobody ever does.',
   ],
 
   // ───────────────────────── LODGINGS ─────────────────────────
@@ -1209,7 +1209,7 @@ export const TEXT: Record<string, string[]> = {
   // ───────────────────────── A COMPANY OF YOUR OWN ─────────────────────────
 
   'company.float': [
-    'The registrar dips his pen, writes you up as promoter, takes his {fee}, and there it is in the ledger: {name}. Twenty shares at ten pounds; you subscribe {shares} of them for {amount} and the rest go to whoever will have them. The scrip is handsome, the sealing wax is still soft, and your ground in the Deep Mountains is now the company\'s first lease.',
+    'The registrar dips his pen, writes you up as promoter, takes his {fee}, and there it is in the ledger: {name}. Twenty shares at ten pounds; you subscribe {shares} of them for {amount} and the rest go to whoever will have them. The scrip is handsome, the sealing wax is still soft, and your ground in the Blackcap Ranges is now the company\'s first lease.',
     'It costs you {fee} in fees and {amount} for your own {shares} shares, and at the end of it a clerk blots the page and says, without looking up, that {name} is registered and may commence operations. You walk out of the office a promoter, which is a thing you could not have spelled in January.',
     'They print the prospectus overnight: {name}, capital two hundred pounds in twenty shares, the promoter\'s ground already proved payable. You pay {fee} to register and {amount} for {shares} shares, and by morning there is a board over the workings with your company\'s name on it.',
     'The fee is {fee} and your subscription {amount} for {shares} of the twenty shares. In return you have a name on a ledger — {name} — a lease where your claim used to be, and the particular anxiety of a man who now owes wages to somebody.',
@@ -1253,6 +1253,65 @@ export const TEXT: Record<string, string[]> = {
     'The prospecting crew have found payable dirt hard against the company\'s own pegs. The lease is extended onto the fresh ground, and the manager now calls it {word}.',
     'No new lease this time, but something as good: fresh ground adjoining what {name} already holds, pegged as an extension. The report on it reads: {word}.',
     'The crew come in from the ranges with news — the reef runs on past the old boundary. {name} takes up the extension, and the ground is {word} again.',
+  ],
+  // --- the mine goes down (§19.4). Skeleton prose: serviceable, one to two
+  // variants the pass over the content owns expanding and bettering.
+  'company.crew.develop': [
+    'The No. {n} crew put down their picks for shovels and powder: they are on development now, not gold.',
+  ],
+  'company.plan.sink': [
+    'The manager marks it out: {name} is to be sunk to the next level, and the winning of gold can wait on the winning of ground.',
+  ],
+  'company.plan.drive': [
+    'The word goes down: drive along the level at {name} and see where the stone runs.',
+  ],
+  'company.sink.bottomed': [
+    'The sinking is done at {name}: the crew bottom the new level and the first dish comes up. The manager calls it {word}.',
+  ],
+  'company.drive.fresh': [
+    'The drive at {name} opens fresh stone. The report on it reads: {word}.',
+  ],
+  'company.drive.duffer': [
+    'The drive at {name} runs into mullock and nothing else. The week and the powder are gone, and there is nothing to crush for it.',
+  ],
+  'company.face.cut': [
+    'The level is cut out at {name}. The mine stands waiting on a decision: sink, drive, or let it lie.',
+  ],
+  'company.flood': [
+    'The winter water has beaten {name}: the workings are flooded to the plat, and nothing comes up but the smell of it.',
+  ],
+  'company.dewatered': [
+    'The pump has done its work: {name} is clear of water, and the men can go down again.',
+  ],
+  'company.pump.broken': [
+    'The pumping plant at {name} has broken its beam, and the water is rising while the fitter is sent for.',
+  ],
+  'company.pump.repaired': [
+    'The fitter has the pump at {name} going again, and the treasury is lighter for it.',
+  ],
+  'company.plant.pump': [
+    'A pumping plant is raised over {name}: boiler, beam and rods, and the water will trouble it no more.',
+  ],
+  'company.plant.timber': [
+    'Standing timber-work goes down every drive at {name}. It is money the shareholders will never see, and lives they will never know they kept.',
+  ],
+  'company.battery.bought': [
+    '{name} raises its own stamping battery, and the thunder of the hammers is the sound of crushing fees no longer paid.',
+  ],
+  'company.driving.cautious': [
+    'The order goes down: work her cautious. Less stone, fewer widows.',
+  ],
+  'company.driving.ordinary': [
+    'The workings are put back on ordinary time.',
+  ],
+  'company.driving.hard': [
+    'The order goes down: drive her hard. The stone will come faster, and so will everything else.',
+  ],
+  'company.lease.abandon': [
+    'The registrar strikes {name} from the book. The plant, the sinking and every pound put into it stay in the ground for the next man.',
+  ],
+  'mine.pumpman': [
+    'The pump-man rigs his gear over your shaft and undertakes to keep it dry for the life of the sinking. His price is paid and worth it.',
   ],
   'company.lease.gone': [
     'There is no ground left worth putting men on. Every lease {name} holds is worked out, and the crews stand about the poppet-head with nothing to do.',
@@ -1361,7 +1420,7 @@ export const TEXT: Record<string, string[]> = {
     'In you go, over the drays and the slab fence at {camp}, and you are sworn in under the Southern Cross with two hundred others to stand truly by each other and fight to defend your rights and liberties. It sounds very well at midnight.',
   ],
   'stockade.killed': [
-    'They come at first light, and it is over in twenty minutes. You are not among those who walk out of it. What the Angus will call an affray, and what the colony will one day call something grander, ends for you in the trampled dust inside the slabs, under a flag that is pulled down an hour later.',
+    'They come at first light, and it is over in twenty minutes. You are not among those who walk out of it. What the Times will call an affray, and what the colony will one day call something grander, ends for you in the trampled dust inside the slabs, under a flag that is pulled down an hour later.',
     'The soldiers come round the flank in the half-dark and the whole thing is finished before the sun is properly up. You go down in the first rush, in a fight that lasted less time than a man takes over his breakfast, and the flag comes down after you.',
   ],
   'stockade.wounded': [
@@ -1384,7 +1443,7 @@ export const TEXT: Record<string, string[]> = {
   ],
   'aftermath.notice': [
     'It is announced from the Council Chambers that the miner\'s licence is abolished. In its place a miner\'s right, one pound for the year, carrying the vote with it — and the digger hunts are discontinued from this day. Thirty shillings a month has cost the Government a great deal more than it ever raised.',
-    'The licence is dead. A miner\'s right at a pound the year replaces it, no trooper will demand your papers in a hole again, and the men who brought that about are mostly in the ground at Snakey Gully.',
+    'The licence is dead. A miner\'s right at a pound the year replaces it, no trooper will demand your papers in a hole again, and the men who brought that about are mostly in the ground at Copperhead Gully.',
     'Word comes down that there will be no more hunts. The fee is gone; a miner\'s right, one pound the year, is to be issued at the Council Chambers, and a man who holds one may vote as well as dig. It is astonishing what a stockade will do that a petition would not.',
   ],
   'law.minersright': [
@@ -1402,7 +1461,7 @@ export const TEXT: Record<string, string[]> = {
   ],
   'epilogue.worth.modest': [
     'You are not rich and you never were going to be, but you are fed, clothed, standing upright and holding a few pounds that are undeniably yours. On these fields that is a better year than most men had.',
-    'A modest sum, honestly got, and a body still able to work. Set against the graves at Calico House and the men who went home on the parish, it will do.',
+    'A modest sum, honestly got, and a body still able to work. Set against the graves at Canvas House and the men who went home on the parish, it will do.',
     'There is money in your hand at the year\'s end — not a fortune, not a farm, but more than you landed with and got out of dirt that owed you nothing.',
   ],
   'epilogue.worth.comfort': [
@@ -1411,13 +1470,13 @@ export const TEXT: Record<string, string[]> = {
     'The kitty holds a sum a clerk in England would take fifteen years to save. You got it in one, out of the ground, with your own hands, and the fact will not stop seeming strange for some time.',
   ],
   'epilogue.worth.rich': [
-    'You are a rich man by any measure that a wharf at Suze Port would recognise. The new chums coming off the ships this week will be told your name by somebody who never met you, with the figures improved.',
+    'You are a rich man by any measure that a wharf at Port Gannet would recognise. The new chums coming off the ships this week will be told your name by somebody who never met you, with the figures improved.',
     'A great deal of money, and the whole colony ready to help you spend it. Men who would not have carried your swag in January now want your opinion on the price of quartz.',
     'The year ends with you wealthy. It is worth remembering, on the days when it feels deserved, exactly how much of it turned on which way a shaft went at eighty feet.',
   ],
   'epilogue.worth.nabob': [
-    'You have made the sort of fortune the goldfields are famous for and almost never actually produce. Suze Port has a name for men like you, and it is not entirely a kind one; you will find you no longer mind.',
-    'A fortune, plainly and completely. There will be a house with a verandah, an interest in a bank, and a portrait commissioned in a frock coat you did not own a year ago — and under all of it, a hole in the ground in the Deep Mountains.',
+    'You have made the sort of fortune the goldfields are famous for and almost never actually produce. Port Gannet has a name for men like you, and it is not entirely a kind one; you will find you no longer mind.',
+    'A fortune, plainly and completely. There will be a house with a verandah, an interest in a bank, and a portrait commissioned in a frock coat you did not own a year ago — and under all of it, a hole in the ground in the Blackcap Ranges.',
     'You finish the year rich beyond any reckoning you brought ashore with you. The gold does not care who you are, the Journal says. It has nonetheless made you somebody.',
   ],
   'epilogue.dead.ruin': [
@@ -1425,16 +1484,16 @@ export const TEXT: Record<string, string[]> = {
     'The fields keep no ledger of the men they take, only of the gold. Yours was a short year and a poor one, and the ground you are in now is the only ground you ever really held.',
   ],
   'epilogue.dead.modest': [
-    'The little you had is counted out on a table at Calico House, and will go to the Crown for want of a next of kin anybody can find. A digger you drank with once follows you to the hole.',
+    'The little you had is counted out on a table at Canvas House, and will go to the Crown for want of a next of kin anybody can find. A digger you drank with once follows you to the hole.',
     'You die with a few pounds put by — enough to bury you decently, which is more than many manage, and less than you meant it for.',
   ],
   'epilogue.dead.comfort': [
-    'It is a cruel joke of these fields that a man may work his way to comfort and not live to spend a shilling of it. The money goes into a strongbox in Fields Town while the lawyers write to England, and you go into the ground on the flat.',
+    'It is a cruel joke of these fields that a man may work his way to comfort and not live to spend a shilling of it. The money goes into a strongbox in Slateford while the lawyers write to England, and you go into the ground on the flat.',
     'You had made it, very nearly. The sum in the bank would have bought a passage home and a business at the end of it; instead it will pay for a stone, and the rest will go where unclaimed money goes.',
   ],
   'epilogue.dead.rich': [
-    'A rich man dead on the diggings is a nine days\' wonder and a paragraph in the Angus. The gold goes to the Crown or to a claimant with a good lawyer, and neither of them ever swung a pick in their lives.',
-    'You die wealthy and buried in dirt you owned outright. The Gazette gives it four inches and an advertisement for a monumental mason underneath.',
+    'A rich man dead on the diggings is a nine days\' wonder and a paragraph in the Times. The gold goes to the Crown or to a claimant with a good lawyer, and neither of them ever swung a pick in their lives.',
+    'You die wealthy and buried in dirt you owned outright. The Times gives it four inches and an advertisement for a monumental mason underneath.',
   ],
   'epilogue.dead.nabob': [
     'The richest man on the field is dead, and there is not a soul at the grave who can spell his name correctly. The fortune goes to the courts, and the courts will be twenty years about it.',
@@ -1477,19 +1536,19 @@ export const TEXT: Record<string, string[]> = {
     'The year ends with the traps looking for you in earnest. Whatever the kitty holds, you cannot spend it anywhere they read the notices.',
   ],
   'epilogue.legal.known': [
-    'Your name is known the length of the field — at Briggs\', at the Shamrock, at the Council Chambers where they once could not be got to write it down. A new chum arriving this week would be told to go and ask you.',
+    "Your name is known the length of the field — at Bell's, at the Crown & Cradle, at the Council Chambers where they once could not be got to write it down. A new chum arriving this week would be told to go and ask you.",
     'You came out a new chum and finish as a man the camps have heard of, which on these diggings is a currency of its own and does not fluctuate with the bank rate.',
   ],
   // ───────────────────────── THE DARK LADDER (§23-§24) ─────────────────────────
 
   'bandit.reward': [
-    'The Angus prints your description in a black-bordered box: a reward of {amount}, to be paid on conviction, and no questions asked of the man who earns it. Every shanty keeper in the colony reads that column over his breakfast.',
+    'The Times prints your description in a black-bordered box: a reward of {amount}, to be paid on conviction, and no questions asked of the man who earns it. Every shanty keeper in the colony reads that column over his breakfast.',
     'A notice goes up outside the Council Chambers offering {amount} for you, alive by preference. Somebody has drawn a moustache on the description, which is at least a kind of fame.',
     'The Commissioner has put {amount} on your head. You hear of it from a bullocky who does not know your face, and who says he would take it and think nothing of the matter.',
   ],
   'bandit.outlawed': [
     'It is done, and there is no undoing it. You are proclaimed: outside the law altogether, to be taken by any man who can, and no magistrate will ever hear the ninety clean days you might have kept.',
-    'The proclamation is read out at Fields Town and pasted on the Chambers wall. From this morning you are not a criminal but an outlaw, which is a different animal and a shorter-lived one.',
+    'The proclamation is read out at Slateford and pasted on the Chambers wall. From this morning you are not a criminal but an outlaw, which is a different animal and a shorter-lived one.',
   ],
   'bandit.bank.refused': [
     'The clerk looks at you, and looks at the notice pinned behind the counter, and finds a great deal of ledger to attend to at the far end of the room. The bank has no business with you.',
@@ -1511,11 +1570,11 @@ export const TEXT: Record<string, string[]> = {
     'A fresh arrival, red as a lobster and twice as slow, humping a kit that no man could carry a week. He has not seen you.',
     'A new chum with a tin dish tied on top of the swag and a pistol he has plainly never fired, stopping every hundred yards to ask the road of nobody at all.',
     'Three months off the ship, by the boots. He is carrying everything a Melbourne outfitter could persuade him to buy and not one article of it any use, and his money is in his hat.',
-    'A young fellow up from the port, resting on a log with his boots off and his feet ruined, and a cradle beside him he paid twice over for at Suze Port.',
+    'A young fellow up from the port, resting on a log with his boots off and his feet ruined, and a cradle beside him he paid twice over for at Port Gannet.',
   ],
   'bandit.victim.digger': [
     'A digger comes down the road with his year in a chamois bag under his shirt, walking fast and looking at nobody. He has done his time in the wet, and it is all in that bag.',
-    'A man off the field with his gold on him, bound for the bank at Fields Town and a berth home. You can see the weight of it in the way he walks.',
+    'A man off the field with his gold on him, bound for the bank at Slateford and a berth home. You can see the weight of it in the way he walks.',
     'A bearded man in a red shirt, going down at a pace that says he means to sleep in a town tonight and never see a cradle again. Whatever he won is on him.',
     'A digger going home the way they all go home: swag, dog, and the luck of three winters sewn into the lining of a coat he will not take off.',
     'Two mates and a hack between them, and a quart pot lashed to the saddle with the lid tied down, which is where a man puts dust when he does not trust a bag.',
@@ -1531,7 +1590,7 @@ export const TEXT: Record<string, string[]> = {
     'A party of Chinese come up the road in single file, carrying their world on bamboo poles, and stop dead when you step out.',
     'Half a dozen Chinese diggers with their baskets slung fore and aft. They have been robbed before, by better men than you and by worse.',
     'A Chinese party in single file, blue tunics white with dust and the mushroom hats down over their eyes, the poles bending. Whatever is in those baskets came a speck at a time out of ground three other men gave up on.',
-    'Eight or nine Chinese, walking in step. The headman comes forward, takes off his hat, and asks you your business in better English than most men in the Shamrock.',
+    'Eight or nine Chinese, walking in step. The headman comes forward, takes off his hat, and asks you your business in better English than most men in the Crown & Cradle.',
     'A Chinese company with their tools and their tent poles and an old man wheeled along in a barrow. They have worked every Sunday of the year for what they are carrying.',
   ],
   'bandit.victim.parson': [
@@ -1554,7 +1613,7 @@ export const TEXT: Record<string, string[]> = {
     'A blue coat at the tail of a long day, asleep in the saddle in everything but name. Robbing the Crown\'s man is the next parish to treason and they hang in both.',
   ],
   'bandit.bailup.knowsname': [
-    'He hears the name and his hands go up before you have finished saying it. There is no fight in a man who has read the Angus.',
+    'He hears the name and his hands go up before you have finished saying it. There is no fight in a man who has read the Times.',
     'You give your name and he gives you his purse, and thanks you for the manner of the asking. That is what a name is for.',
   ],
   'bandit.bailup.take': [
@@ -1600,7 +1659,7 @@ export const TEXT: Record<string, string[]> = {
     'He is dead before he is off his feet. There is no going back over this ground: they hang men for it, and rightly, and you knew that when you cocked the piece.',
   ],
   'bandit.digger.robbed': [
-    'Word of it is at Snakey Gully before you have counted the money. You have taken a digger\'s pile, and every tent on the field will hear of it and remember.',
+    'Word of it is at Copperhead Gully before you have counted the money. You have taken a digger\'s pile, and every tent on the field will hear of it and remember.',
     'A digger robbed. There is no faster way to lose the half-admiration of the camps, and you have just found it.',
   ],
   'bandit.gang.share': [
@@ -1642,12 +1701,12 @@ export const TEXT: Record<string, string[]> = {
   ],
 
   'bandit.hideout.make': [
-    'Two days up the gullies beyond the Deep Mountains, and there is a flat under a granite overhang with water, feed for a horse and one way in that a man could hold with a stick. You build the fire small and against the rock, as you have been told to, so the smoke goes to nothing before it clears the trees.',
+    'Two days up the gullies beyond the Blackcap Ranges, and there is a flat under a granite overhang with water, feed for a horse and one way in that a man could hold with a stick. You build the fire small and against the rock, as you have been told to, so the smoke goes to nothing before it clears the trees.',
     'You find the place on the second day: a saddle in the ranges with a spring, a view of every approach for four miles, and no reason whatever for anyone to come there. This is home now, such as it is.',
   ],
   'bandit.hideout.arrive': [
     'Up through the gullies at dusk, and the fire is where you left it and so is the silence. Nobody has been here.',
-    'The camp in the ranges, and nothing touched. You sleep the way only a man who cannot be found sleeps.',
+    'Split Rock Camp, and nothing touched. You sleep the way only a man who cannot be found sleeps.',
   ],
   'bandit.stash.in': [
     'Under the flat stone, wrapped in oilcloth: {what}, and the ground stamped back down over it.',
@@ -1658,12 +1717,12 @@ export const TEXT: Record<string, string[]> = {
     '{what} comes back up out of the ground, damp and none the worse.',
   ],
   'bandit.hideout.found': [
-    'They found the camp while you were away: the tent cut to ribbons, the stone turned over, and {amount} gone into the Government\'s pocket. The Angus is very pleased about it.',
-    'The traps have been up the gullies. Everything under the stone — {amount} of it — is in the Commissioner\'s safe at Fields Town, and there is a trooper sitting in your camp with a pipe.',
+    'They found the camp while you were away: the tent cut to ribbons, the stone turned over, and {amount} gone into the Government\'s pocket. The Times is very pleased about it.',
+    'The traps have been up the gullies. Everything under the stone — {amount} of it — is in the Commissioner\'s safe at Slateford, and there is a trooper sitting in your camp with a pipe.',
   ],
   'bandit.hideout.raid': [
     'The horse throws its head up at nothing, and then you hear them: police, coming up the only way in, and they are between you and the ridge.',
-    'A shot goes off somewhere below and a voice calls a name that is yours. They have found the camp in the ranges, and you are in it.',
+    'A shot goes off somewhere below and a voice calls a name that is yours. They have found Split Rock Camp, and you are in it.',
   ],
   'bandit.hideout.slipped': [
     'You go up the rock face behind the camp and lie in the scree while they burn the tent, and afterwards you come down and there is nothing there at all.',
@@ -1671,7 +1730,7 @@ export const TEXT: Record<string, string[]> = {
   ],
   'bandit.hideout.abandoned': [
     'They have the camp, and {amount} that was under the stone with it. You come down out of the ranges with what you stand in.',
-    'The place is burnt and the stash — {amount} — is theirs. A camp in the ranges is only worth anything while nobody knows of it.',
+    'The place is burnt and the stash — {amount} — is theirs. Split Rock Camp is only worth anything while nobody knows of it.',
   ],
 
   'bandit.gang.join': [
@@ -1687,7 +1746,7 @@ export const TEXT: Record<string, string[]> = {
     'You tell {name} the road is no place for him and he agrees a great deal too quickly.',
   ],
   'bandit.gang.inform': [
-    '{name} is not at the fire this morning, nor his horse, nor his blankets. He has gone into Fields Town, and there is only one errand that takes a man of his sort into Fields Town.',
+    '{name} is not at the fire this morning, nor his horse, nor his blankets. He has gone into Slateford, and there is only one errand that takes a man of his sort into Slateford.',
     '{name} has sold you for what is on your head. Whatever you do next, they will be waiting at it.',
   ],
 
@@ -1700,15 +1759,15 @@ export const TEXT: Record<string, string[]> = {
     'The room talks all afternoon and says nothing you did not know. It cost you nothing, which is exactly what it was worth.',
   ],
   'bandit.intel.ambush': [
-    'The harbourer will not talk of escorts or gold rooms. He talks instead of a party of police who have been sitting in a hut off the Pass Road for nine days with nothing to do, and of who told them to. That is worth more than either, and the day is not wasted.',
-    'The shanty keeper leans across and tells you plainly: they are waiting for you, they have been waiting since the man went into Fields Town, and here is where. You will not walk into it now, which is the whole of what five shillings bought.',
+    'The harbourer will not talk of escorts or gold rooms. He talks instead of a party of police who have been sitting in a hut off the Razorback Road for nine days with nothing to do, and of who told them to. That is worth more than either, and the day is not wasted.',
+    'The shanty keeper leans across and tells you plainly: they are waiting for you, they have been waiting since the man went into Slateford, and here is where. You will not walk into it now, which is the whole of what five shillings bought.',
   ],
   'bandit.intel.shouted': [
     'Nobody will take your money in this shanty. They shout you instead, and lean in to listen, which is what a name is worth in the ranges.',
     'The keeper puts the bottle on the table and will not name a price for it. A man of your reputation drinks free here and pays in stories, and the stories are worth more to him than the rum.',
   ],
   'bandit.intel.escort': [
-    'A stableman who owes the shanty keeper money says the gold escort goes down Trickey\'s Track inside the week — {men} troopers and a sergeant, and the sergeant drinks. You have until day {day} to make use of it.',
+    'A stableman who owes the shanty keeper money says the gold escort goes down Mercer\'s Track inside the week — {men} troopers and a sergeant, and the sergeant drinks. You have until day {day} to make use of it.',
     'The word is the escort runs before day {day}: {men} men and a spring cart with the boxes under the driver\'s feet. The man who tells you it will not meet your eye afterwards.',
   ],
   'bandit.intel.bank': [
@@ -1730,12 +1789,12 @@ export const TEXT: Record<string, string[]> = {
   ],
 
   'bandit.bank.go': [
-    'You walk the horses into Fields Town at noon with your hats down and stop outside the bank with the glass window, and one of you stays with the reins.',
+    'You walk the horses into Slateford at noon with your hats down and stop outside the bank with the glass window, and one of you stays with the reins.',
     'Middle of the day, the street full of drays, and the four of you go through the door of the Bank of Australasia with the pistols already out.',
   ],
   'bandit.bank.success': [
     'The manager opens the safe at the far end by his own bed, because the alternative is explained to him clearly, and {gross} comes out of it in canvas bags. Your share is {amount}. You are down the street and over the river before the first man thinks to shout.',
-    'Nine minutes, and {gross} out of the safe. {amount} of it is yours. Nobody is hurt, which the Angus will not mention.',
+    'Nine minutes, and {gross} out of the safe. {amount} of it is yours. Nobody is hurt, which the Times will not mention.',
   ],
   'bandit.bank.fail': [
     'The clerk under the counter has a pistol nobody expected, and the whole thing comes apart in the smoke and the shouting. You go out through the window into the street.',
@@ -1751,11 +1810,11 @@ export const TEXT: Record<string, string[]> = {
   ],
 
   'bandit.escort.ride': [
-    'Two days\' ride to the place you have chosen: a cutting on Trickey\'s Track where the road narrows between rock and creek, and a man on the high side can see three miles of it.',
+    'Two days\' ride to the place you have chosen: a cutting on Mercer\'s Track where the road narrows between rock and creek, and a man on the high side can see three miles of it.',
     'You lie up over the cutting for two days with the horses hobbled below and the pistols loaded, waiting for the gold escort, and nobody says very much.',
   ],
   'bandit.escort.missed': [
-    'Two days on the ridge and no escort. It went yesterday, or it goes next week, or it went by the Pass Road; without a word from somebody who knows, an ambush is only a picnic with guns.',
+    'Two days on the ridge and no escort. It went yesterday, or it goes next week, or it went by the Razorback Road; without a word from somebody who knows, an ambush is only a picnic with guns.',
     'Nothing comes down the cutting but drays and dust. You have ambushed an empty road, which is a great deal of trouble for nothing.',
   ],
   'bandit.escort.success': [
@@ -1772,7 +1831,7 @@ export const TEXT: Record<string, string[]> = {
   ],
   'bandit.escort.manlost': [
     '{name} goes down in the road and does not get up. There is no time to go back for him and no purpose in it.',
-    'They shoot {name} out of the saddle at thirty yards. He was a fool and a thief and he rode beside you, and now he is in the dust on Trickey\'s Track.',
+    'They shoot {name} out of the saddle at thirty yards. He was a fool and a thief and he rode beside you, and now he is in the dust on Mercer\'s Track.',
   ],
   'bandit.escort.wounded': [
     'A ball goes through you somewhere below the ribs and you stay on the horse by a means you cannot afterwards explain.',
@@ -1784,12 +1843,12 @@ export const TEXT: Record<string, string[]> = {
   ],
 
   'bandit.taken': [
-    'They take you into Fields Town on a led horse with your hands tied under its belly, and half the street comes out to look. It is not the logs and the monthly magistrate this time. It is the gaol, and the assizes.',
-    'Irons, a cart, and the road to Fields Town, and a crowd at the end of it. The magistrate\'s court is not mentioned; what is mentioned is the assizes, and the judge who is coming up for them.',
+    'They take you into Slateford on a led horse with your hands tied under its belly, and half the street comes out to look. It is not the logs and the monthly magistrate this time. It is the gaol, and the assizes.',
+    'Irons, a cart, and the road to Slateford, and a crowd at the end of it. The magistrate\'s court is not mentioned; what is mentioned is the assizes, and the judge who is coming up for them.',
   ],
   'bandit.assizes.hanged': [
-    'The judge takes nine minutes over it and puts on the black. They hang you outside the Fields Town gaol on a grey morning before a crowd of several thousand, and a man sells printed ballads of your life in the road for a penny, most of it invented and all of it better than the truth.',
-    'Blood was shed, and the Crown hangs men for blood. The rope is new, the drop is short, and the ballad is being sung in the Shamrock before the body is down.',
+    'The judge takes nine minutes over it and puts on the black. They hang you outside the Slateford gaol on a grey morning before a crowd of several thousand, and a man sells printed ballads of your life in the road for a penny, most of it invented and all of it better than the truth.',
+    'Blood was shed, and the Crown hangs men for blood. The rope is new, the drop is short, and the ballad is being sung in the Crown & Cradle before the body is down.',
   ],
   'bandit.assizes.hulks': [
     'No man died at your hands, which is the whole of the difference between the yard and the hulks. Years of it: the rotting ships, the chain, the quarry, and the Crown taking every penny it can find of yours by way of costs.',
@@ -1800,7 +1859,7 @@ export const TEXT: Record<string, string[]> = {
     'Breaking gaol is a felony on top of felonies. The years are doubled, the irons are heavier, and the hulks are where it finishes.',
   ],
   'bandit.gaolbreak.ok': [
-    'A file comes in with the bread, and at two in the morning there is a horse standing in the lane, and the man holding it does not give his name. You are in the ranges by daylight, and the Gazette will be very rude about the police.',
+    'A file comes in with the bread, and at two in the morning there is a horse standing in the lane, and the man holding it does not give his name. You are in the ranges by daylight, and the Times will be very rude about the police.',
     'The bar gives at the third hour and there is a rope, a wall, and a friend. Nobody on this field will say who. You are gone before the lantern comes round again.',
   ],
   'bandit.gaolbreak.fail': [
@@ -1814,7 +1873,7 @@ export const TEXT: Record<string, string[]> = {
   ],
   'bandit.passage.recognised': [
     'A man at the foot of the gangway looks at you a moment too long, and then at the notice pinned by the shipping office, and then he is shouting for the water police.',
-    'The mate has read the Angus and has an excellent memory for faces, and there is a constable on the wharf within a minute of him remembering.',
+    'The mate has read the Times and has an excellent memory for faces, and there is a constable on the wharf within a minute of him remembering.',
   ],
   'bandit.passage.turnedback': [
     'The master will not have you aboard at any price, and the fare goes with him. You are left on the wharf, known, with the ship warping out.',
@@ -1841,13 +1900,13 @@ export const TEXT: Record<string, string[]> = {
 
   'end.buried.rumour': [
     'It is said he left gold buried in the ranges, and that no man living knows the stone it is under. Parties have gone up the gullies to look for it already, and will go up every summer for fifty years.',
-    'He had a camp somewhere beyond the Deep Mountains, and what he took off the roads was never found on him nor in any bank. The country says it is still up there under a flat stone, and the country is seldom wrong and never right.',
+    'He had a camp somewhere beyond the Blackcap Ranges, and what he took off the roads was never found on him nor in any bank. The country says it is still up there under a flat stone, and the country is seldom wrong and never right.',
     'Nothing was found about him but a pistol and eightpence, which the whole colony takes as proof of what everybody already believes: that there is gold buried in the ranges yet, waiting on a man who knows the place.',
   ],
 
   'epilogue.outlaw.hanged': [
     'They buried what was left inside the gaol wall without a service, and sold the ballad of it in the streets for a penny for eleven years afterwards. Every word of the ballad is a lie and every man in the colony can still sing the chorus.',
-    'The drop was short and the crowd was large and the whole business was over before the sun cleared the ranges you came out of. A year ago you were a new chum at Suze Port with a tin dish and no notion of any of it, and the distance between those two mornings is the whole of your story.',
+    'The drop was short and the crowd was large and the whole business was over before the sun cleared the ranges you came out of. A year ago you were a new chum at Port Gannet with a tin dish and no notion of any of it, and the distance between those two mornings is the whole of your story.',
   ],
   'epilogue.outlaw.hulks': [
     'The hulks, then, and the quarry gang, and the tide going out twice a day under a deck you will not see the top of for a very long while. What was under the flat stone in the ranges is still under it, which is a joke you will have years to appreciate.',
@@ -1876,17 +1935,17 @@ export const TEXT: Record<string, string[]> = {
 
   'estate.shamrock.buy': [
     'Mrs. Doyle counts the {amount} twice, signs the transfer of the licence, and then, being a woman of sense, offers to stay on and run the house for wages — which is the best bargain in the whole transaction. The name over the door does not change. What changes is that the takings are yours, and so is every word said at that bar after ten o\'clock.',
-    'For {amount} you have the Shamrock Hotel: a long bar of dressed slabs, forty gallons of colonial brandy, a licence, a piano nobody can play, and Mrs. Doyle, who will stay on and manage it and does not think much of your chances. You are a publican on the goldfields, which is a better trade than digging and everybody but the diggers knows it.',
-    'The papers are signed in the parlour with the rain on the iron roof: {amount}, and the Shamrock is yours. Half the town does its business at that bar and the other half talks about it there, and from this evening on the man behind it works for you.',
+    'For {amount} you have the Crown & Cradle: a long bar of dressed slabs, forty gallons of colonial brandy, a licence, a piano nobody can play, and Mrs. Doyle, who will stay on and manage it and does not think much of your chances. You are a publican on the goldfields, which is a better trade than digging and everybody but the diggers knows it.',
+    'The papers are signed in the parlour with the rain on the iron roof: {amount}, and the Crown & Cradle is yours. Half the town does its business at that bar and the other half talks about it there, and from this evening on the man behind it works for you.',
   ],
   'estate.shamrock.week': [
-    'The Shamrock\'s week comes to {amount}, counted out of the till in silver and a good deal of gold dust, less what was drunk on credit and will never be seen again.',
+    'The Crown & Cradle\'s week comes to {amount}, counted out of the till in silver and a good deal of gold dust, less what was drunk on credit and will never be seen again.',
     'Mrs. Doyle sends the week\'s account: {amount} clear, and a note that the piano wants tuning and the brandy wants watering, and that she has done one of those things.',
     'A quiet week at the house — {amount} in the till. Men drink no less for the ground being poor; they drink rather more, and pay rather later.',
   ],
   'estate.shamrock.week.rush': [
     'A rush on, and the bar three deep from noon: {amount} for the week, and they would have paid double for the privilege of standing in it.',
-    'The house has not been so full since the field was opened. Every man off the road drinks at the Shamrock before he pegs anything, and the week comes to {amount}.',
+    'The house has not been so full since the field was opened. Every man off the road drinks at the Crown & Cradle before he pegs anything, and the week comes to {amount}.',
     '{amount} for the week. Thirsty ground makes thirsty diggers, and a rush is worth more to a publican than to any man holding a pick.',
   ],
   'estate.shamrock.brawl': [
@@ -1895,7 +1954,7 @@ export const TEXT: Record<string, string[]> = {
     'The house is knocked about on Saturday night by men who were the best of friends on Friday. {amount} to put it right, and no use asking who began it.',
   ],
   'estate.shamrock.shakedown.paid': [
-    'The Commissioner\'s clerk calls at the Shamrock about the licence, which he says is a matter of the strictest regularity, and stands looking at the shelf until {amount} of it is in his pocket. The field is angry this year, and angry fields make hungry officials.',
+    'The Commissioner\'s clerk calls at the Crown & Cradle about the licence, which he says is a matter of the strictest regularity, and stands looking at the shelf until {amount} of it is in his pocket. The field is angry this year, and angry fields make hungry officials.',
     'A sergeant leans on your bar for an hour, admires the house, and observes that licensed premises are being looked at very closely just now. It costs {amount} to have him admire it somewhere else.',
   ],
   'estate.shamrock.shakedown.refused': [
@@ -1903,7 +1962,7 @@ export const TEXT: Record<string, string[]> = {
     'You will not pay it, and the sergeant does not press the matter — but he says his piece loudly on the verandah, and every digger within earshot goes off angrier than he came.',
   ],
   'estate.shamrock.rushword': [
-    'The barman leans over between two shouts: a man in from {camp} has been drinking since noon and cannot keep his mouth shut about what came up in the last dish. The Angus will have it in two days. You have it now.',
+    'The barman leans over between two shouts: a man in from {camp} has been drinking since noon and cannot keep his mouth shut about what came up in the last dish. The Times will have it in two days. You have it now.',
     'A digger sleeps in the corner of your own bar with his swag under his head, and what he said before he slept concerned the wash at {camp}. There is nothing in the paper about it yet, and there will be.',
     'That is the second man tonight in from {camp} paying for brandy with dust nobody has seen the like of this month. The house hears these things first, which is the whole reason for owning a house.',
   ],
@@ -1912,13 +1971,13 @@ export const TEXT: Record<string, string[]> = {
     'Your barman knows every liar on this field by his hat, and this man is not one of them. He told it once, quietly, and did not tell it twice for a drink. There is something out there.',
   ],
   'estate.shamrock.rumour.hoax': [
-    'The barman waits until the man has gone and then observes that he told the same story at the Golden Shanty last month with a different creek in it, and drank on it both times.',
+    'The barman waits until the man has gone and then observes that he told the same story at the Lucky Dish Shanty last month with a different creek in it, and drank on it both times.',
     'Drunk by four o\'clock and free with his geography. Your barman has seen the article before: a hoax told for the drinks it buys, and no more a mine than the piano is.',
   ],
 
   'estate.store.open': [
-    'The tent goes up at {camp} with a plank counter and a set of scales, {amount} the lot, licence and opening stock together. Briggs sends the first dray out on Thursday. You will pay port prices and charge diggings prices, and the difference is the oldest fortune on this field.',
-    'For {amount} you are a storekeeper at {camp}: calico, flour, moleskins, quicksilver, tin dishes and a pound of tea that cost you eightpence at Suze Port. The suppliers, the Journal says, are more likely to make a fortune than the diggers, and you have just changed sides.',
+    'The tent goes up at {camp} with a plank counter and a set of scales, {amount} the lot, licence and opening stock together. Bell sends the first dray out on Thursday. You will pay port prices and charge diggings prices, and the difference is the oldest fortune on this field.',
+    'For {amount} you are a storekeeper at {camp}: calico, flour, moleskins, quicksilver, tin dishes and a pound of tea that cost you eightpence at Port Gannet. The suppliers, the Journal says, are more likely to make a fortune than the diggers, and you have just changed sides.',
     'A counter, a set of scales, a tarpaulin and the Commissioner\'s licence, {amount} in all, at {camp}. The men who dug alongside you last month will buy their flour off you this month, and both parties will pretend nothing whatever has altered.',
   ],
   'estate.store.week': [
@@ -1928,7 +1987,7 @@ export const TEXT: Record<string, string[]> = {
   ],
   'estate.store.week.rush': [
     'The rush is at {camp}, and {camp} is where your counter stands. Men who came forty miles for the wash will pay anything for a dish to wash it in: {amount} for the week, and the shelves stripped by Wednesday.',
-    'Every dray on the road is bound for {camp} and every man on it wants something of you before he pegs. The week comes to {amount}, and the Angus\'s famous sixteen-pound pan no longer sounds like a lie.',
+    'Every dray on the road is bound for {camp} and every man on it wants something of you before he pegs. The week comes to {amount}, and the famous sixteen-pound pan in the Times no longer sounds like a lie.',
     '{amount} in a week at {camp}. This is the whole trick of the diggings, learned late by most men and never at all by some: be the one selling when the rush comes in.',
   ],
   'estate.store.week.dying': [
@@ -1946,37 +2005,37 @@ export const TEXT: Record<string, string[]> = {
   ],
 
   'estate.gazette.buy': [
-    'Mr. Angus, who has been printing this field\'s opinions on a press that came out in the hold of a barque, takes your {amount} for the half of it and shakes hands with ink on his fingers. He keeps the editing. You have the other thing a newspaper is for.',
-    '{amount} buys half of The Angus Gazette: a flatbed press, four cases of type, a boy who sets it wrong, and the settled habit of eleven thousand men of reading whatever it says on Saturday and believing about half.',
+    'Mr. Vale, who has been printing this field\'s opinions on a press that came out in the hold of a barque, takes your {amount} for the half of it and shakes hands with ink on his fingers. He keeps the editing. You have the other thing a newspaper is for.',
+    '{amount} buys half of The Slateford Times: a flatbed press, four cases of type, a boy who sets it wrong, and the settled habit of eleven thousand men of reading whatever it says on Saturday and believing about half.',
     'The half-share costs {amount} and pays about a pound a week, which is not the point and everybody at the signing knows it is not the point.',
   ],
   'estate.gazette.week': [
     'The paper\'s week: {amount}, after the ink and the boy.',
-    'The Angus turns in {amount} for the week. A newspaper is a poor investment and a remarkable possession.',
+    'The Times turns in {amount} for the week. A newspaper is a poor investment and a remarkable possession.',
   ],
   'estate.press.talkup': [
-    'The Angus goes to press with a strike at {camp} across two columns and a great deal of white space around it. In two days there will be men on that road who have not slept, and not one of them will ask who set the type.',
+    'The Times goes to press with a strike at {camp} across two columns and a great deal of white space around it. In two days there will be men on that road who have not slept, and not one of them will ask who set the type.',
     'The paper cries up the new ground at {camp} handsomely, quoting a correspondent who does not exist about washdirt nobody has seen. The field will be on the move by Thursday. You know it is paper. They do not.',
     'You put it on the front page: heavy wash at {camp}, and the ground not half taken up. The press is a rifle and not a shotgun, and the whole art of it is knowing what is really in the ground before you fire.',
   ],
   'estate.press.collapse': [
     'A week of duffer ground at {camp} and eleven hundred men with nothing in the dish, and by Sunday the whole field has worked out who owns the paper that sent them there. Word of that sort travels faster than any rush ever did.',
-    'The rush at {camp} dies where it stood — mullock, sand and bad temper. Men who humped their swags forty miles on the strength of your two columns are walking back with something to say about the proprietors of The Angus Gazette, and they are saying it everywhere.',
+    'The rush at {camp} dies where it stood — mullock, sand and bad temper. Men who humped their swags forty miles on the strength of your two columns are walking back with something to say about the proprietors of The Slateford Times, and they are saying it everywhere.',
   ],
   'estate.press.disbelieved': [
-    'Angus sets down his pen. The paper cried up ground once too often lately, he says, and if it does so again this year there will be nobody left on the field who believes a word of it, including the advertisements.',
-    'No. Not yet. The last rush the Angus called is still being talked about in terms no proprietor would care to hear, and another would finish the paper.',
+    'Mr. Vale sets down his pen. The paper cried up ground once too often lately, he says, and if it does so again this year there will be nobody left on the field who believes a word of it, including the advertisements.',
+    'No. Not yet. The last rush the Times called is still being talked about in terms no proprietor would care to hear, and another would finish the paper.',
   ],
   'estate.press.licence': [
-    'The paper puts the licence question at the head of the page and keeps it there: thirty shillings a month off a man who earns five shillings a week at wages, and the hunts to collect it. And in the fourth column, in small type, that the Commissioner will sweep {camp} shortly — which is a thing the Angus is not supposed to know, and now every digger does.',
+    'The paper puts the licence question at the head of the page and keeps it there: thirty shillings a month off a man who earns five shillings a week at wages, and the hunts to collect it. And in the fourth column, in small type, that the Commissioner will sweep {camp} shortly — which is a thing the Times is not supposed to know, and now every digger does.',
     'You steer the paper hard at the fee, and it prints what half the field has been saying at the fires: that it is a poll-tax on labour and collected like a dog licence. The same issue names {camp} for the next inspection. The Camp will be furious. The camps will not.',
   ],
   'estate.press.soothe': [
-    'The Angus counsels patience in a leading article of great length and no particular meaning: that grievances are best carried to the Chambers, that the Government is not deaf, and that a monster meeting never yet washed a dish of dirt. It does the trick, a little.',
+    'The Times counsels patience in a leading article of great length and no particular meaning: that grievances are best carried to the Chambers, that the Government is not deaf, and that a monster meeting never yet washed a dish of dirt. It does the trick, a little.',
     'A column urging moderation, quoting Scripture and the price of flour, and observing that hasty men make trouble for careful ones. The field reads it and simmers a degree lower than it did.',
   ],
   'estate.press.soothe.floor': [
-    'You set the type. Angus prints it. And the meetings go on being held, because the thing has gone past what any newspaper can talk a man out of. Some business is done with the press and some with pikes, and it is no longer the printers\' season.',
+    'You set the type. Vale prints it. And the meetings go on being held, because the thing has gone past what any newspaper can talk a man out of. Some business is done with the press and some with pikes, and it is no longer the printers\' season.',
     'The column runs and nobody reads past the first paragraph. There is a stage in the year after which a leading article counselling patience is only so much paper for lighting fires, and the field has reached it.',
   ],
   'estate.press.killnotice': [
@@ -1984,14 +2043,14 @@ export const TEXT: Record<string, string[]> = {
     'What was to be printed of you is quietly not printed, and the space goes to the shipping list. A man who is not in the newspapers is a man the Camp stops being reminded of; for a fortnight you are nobody in particular, which is the most valuable thing the press can make anybody.',
   ],
   'estate.press.exposed': [
-    'The rival sheet at Suze Port has the whole business, and prints it: that the proclaimed man owned half a newspaper this year, and that certain notices concerning him were kept out of it. The colony is more shocked by that than by anything you did on the roads.',
-    'Somebody at the Angus has talked. It is in print by Saturday — the silence you bought and what you bought it with — and there is not a respectable man on this field who will now say he knew you.',
+    'The rival sheet at Port Gannet has the whole business, and prints it: that the proclaimed man owned half a newspaper this year, and that certain notices concerning him were kept out of it. The colony is more shocked by that than by anything you did on the roads.',
+    'Somebody at the Times has talked. It is in print by Saturday — the silence you bought and what you bought it with — and there is not a respectable man on this field who will now say he knew you.',
   ],
 
   // ───────────────────────── PUBLIC WORKS ─────────────────────────
 
   'estate.work.bridge': [
-    'The subscription list goes up at the Chambers with your name at the head of it and {amount} against it, and by the end of the month there are piles driven in the Blue River and a bridge of ironbark over it. The Damp Camp road is a road now, in winter as in summer, for you and for every bullocky and every man on foot who will never know who paid for it.',
+    'The subscription list goes up at the Chambers with your name at the head of it and {amount} against it, and by the end of the month there are piles driven in the Slate River and a bridge of ironbark over it. The Reedbank Camp road is a road now, in winter as in summer, for you and for every bullocky and every man on foot who will never know who paid for it.',
     '{amount} to the bridge fund, and the Council writes to thank you in the manner of men who intend to ask again. The thing goes up in six weeks: ironbark, a hand-rail, and a plank with the subscribers on it. The old ford took a dray and two bullocks last winter and will not take another.',
   ],
   'estate.work.waterRace': [
@@ -1999,23 +2058,23 @@ export const TEXT: Record<string, string[]> = {
     '{amount} pays for the water race to {camp}, and the difference is visible from the ridge: green along the cut, tubs going all summer, and no man on that flat drinking out of the same hole he washes in. Half the sickness of a diggings is want of water, and the other half is what men do without it.',
   ],
   'estate.work.ward': [
-    'Calico House gets a ward of its own for {amount} — twelve beds, a stove, a floor that is not the ground, and a standing order that no man is turned away for want of ten shillings. The doctor, who has buried more diggers than he cares to count and most of them of the dysentery, shakes your hand for rather too long.',
+    'Canvas House gets a ward of its own for {amount} — twelve beds, a stove, a floor that is not the ground, and a standing order that no man is turned away for want of ten shillings. The doctor, who has buried more diggers than he cares to count and most of them of the dysentery, shakes your hand for rather too long.',
     'The subscribers\' ward goes up in canvas and slab beside the hospital tents, {amount} of it yours: beds off the ground, clean water carted daily, and the sick carted in before they can infect a whole gully. The plaque is small. The thing itself is not.',
   ],
   'estate.work.school': [
     'A school, then: one room, a stove, forty slates and a master at £80 the year, for {amount} down. There are children on this field who have never sat under a roof in their lives and can tell you the price of gold to the pennyweight. From Monday they will be learning something else.',
-    '{amount} builds the Fields Town school. It pays nothing, will never pay anything, and is the only thing you have bought this year that will still be standing when the gold is done and the tents are gone.',
+    '{amount} builds the Slateford school. It pays nothing, will never pay anything, and is the only thing you have bought this year that will still be standing when the gold is done and the tents are gone.',
   ],
   'works.bridge.absence': [
-    'The coach rolls over the Blue River bridge without slackening. The old crossing would have swallowed a wheel on a day like this, and the bullockies at the ford used to be heard a mile off; there is no ford now, and nothing to hear.',
-    'You cross the Blue River dry-shod in the middle of a wet winter, over your own bridge, in the time it takes to fill a pipe. Men were bogged here to the axle-trees last year for a week at a stretch.',
+    'The coach rolls over the Slate River bridge without slackening. The old crossing would have swallowed a wheel on a day like this, and the bullockies at the ford used to be heard a mile off; there is no ford now, and nothing to hear.',
+    'You cross the Slate River dry-shod in the middle of a wet winter, over your own bridge, in the time it takes to fill a pipe. Men were bogged here to the axle-trees last year for a week at a stretch.',
   ],
   'works.race.absence': [
     'The hot wind comes up as it always does, and the flat does not choke on it: the race is running full and there is water at the head of every tub. In a year without it there would be men here with their eyes bandaged against the Blight by now.',
     'High summer, and the cut is running. Nobody on this ground is drinking out of a hole he washed dirt in, and nobody\'s eyes are shut against the dust; the Sandy Blight has gone to find some other camp.',
   ],
   'works.ward.absence': [
-    'A man goes down with the dysentery in the next tent and is carted to Calico House the same afternoon instead of lying there three days infecting a gully. The ward is doing quietly what the ward was built for.',
+    'A man goes down with the dysentery in the next tent and is carted to Canvas House the same afternoon instead of lying there three days infecting a gully. The ward is doing quietly what the ward was built for.',
     'There is fever in the camp and it does not spread as fever used to spread here. The sick are taken out early to the subscribers\' ward, and the difference does not make a paragraph in any newspaper.',
   ],
   'works.ward.free': [
@@ -2023,7 +2082,7 @@ export const TEXT: Record<string, string[]> = {
     'They put you in the ward you paid for, {days} days of it, free — and the doctor observes drily that this is the first time in his experience the arrangement has worked out to the subscriber\'s advantage.',
   ],
   'works.school.lad': [
-    'A youngster of about seventeen presents himself at the tent — one of the first through the Fields Town school, and he can read, cipher, and keep a tally without cheating himself or you. He will not hear of wages until he has learned the trade. He is the best mate you have had on this field, and the school cost you sixty pounds.',
+    'A youngster of about seventeen presents himself at the tent — one of the first through the Slateford school, and he can read, cipher, and keep a tally without cheating himself or you. He will not hear of wages until he has learned the trade. He is the best mate you have had on this field, and the school cost you sixty pounds.',
     'The schoolmaster sends a boy along who wants to learn the diggings: quick, sober, honest, and able to keep an account of the week in a fair hand. He works for his tucker and the teaching. Every other mate you ever hired wanted two shillings a day and was worth about half of it.',
   ],
 
@@ -2034,7 +2093,7 @@ export const TEXT: Record<string, string[]> = {
     'The commission is read out, the {amount} subscribed to the Court fund is entered in the book, and you take the oath before a clerk who yawns. J.P. after a man\'s name is only three letters. It means the Crown has decided to be represented, in this place, by you.',
   ],
   'estate.jp.forfeit': [
-    'A magistrate convicted is a magistrate no longer. The commission is revoked by return of post, the Angus has it on the front page under a heading it clearly enjoyed setting, and men who drank your health in the spring cross the street now.',
+    'A magistrate convicted is a magistrate no longer. The commission is revoked by return of post, the Times has it on the front page under a heading it clearly enjoyed setting, and men who drank your health in the spring cross the street now.',
     'They strike you off the commission of the peace, and they do it publicly, because the whole point of the thing was that it was public. It is a long way down from the bench and it takes about a week.',
   ],
   'estate.jp.nobill': [
@@ -2056,7 +2115,7 @@ export const TEXT: Record<string, string[]> = {
 
   'court.case.licence.charge': [
     'A Cornishman is brought up for digging without a licence. He has been on the ground eleven days, has thirty shillings of gold to his name and thirty shillings is the fee, and he says so.',
-    'First on the list: a licence dodger, taken in the hunt on Tuesday, who says he has a wife at Suze Port and no thirty shillings and asks the bench which it would rather he paid for.',
+    'First on the list: a licence dodger, taken in the hunt on Tuesday, who says he has a wife at Port Gannet and no thirty shillings and asks the bench which it would rather he paid for.',
   ],
   'court.case.licence.leniency': [
     'You take his word and discharge him on his undertaking to take out the licence within the week. He says nothing at all and goes out, and the back of the hall makes a noise a Commissioner would not have cared for.',
@@ -2072,7 +2131,7 @@ export const TEXT: Record<string, string[]> = {
   ],
   'court.case.vagrant.leniency': [
     'You discharge him, and the Court fund finds him a week\'s rations and the loan of a swag. There is not a man on this field who could not have stood where he is standing.',
-    'Discharged. You tell him the road to the Deep Mountains, where there is wages work for a man who will take it, and he touches his hat and goes.',
+    'Discharged. You tell him the road to the Blackcap Ranges, where there is wages work for a man who will take it, and he touches his hat and goes.',
   ],
   'court.case.vagrant.severity': [
     'Fourteen days. The law is quite clear about men without means, and the town has been complaining about them since the tents came down.',
@@ -2087,11 +2146,11 @@ export const TEXT: Record<string, string[]> = {
     'You restore the claim, order the gold won off it paid over, and let him go. The camp takes note of the restoration and rather less note of the mercy.',
   ],
   'court.case.jumper.severity': [
-    'Three months, and the ground restored. Claim-jumping is the one crime the diggings will not laugh at, and you say so in terms the Angus prints in full.',
-    'The full penalty: gaol, the ground back to its owner, and a caution to the field that this bench will hear every such case the same way. There is not a jumper between here and Suze Port who will not have heard of it by Friday.',
+    'Three months, and the ground restored. Claim-jumping is the one crime the diggings will not laugh at, and you say so in terms the Times prints in full.',
+    'The full penalty: gaol, the ground back to its owner, and a caution to the field that this bench will hear every such case the same way. There is not a jumper between here and Port Gannet who will not have heard of it by Friday.',
   ],
   'court.case.drunk.charge': [
-    'A digger, still unsteady, is charged with wrecking the bar of the Shamrock Hotel on Saturday night — two windows, a door, and a piano that was of no use to anybody in the first place.',
+    'A digger, still unsteady, is charged with wrecking the bar of the Crown & Cradle on Saturday night — two windows, a door, and a piano that was of no use to anybody in the first place.',
     'Drunk and disorderly, and £4 of damage to a licensed house. He is very sorry, he says, and cannot remember one particle of it, which he offers as though it were a defence.',
   ],
   'court.case.drunk.leniency': [
@@ -2103,8 +2162,8 @@ export const TEXT: Record<string, string[]> = {
     'You give him the month. A licensed house is a man\'s property, and men who cannot drink in one without taking the door off it may drink in the logs.',
   ],
   'court.case.bushranger.charge': [
-    'The constables have a bushranger for you — taken on Trickey\'s Track with a horse he could not account for and a pistol he could account for far too well. He is nineteen and has an old woman at Suze Port.',
-    'A man charged with sticking up a traveller on the Pass Road. The traveller is in the hall and identifies him. The prisoner grins at the crowd, and about a third of the crowd grins back.',
+    'The constables have a bushranger for you — taken on Mercer\'s Track with a horse he could not account for and a pistol he could account for far too well. He is nineteen and has an old woman at Port Gannet.',
+    'A man charged with sticking up a traveller on the Razorback Road. The traveller is in the hall and identifies him. The prisoner grins at the crowd, and about a third of the crowd grins back.',
   ],
   'court.case.bushranger.leniency': [
     'You commit him for trial and recommend the mercy of the court, on the grounds of his age, and the roads are none the safer for it. Half the hall thinks you a fool and the other half thinks you sound.',
@@ -2127,8 +2186,8 @@ export const TEXT: Record<string, string[]> = {
     'The heaviest sentence in your power, and the hall is satisfied. Tent-robbers have been tarred and feathered on lighter evidence than this, and worse than tarred.',
   ],
   'court.case.grog.charge': [
-    'Sly grog: a woman with a tent, a washing-tub and forty bottles, doing more business on a Saturday than the Shamrock. She observes that the police at the camp have taken a fee off her every month since Michaelmas.',
-    'A sly-grog seller, taken at Snakey Gully with the evidence in a hole under the floor. Everybody in the hall has drunk it, including, by the look of him, the constable who found it.',
+    'Sly grog: a woman with a tent, a washing-tub and forty bottles, doing more business on a Saturday than the Crown & Cradle. She observes that the police at the camp have taken a fee off her every month since Michaelmas.',
+    'A sly-grog seller, taken at Copperhead Gully with the evidence in a hole under the floor. Everybody in the hall has drunk it, including, by the look of him, the constable who found it.',
   ],
   'court.case.grog.leniency': [
     'Five pounds and the tent left standing, which is what everybody expected and what everybody, in a district with one licensed house and eleven thousand thirsty men, quietly wanted.',
@@ -2150,12 +2209,12 @@ export const TEXT: Record<string, string[]> = {
     'They burnt out the shanty at {camp}. There is a black patch and a puddle of brandy where your investment was, and the men who drank there have moved half a mile up the gully and forgotten your name already.',
   ],
   'estate.lawyer.retain': [
-    'Sixty pounds the quarter, in advance, to an attorney in Briggs Street who does not ask a single question and writes your particulars in a book of his own. He is retained until day {until}. There are few lawyers on this field and they are ridiculously expensive, and a man in your line will find out why.',
+    'Sixty pounds the quarter, in advance, to an attorney in Bell Street who does not ask a single question and writes your particulars in a book of his own. He is retained until day {until}. There are few lawyers on this field and they are ridiculously expensive, and a man in your line will find out why.',
     'The shanty keeper knows a man, and the man knows the Crown Prosecutor\'s habits. {amount} for the quarter buys you a defence instead of a plea, which is a distinction of no importance whatever until the morning it is the only thing in the world that matters. Retained to day {until}.',
   ],
   'estate.lawyer.acquit': [
     'Your attorney takes the informer\'s evidence apart in twenty minutes, observes that no man in the box will swear to a face under a covering, and sits down. The jury are out eleven minutes. You walk out of the assizes into the sunlight a free man, and every digger in the colony reads about it on Saturday.',
-    'The case is thrown out on the identification. Sixty pounds against the years — and the ballad-sellers have it on the streets of Suze Port by Monday, which does your name no harm at all in the quarters where names of that sort are made.',
+    'The case is thrown out on the identification. Sixty pounds against the years — and the ballad-sellers have it on the streets of Port Gannet by Monday, which does your name no harm at all in the quarters where names of that sort are made.',
   ],
   'estate.lawyer.fail': [
     'Your attorney does what he is paid for, at length and with feeling, and the jury are out four minutes. Sixty pounds is a great deal of money to spend on a better class of the same sentence.',
@@ -2163,7 +2222,7 @@ export const TEXT: Record<string, string[]> = {
   ],
 
   'epilogue.notable.bench': [
-    'You came out a new chum with a tin dish and a Journal you had read twice, and you sit on the Fields Town bench now. The town is what it is partly because you were in it: there are things standing in that valley that would not be standing, and men going about their business who would otherwise be in the logs or the ground.',
+    'You came out a new chum with a tin dish and a Journal you had read twice, and you sit on the Slateford bench now. The town is what it is partly because you were in it: there are things standing in that valley that would not be standing, and men going about their business who would otherwise be in the logs or the ground.',
     'A Justice of the Peace for the district — which is not a fortune, and cannot be banked, and is the only thing in this colony that a man cannot buy with gold alone. They will put your name on the list of subscribers at the front of the Chambers, and it will still be legible in fifty years, which is longer than the gold lasted.',
   ],
   'epilogue.notable.town': [

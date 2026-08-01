@@ -58,14 +58,19 @@ import {
   worsenForCrime,
 } from './bandit';
 import {
+  abandonLease,
   buyBackShares,
+  buyBattery,
   declareDividend,
   fireCrew,
   floatCompany,
   hireCrew,
+  installPlant,
   sellOut,
   sellOwnShares,
   setCrewTask,
+  setDriving,
+  setLeasePlan,
 } from './company';
 import { endDay, passKeptDays } from './daily';
 import {
@@ -99,6 +104,7 @@ import {
   checkMethod,
   dissolvePartnership,
   hireMate,
+  hirePumpman,
   licenceDiesMidSpell,
   licenceLapsedToday,
   mineOneDay,
@@ -153,10 +159,18 @@ export function screenForLocation(loc: LocationId): Screen {
 
 function afterDay(state: GameState, rng: RNG, log: Log): boolean {
   if (state.gameOver) return false;
-  checkGrave(state, rng, log);
+  checkGraveAfter(state, rng, log);
   if (state.gameOver) return false;
   if (state.endOfYear) return false;
   return true;
+}
+
+function advanceKept(state: GameState, rng: RNG, log: Log, days: number): void {
+  passKeptDays(state, rng, log, days);
+}
+
+function checkGraveAfter(state: GameState, rng: RNG, log: Log): boolean {
+  return checkGrave(state, rng, log, (days) => advanceKept(state, rng, log, days));
 }
 
 /**
@@ -212,7 +226,7 @@ function runWork(state: GameState, rng: RNG, log: Log, task: Task & { kind: 'wor
       case 'barman':
         if (rng.chance(0.05)) {
           log.say('work.barman.brawl', undefined, 'bad');
-          damage(state, rng.int(3, 10), 'a brawl at the Shamrock');
+          damage(state, rng.int(3, 10), 'a brawl at the Crown & Cradle');
         }
         maybeRumour(state, rng, log, 3);
         break;
@@ -220,12 +234,13 @@ function runWork(state: GameState, rng: RNG, log: Log, task: Task & { kind: 'wor
         state.briggsDays += 1;
         if ([7, 21, 42].includes(state.briggsDays)) {
           const pct = state.briggsDays >= 42 ? 15 : state.briggsDays >= 21 ? 10 : 5;
-          log.raw(`Briggs enters you on a better staff tier: ${pct}% off his marked prices.`, 'good');
+          log.raw(`Bell enters you on a better staff tier: ${pct}% off his marked prices.`, 'good');
         }
         break;
       case 'orderly':
         if (rng.chance(0.15)) log.say('work.orderly.lesson', undefined, 'good');
         heal(state, 1);
+        state.fedToday = true;
         break;
       default:
         break;
@@ -274,7 +289,7 @@ function runMine(state: GameState, rng: RNG, log: Log, task: Task & { kind: 'min
   let left = -1;
   const camp = state.location;
   while (remaining > 0) {
-    // Carted off to Calico House, or otherwise no longer on the ground.
+    // Carted off to Canvas House, or otherwise no longer on the ground.
     if (state.location !== camp) break;
     if (state.illness?.blinding && rng.chance(0.6)) {
       log.say('ill.blind', undefined, 'bad');
@@ -369,7 +384,7 @@ function runTravel(state: GameState, rng: RNG, log: Log): void {
       state.screen = screenForLocation(state.location);
       return;
     }
-    checkGrave(state, rng, log);
+    checkGraveAfter(state, rng, log);
     if (state.gameOver) return;
   }
 }
@@ -427,16 +442,16 @@ function handleTrooperChoice(state: GameState, rng: RNG, log: Log, action: Actio
       resumePending(state, rng, log);
       return;
     }
-    toTheLogs(state, rng, log);
+    toTheLogs(state, rng, log, (days) => advanceKept(state, rng, log, days));
   } else if (action.type === 'resist') {
     const outcome = makeRun(state, rng, log);
     if (outcome === 'escaped') {
       resumePending(state, rng, log);
       return;
     }
-    toTheLogs(state, rng, log);
+    toTheLogs(state, rng, log, (days) => advanceKept(state, rng, log, days));
   } else {
-    toTheLogs(state, rng, log);
+    toTheLogs(state, rng, log, (days) => advanceKept(state, rng, log, days));
   }
   state.pending = null;
   state.resumeTask = null;
@@ -522,7 +537,7 @@ function handlePatrolChoice(state: GameState, rng: RNG, log: Log, action: Action
       state.resumeTask = null;
       return;
     }
-    toGaol(state, rng, log);
+    toGaol(state, rng, log, (days) => advanceKept(state, rng, log, days));
   } else if (action.type === 'flee' || action.type === 'bailUp') {
     if (rng.chance(escapeChance(state))) {
       log.say(raid ? 'bandit.hideout.slipped' : 'bandit.escape', undefined, 'good');
@@ -546,7 +561,7 @@ function handlePatrolChoice(state: GameState, rng: RNG, log: Log, action: Action
       state.resumeTask = null;
       return;
     }
-    toGaol(state, rng, log);
+    toGaol(state, rng, log, (days) => advanceKept(state, rng, log, days));
   } else {
     log.say('bandit.surrender', undefined, 'bad');
     toGaol(state, rng, log);
@@ -582,9 +597,9 @@ function handleAssizesChoice(state: GameState, rng: RNG, log: Log, action: Actio
       return;
     }
     // The file broke, or the man outside did not come. The sentence doubles.
-    assizes(state, log, true, rng);
+    assizes(state, log, true, rng, (days) => advanceKept(state, rng, log, days));
   } else {
-    assizes(state, log, false, rng);
+    assizes(state, log, false, rng, (days) => advanceKept(state, rng, log, days));
   }
   state.pending = null;
   state.resumeTask = null;
@@ -654,7 +669,7 @@ function settle(state: GameState, rng: RNG, log: Log): void {
     state.screen = 'encounter';
   }
   if (state.gameOver === 'dead') {
-    // The Gazette prints a man's death once, not every time he is spoken to.
+    // The Times prints a man's death once, not every time he is spoken to.
     if (state.screen !== 'obituary') {
       state.screen = 'obituary';
       log.say('end.obituary', undefined, 'grave');
@@ -736,7 +751,7 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
       return;
     }
     if (s.pending.kind === 'meeting') {
-      resolveMeeting(s, rng, log, action.type === 'attendMeeting' && action.attend);
+      resolveMeeting(s, rng, log, action.type === 'attendMeeting' && action.attend, (days) => advanceKept(s, rng, log, days));
       resumePending(s, rng, log);
       return;
     }
@@ -747,7 +762,7 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
           : action.type === 'sellSupplies'
             ? 'sellSupplies'
             : 'keepClear';
-      resolveStockade(s, rng, log, choice);
+      resolveStockade(s, rng, log, choice, (days) => advanceKept(s, rng, log, days));
       // A refused sale leaves the question standing.
       if (s.pending) return;
       resumePending(s, rng, log);
@@ -842,7 +857,7 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
       s.screen = screenForLocation(s.location);
       return;
 
-    // --- Suze Port -----------------------------------------------------
+    // --- Port Gannet -----------------------------------------------------
     case 'work': {
       const job = JOBS[action.job];
       // From wanted criminal no honest house in either town will engage him;
@@ -931,7 +946,9 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
     }
 
     case 'setLodging': {
-      s.lodging = action.kind;
+      if (s.location === 'fields-town') s.slatefordLodging = action.kind;
+      else if (s.location === 'suze-port') s.lodging = action.kind;
+      else return;
       const key =
         action.kind === 'inn'
           ? 'lodging.inn'
@@ -959,20 +976,21 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
       const value = salvageValue(s, rng);
       s.moneyPence += value;
       log.raw(
-        `The Suze Port dealers fall on your scavenged chests and pay ${formatMoney(value)} — a wonderful profit for goods that lay rotting on the track.`,
+        `The Port Gannet dealers fall on your scavenged chests and pay ${formatMoney(value)} — a wonderful profit for goods that lay rotting on the track.`,
         'good',
       );
-      addJournal(s, `Sold scavenged goods at Suze Port for ${formatMoney(value)}.`, 'good');
+      addJournal(s, `Sold scavenged goods at Port Gannet for ${formatMoney(value)}.`, 'good');
       s.salvage = 0;
       return;
     }
 
     case 'readGazette': {
-      if (s.moneyPence < 1) {
-        log.raw('The boy will not part with a Gazette for nothing.', 'bad');
+      const firstReadingToday = s.gazetteReadOn !== s.day;
+      if (firstReadingToday && s.moneyPence < 1) {
+        log.raw('The boy will not part with a copy of the Times for nothing.', 'bad');
         return;
       }
-      s.moneyPence -= 1;
+      if (firstReadingToday) s.moneyPence -= 1;
       // A licence story read over a pannikin of tea is worth a day's grumbling.
       if (s.gazetteReadOn !== s.day && gazetteStokesTrouble(s)) agitationFromStory(s);
       s.gazetteReadOn = s.day;
@@ -1018,7 +1036,7 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
       addHeat(s, heatZoneFor(s), HEAT_PER_CRIME);
       // Watching a store, or a drunk, is a night's work like any other.
       endDay(s, rng, log, {});
-      checkGrave(s, rng, log);
+      checkGraveAfter(s, rng, log);
       return;
     }
 
@@ -1172,7 +1190,7 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
       return;
     }
 
-    // --- Fields Town ---------------------------------------------------
+    // --- Slateford ---------------------------------------------------
     case 'deposit': {
       if (bankRefuses(s)) {
         log.say('bandit.bank.refused', undefined, 'bad');
@@ -1277,7 +1295,7 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
       }
       if (res.stop === 'dead') return;
       endDay(s, rng, log, { toil: true });
-      checkGrave(s, rng, log);
+      checkGraveAfter(s, rng, log);
       return;
     }
 
@@ -1397,9 +1415,9 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
         const player = g.hand + (action.choice === 'bluff' ? rng.int(-2, 4) + tellBonus : 0);
         const won = player >= opponent;
         if (won) {
-          const returned = totalRisk * 2;
+          const returned = Math.round(totalRisk * CARDS_PAYOUT);
           s.moneyPence += returned;
-          s.stats.gamblingNet += totalRisk;
+          s.stats.gamblingNet += returned - totalRisk;
           log.raw(action.choice === 'bluff' ? 'He looks once more at you, not his cards, and folds.' : `The hands turn over. Yours is good; ${formatMoney(returned)} comes across the table.`, 'good');
         } else {
           s.stats.gamblingNet -= totalRisk;
@@ -1525,6 +1543,7 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
         return;
       }
       s.moneyPence -= cost;
+      if (s.shares === 0) s.sharesBoughtOn = s.day;
       s.shares += n;
       log.say('shares.buy', { n, amount: formatMoney(cost) }, 'neutral');
       addJournal(s, `Took up ${n} share${n === 1 ? '' : 's'} in a company mine.`, 'neutral');
@@ -1539,7 +1558,7 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
     case 'floatCompany': {
       if (s.location !== 'deep-mountains' && s.location !== 'fields-town') {
         log.raw(
-          'A company is registered at the Council Chambers, or at the company office in the Deep Mountains.',
+          'A company is registered at the Council Chambers, or at the company office in the Blackcap Ranges.',
           'bad',
         );
         return;
@@ -1557,7 +1576,31 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
       return;
 
     case 'setCrewTask':
-      setCrewTask(s, log, action.index, action.task);
+      setCrewTask(s, log, action.index, action.task, action.lease);
+      return;
+
+    case 'setLeasePlan':
+      setLeasePlan(s, log, action.lease, action.plan);
+      return;
+
+    case 'installPlant':
+      installPlant(s, log, action.lease, action.plant);
+      return;
+
+    case 'buyBattery':
+      buyBattery(s, log);
+      return;
+
+    case 'setDriving':
+      setDriving(s, log, action.rate);
+      return;
+
+    case 'abandonLease':
+      abandonLease(s, log, action.lease);
+      return;
+
+    case 'hirePumpman':
+      hirePumpman(s, log);
       return;
 
     case 'declareDividend':
@@ -1630,7 +1673,7 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
       // Setting a story costs the day it takes to write, set and print it.
       if (!placeStory(s, rng, log, action.kind, action.camp)) return;
       endDay(s, rng, log, {});
-      checkGrave(s, rng, log);
+      checkGraveAfter(s, rng, log);
       if (!s.gameOver && !s.endOfYear) s.screen = screenForLocation(s.location);
       return;
     }
@@ -1646,7 +1689,7 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
     case 'holdCourt': {
       if (!holdCourt(s, log)) return;
       endDay(s, rng, log, {});
-      checkGrave(s, rng, log);
+      checkGraveAfter(s, rng, log);
       if (s.gameOver || s.endOfYear) return;
       s.screen = 'court';
       return;
@@ -1687,7 +1730,7 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
       const from = s.location;
       lurk(s, rng, log, action.route);
       endDay(s, rng, log, { toil: true });
-      checkGrave(s, rng, log);
+      checkGraveAfter(s, rng, log);
       if (s.gameOver || s.endOfYear) return;
       // He rides back to whatever roof he keeps; the road is a day's work.
       s.location = from;
@@ -1729,7 +1772,7 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
       }
       if (!gatherIntelligence(s, rng, log)) return;
       endDay(s, rng, log, {});
-      checkGrave(s, rng, log);
+      checkGraveAfter(s, rng, log);
       return;
     }
 
@@ -1738,26 +1781,34 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
       return;
 
     case 'robBank': {
-      if (!robBank(s, rng, log)) return;
+      if (!robBank(s, rng, log, (days) => advanceKept(s, rng, log, days))) return;
+      if (s.pending?.kind === 'assizes') {
+        s.screen = 'encounter';
+        return;
+      }
       endDay(s, rng, log, { toil: true });
-      checkGrave(s, rng, log);
+      checkGraveAfter(s, rng, log);
       if (s.pending) s.screen = 'encounter';
       return;
     }
 
     case 'robEscort': {
-      if (!robEscort(s, rng, log)) return;
+      if (!robEscort(s, rng, log, (days) => advanceKept(s, rng, log, days))) return;
+      if (s.pending?.kind === 'assizes') {
+        s.screen = 'encounter';
+        return;
+      }
       for (let i = 0; i < ROB_ESCORT_DAYS; i++) {
         endDay(s, rng, log, { toil: true });
         if (s.gameOver || s.endOfYear) return;
       }
-      checkGrave(s, rng, log);
+      checkGraveAfter(s, rng, log);
       if (s.pending) s.screen = 'encounter';
       return;
     }
 
     case 'buyPassage':
-      buyPassage(s, rng, log);
+      buyPassage(s, rng, log, (days) => advanceKept(s, rng, log, days));
       if (s.pending) s.screen = 'encounter';
       return;
 

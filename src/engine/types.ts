@@ -23,7 +23,7 @@ export type LocationId =
   | 'snakey-gully'
   | 'deep-mountains'
   | 'secret-mine'
-  /** A camp in the ranges beyond the Deep Mountains that no map shows (§23.4). */
+  /** A camp in the ranges beyond the Blackcap Ranges that no map shows (§23.4). */
   | 'hideout';
 
 export type CampId = 'damp-camp' | 'snakey-gully' | 'deep-mountains' | 'secret-mine';
@@ -94,7 +94,7 @@ export interface Claim {
   peggedOn: number;
   /** Set when a shaft on this claim bottoms on payable wash. */
   proven: boolean;
-  /** Registered at the Fields Town Council; useful when a jumper disputes it. */
+  /** Registered at the Slateford Council; useful when a jumper disputes it. */
   registered?: boolean;
   /** Last day the owner or his mate was on the ground. */
   lastAttendedDay?: number;
@@ -140,7 +140,7 @@ export interface OwnStore {
   openedOn: number;
 }
 
-/** What a half-share in the Gazette lets a man print (§26). */
+/** What a half-share in the Times lets a man print (§26). */
 export type StoryKind = 'talkUp' | 'pressLicence' | 'soothe' | 'killNotice';
 
 /** Everything a man of property holds, and what the town lets him do with it. */
@@ -162,7 +162,7 @@ export interface Estate {
   calledRushBurnedOn: number;
   /** A hard bench keeps the field quiet until this day (§28.1); 0 is never. */
   severityUntilDay: number;
-  /** The one-per-year silence bought of the Gazette (§26). */
+  /** The one-per-year silence bought of the Times (§26). */
   noticeKillUsed: boolean;
   noticeKillUntilDay: number;
   /** Last day the bar bought him standing (the fourteen-day cap, §30.2). */
@@ -171,7 +171,7 @@ export interface Estate {
   flushUntilDay: number;
   /**
    * Day of the last spree held at his own house (§30.2); 0 is never. The
-   * Shamrock's takings only rise for a night drunk under its own roof — a
+   * Crown & Cradle's takings only rise for a night drunk under its own roof — a
    * spree in a grog tent forty miles off puts nothing in Mrs. Doyle's till.
    */
   houseSpreeOn: number;
@@ -225,6 +225,90 @@ export interface Intelligence {
 /** How the outlaw's road ended, for the epilogue (§24). */
 export type OutlawEnd = 'hanged' | 'hulks' | 'california' | 'pardoned' | 'at large';
 
+// ---------------------------------------------------------------------------
+// Hearth & kin — the courtship anchor (§32)
+// ---------------------------------------------------------------------------
+
+export type HearthRung =
+  | 'none'
+  | 'acquainted'
+  | 'courting'
+  | 'betrothed'
+  | 'wed'
+  | 'settled'
+  | 'estranged';
+
+/** The trade she keeps, before the wedding and after it (§32.1). */
+export type IntendedTrade = 'storekeeper' | 'nurse' | 'boarding-house';
+
+/** Where the pair of you first met, for the copy to remember. */
+export type MeetingPlace = 'ball' | 'shamrock' | 'calico' | 'garden';
+
+export interface Intended {
+  name: string;
+  trade: IntendedTrade;
+  /** A flavour axis for the copy, never a stat: 'dry wit', 'devout', 'bookish'… */
+  manner: string;
+  metOn: number;
+  metAt: MeetingPlace;
+  /** Evening calls kept at Port Gannet; 2-3 and she decides (§32.1). */
+  callsKept: number;
+  /** Lavish gifts pressed on her; it is the pattern that cools, never the price. */
+  lavishGifts: number;
+  /** Day of the last gift of any size, for the pattern's arithmetic (§32.1). */
+  lastGiftOn: number;
+}
+
+export type HearthEventKind = 'call' | 'banns' | 'wedding' | 'christmas' | 'birth' | 'sickbed';
+
+/** One dated pull at a time: a window at Port Gannet, printed well ahead. */
+export interface HearthEvent {
+  kind: HearthEventKind;
+  openDay: number;
+  closeDay: number;
+  /** Has a letter told the player of it yet? */
+  announced: boolean;
+}
+
+export interface Letter {
+  day: number;
+  text: string;
+  tone: Tone;
+  read: boolean;
+}
+
+export interface Hearth {
+  intended: Intended | null;
+  rung: HearthRung;
+  /** The Port Gannet household exists. */
+  cottage: boolean;
+  /** What was paid for it; the deed's value in the net-worth ledger. */
+  cottagePaid: number;
+  nextEvent: HearthEvent | null;
+  eventsKept: number;
+  eventsMissed: number;
+  /** Consecutive missed events; two running is an estrangement (§32.3). */
+  missedRun: number;
+  homeStashPence: number;
+  homeStashGold: number;
+  /** Unread mail waiting at a post office (§32.2). */
+  letters: Letter[];
+  /** Day of the next subscription ball at Slateford; 0 until announced. */
+  nextBallDay: number;
+  /** A broken courtship: no new introduction for sixty days (§32.1). */
+  courtshipBurnedOn: number;
+  /** She ended it herself; that door does not reopen (§32.1, §32.3). */
+  herDecision: boolean;
+  reconciliationUsed: boolean;
+  weddingDay: number;
+  /** Total sent home, for the epilogue's arithmetic (§32.3). */
+  remittedPence: number;
+  childBorn: boolean;
+  sickbedDone: boolean;
+  /** The engineered calendar collision has fired this year (§32.3). */
+  collisionDone: boolean;
+}
+
 export interface ShaftState {
   camp: CampId;
   /** Feet sunk so far. */
@@ -240,16 +324,58 @@ export interface ShaftState {
   pumped: boolean;
 }
 
-/** Four wages-men and a task. */
+/** How hard the company drives its ground (§19.4). */
+export type DrivingRate = 'cautious' | 'ordinary' | 'hard';
+
+/** What a developing crew is at on a lease (§19.4). */
+export type LeasePlan = 'sink' | 'drive';
+
+/** Four wages-men, a task, and perhaps a particular mine to do it at. */
 export interface Crew {
-  task: 'mine' | 'prospect';
+  task: 'mine' | 'develop' | 'prospect';
+  /** Index into the company's leases, for mining and developing crews. */
+  lease?: number;
 }
 
-/** Company ground: deeper than a digger's claim, and slower to wear out. */
+/**
+ * A named company mine, worked level by level for as long as the treasury
+ * dares pay for it (§19.4). Never a churned resource: developed, extended,
+ * flooded, dewatered — and abandoned only as a last resort.
+ */
 export interface Lease {
-  quality: number;
-  workedDays: number;
-  proven: boolean;
+  /** "the North Star" — fixed at discovery, and printed everywhere. */
+  name: string;
+  /** ×100 quality of the lode, rolled at discovery. Never shown as a number. */
+  reef: number;
+  /** 0 = an unbottomed show; each level after is a sunk development project. */
+  level: number;
+  /** Crew-weeks of payable stone left at the current level. */
+  face: number;
+  /** ×100 worth of the stone now being broken; rolled when a level or drive opens. */
+  yieldNow: number;
+  /** Rolled at discovery; all ground below level 2 counts wet regardless. */
+  wet: boolean;
+  /** Pumping plant installed (treasury capital, §19.4). */
+  pump: boolean;
+  /** Standing timber-work installed; halves cave-ins here. */
+  timbered: boolean;
+  /** A flooded mine yields nothing until a crew and a pump dewater it. */
+  flooded: boolean;
+  /** Crew-weeks put into the current development job (sinking, driving, dewatering). */
+  progress: number;
+  /** What a developing crew is at on this lease. */
+  plan: LeasePlan | null;
+}
+
+/** One week of the company's books, ruled off for the ledger pane (§19.4). */
+export interface WeekBooks {
+  revenue: number;
+  crushing: number;
+  wages: number;
+  development: number;
+  upkeep: number;
+  compensation: number;
+  net: number;
 }
 
 export interface Company {
@@ -269,10 +395,16 @@ export interface Company {
   lastWeekGold: number;
   foundedOn: number;
   lastDividendDay: number;
-  /** Confidence built by meeting investors and agents at Suze Port, 0-100. */
+  /** Confidence built by meeting investors and agents at Port Gannet, 0-100. */
   relations?: number;
   /** A port supply contract trims weekly working costs through this day. */
   supplyContractUntilDay?: number;
+  /** The company's own stamping battery, once bought: no more crushing fees (§19.4). */
+  battery: boolean;
+  /** Company-wide driving policy (§19.4). */
+  driving: DrivingRate;
+  /** Last week's statement for the ledger pane; null before the first Sunday. */
+  lastWeek: WeekBooks | null;
 }
 
 /** What a man did in December, and what the field remembers of it. */
@@ -364,12 +496,16 @@ export type Screen =
   | 'suze-horses'
   | 'secret-expedition'
   | 'suze-crime'
+  | 'hearth'
+  | 'ball'
+  | 'letters'
   | 'gazette'
   | 'journal'
   | 'travel-route'
   | 'travel-mode'
   | 'ftown'
   | 'ftown-bank'
+  | 'ftown-lodgings'
   | 'ftown-store'
   | 'ftown-council'
   | 'ftown-work'
@@ -414,7 +550,7 @@ export type PendingKind =
   | 'patrol'
   /** The camp in the ranges found while the player is in it. */
   | 'hideoutRaid'
-  /** Taken, and waiting on the assizes at Fields Town (§24). */
+  /** Taken, and waiting on the assizes at Slateford (§24). */
   | 'assizes'
   /** The pardon offered to an outlaw who stood behind the slabs (§24). */
   | 'pardon'
@@ -443,7 +579,7 @@ export interface Journey {
   /** Where the road ends. */
   to: LocationId;
   from: LocationId;
-  /** Chests of abandoned finery picked up along the way (saleable at Suze Port). */
+  /** Chests of abandoned finery picked up along the way (saleable at Port Gannet). */
   salvage: number;
 }
 
@@ -505,6 +641,9 @@ export interface GameState {
   horseInspection: { brumby: number; hack: number };
   lodging: Lodging;
   tentGroundPaidUntil: number;
+  /** Lodging chosen at Slateford; Port Gannet keeps the legacy fields above. */
+  slatefordLodging: Lodging;
+  slatefordTentGroundPaidUntil: number;
   salvage: number;
   /** A bought or earned meal waiting to be eaten at the next day-end. */
   fedToday: boolean;
@@ -514,7 +653,7 @@ export interface GameState {
   freshness: Record<CampId, number>;
   shaft: ShaftState | null;
   mateUntilDay: number;
-  /** A partner takes no wage and a quarter of the gold. */
+  /** A partner takes no wage and half the gold. */
   partner: boolean;
   puddlerUntilDay: number;
 
@@ -523,7 +662,7 @@ export interface GameState {
   standing: number;
   /** Port contacts: employers, ostlers, shipping agents and investors. */
   suzeStanding: number;
-  /** Successful days behind Briggs' counter, determining the visible discount tier. */
+  /** Successful days behind Bell's counter, determining the visible discount tier. */
   briggsDays: number;
   briggsBlacklisted: boolean;
 
@@ -545,7 +684,7 @@ export interface GameState {
   bigJobsDone: number;
   /** A trooper or a victim killed. The assizes hang for it (§24). */
   bloodShed: boolean;
-  /** The reward last printed in the Gazette, in pence. */
+  /** The reward last printed in the Times, in pence. */
   rewardPrinted: number;
   /** Day the harbourers' free warning was last spent (§23.5). */
   warnedOn: number;
@@ -557,6 +696,8 @@ export interface GameState {
 
   employment: Employment | null;
   shares: number;
+  /** First day the current outside-company holding was taken up. */
+  sharesBoughtOn: number;
 
   /** The player's own company, once floated (§19). */
   company: Company | null;
@@ -565,6 +706,9 @@ export interface GameState {
 
   /** Property, works, the press and the bench (§26-§31). Always present. */
   estate: Estate;
+
+  /** The courtship, the cottage and the letters (§32). Always present. */
+  hearth: Hearth;
 
   /** How hot the licence question has grown, 0-100 (§20). */
   agitation: number;
@@ -705,7 +849,13 @@ export type Action =
   | { type: 'floatCompany'; shares: number }
   | { type: 'hireCrew' }
   | { type: 'fireCrew' }
-  | { type: 'setCrewTask'; index: number; task: 'mine' | 'prospect' }
+  | { type: 'setCrewTask'; index: number; task: 'mine' | 'develop' | 'prospect'; lease?: number }
+  | { type: 'setLeasePlan'; lease: number; plan: LeasePlan }
+  | { type: 'installPlant'; lease: number; plant: 'pump' | 'timber' }
+  | { type: 'buyBattery' }
+  | { type: 'setDriving'; rate: DrivingRate }
+  | { type: 'abandonLease'; lease: number }
+  | { type: 'hirePumpman' }
   | { type: 'declareDividend'; perShare: number }
   | { type: 'sellOwnShares'; n: number }
   | { type: 'buyBackShares'; n: number }
@@ -741,6 +891,20 @@ export type Action =
   | { type: 'buyShanty' }
   | { type: 'retainLawyer' }
   | { type: 'shoutBar'; spree: boolean }
+  // --- hearth & kin (§32) ----------------------------------------------
+  | { type: 'attendBall' }
+  | { type: 'payAddresses' }
+  | { type: 'callAtThePort' }
+  | { type: 'giveGift'; lavish: boolean }
+  | { type: 'proposeBanns' }
+  | { type: 'holdWedding' }
+  | { type: 'buyCottage'; size: 'small' | 'large' }
+  | { type: 'homeStash'; what: 'money' | 'gold'; amount: number }
+  | { type: 'homeUnstash'; what: 'money' | 'gold'; amount: number }
+  | { type: 'consignGoods' }
+  | { type: 'sendRemittance'; amount: number }
+  | { type: 'readLetters' }
+  | { type: 'seekReconciliation' }
   // --- the dark ladder (§23-§24) ---------------------------------------
   | { type: 'bailUp'; route: Route }
   | { type: 'bailUpTake'; shoot: boolean }

@@ -90,7 +90,7 @@ export function rateTrend(state: GameState): RateTrend {
   return 'steady';
 }
 
-/** The sentence the kitty, the bank and the Gazette all put it in. */
+/** The sentence the kitty, the bank and the Times all put it in. */
 export function rateTrendPhrase(state: GameState): string {
   const then = rateWeekAgo(state);
   switch (rateTrend(state)) {
@@ -119,7 +119,7 @@ export function rateAt(state: GameState, where: LocationId): number {
   return Math.round(state.bankRate * 0.7);
 }
 
-/** Briggs' Store in Fields Town will take gold too, at a shave off the bank. */
+/** Bell's Outfitters in Slateford will take gold too, at a shave off the bank. */
 export function storeRate(state: GameState): number {
   const f =
     STORE_RATE_FACTOR.lo + hash(state.day, 313) * (STORE_RATE_FACTOR.hi - STORE_RATE_FACTOR.lo);
@@ -134,7 +134,7 @@ export function bestLocalRate(state: GameState): number {
 // Goods
 // ---------------------------------------------------------------------------
 
-/** A visible staff discount earned behind Briggs' counter. */
+/** A visible staff discount earned behind Bell's counter. */
 export function briggsDiscount(state: GameState): number {
   if (state.briggsBlacklisted) return 0;
   if (state.briggsDays >= 42) return 0.15;
@@ -159,14 +159,14 @@ function briggsFactor(state: GameState): number {
 
 export function priceOf(state: GameState, item: ItemId): number {
   // A man buying his own kit off his own shelves pays what the dray cost him
-  // at Suze Port, and not a farthing of the diggings margin (§26).
+  // at Port Gannet, and not a farthing of the diggings margin (§26).
   const own = state.estate.store && state.estate.store.camp === state.location;
   const tier = own ? 'suze' : tierFor(state.location);
   const base = PRICES[item][tier];
   const isBriggs = !own && (state.location === 'suze-port' || state.location === 'fields-town');
   const shave = isBriggs ? briggsFactor(state) : 1;
   if (tier === 'suze') return Math.round(base * shave);
-  // The Angus recorded a miner's pan selling for £16 (faithful) — rare gouging.
+  // The Times recorded a miner's pan selling for £16 (faithful) — rare gouging.
   const roll = hash(state.day * 31 + item.length * 7, item.charCodeAt(0) * 13 + 5);
   if (roll < GOUGE_CHANCE) {
     const mult =
@@ -186,7 +186,7 @@ export function isGouged(state: GameState, item: ItemId): boolean {
  * Freight is the villain at the diggings (§31.3). A week's flour, tea and salt
  * mutton runs from 12s to 25s inland, according to the season and to whether
  * every dray on the road is bound for somebody else's rush. The wharf price at
- * Suze Port never moves: the ships land there.
+ * Port Gannet never moves: the ships land there.
  */
 export function provisionsPrice(state: GameState): number {
   const tier = tierFor(state.location);
@@ -261,7 +261,7 @@ export const ITEM_NAMES: Record<ItemId, string> = {
   barrow: 'a wheelbarrow',
   timber: 'timber supports',
   pump: 'a pump',
-  journal: 'A Goldfields Journal',
+  journal: "The New Chum's Companion",
 };
 
 /** What a thing is for — a new chum cannot be expected to know. */
@@ -424,7 +424,7 @@ export function sellGold(
   }
   const rate =
     where === 'bank'
-      ? // The Fields Town bank pays best in the colony; the Suze Port branch shaves a little.
+      ? // The Slateford bank pays best in the colony; the Port Gannet branch shaves a little.
         state.location === 'suze-port'
         ? rateAt(state, 'suze-port')
         : state.bankRate
