@@ -21,6 +21,7 @@ import {
   WEDDING_COST,
   WEDDING_STANDING,
 } from './constants';
+import { sayFixed } from '../content/say';
 import { salvageValue } from './events';
 import { formatGold, formatMoney } from './money';
 import type { Log } from './narrate';
@@ -60,10 +61,9 @@ function schedule(state: GameState, kind: HearthEventKind, openDay: number): voi
   const h = state.hearth;
   h.nextEvent = { kind, openDay, closeDay: openDay + CALL_WINDOW_DAYS - 1, announced: true };
   const name = h.intended?.name ?? 'Your people';
-  addLetter(
-    state,
-    `${name} asks you to be at Port Gannet for ${eventName(kind)}, between ${formatDate(openDay)} and ${formatDate(openDay + CALL_WINDOW_DAYS - 1)}.`,
-  );
+  addLetter(state, sayFixed('hearth.letter.summons', state.day + openDay, {
+    name, event: eventName(kind), from: formatDate(openDay), to: formatDate(openDay + CALL_WINDOW_DAYS - 1),
+  }));
 }
 
 function markKept(state: GameState): void {
@@ -96,9 +96,9 @@ export function hearthDay(state: GameState, _rng: RNG, log: Log): void {
     h.nextEvent = null;
     h.eventsMissed += 1;
     h.missedRun += 1;
-    addLetter(state, `The days appointed for ${eventName(missed)} passed without you. No account is asked; the absence is account enough.`, 'bad');
+    addLetter(state, sayFixed('hearth.letter.missed', state.day, { event: eventName(missed) }), 'bad');
     if (h.missedRun >= MISSED_RUN_ESTRANGED) {
-      estrange(state, false, `${h.intended?.name ?? 'She'} will not arrange a life around dates you do not keep. She releases you from the understanding.`);
+      estrange(state, false, sayFixed('hearth.letter.estranged.missed', state.day, { name: h.intended?.name ?? 'She' }));
       log.say('hearth.estranged.missed', { name: h.intended?.name ?? 'She' }, 'bad');
     } else if (h.rung === 'courting') {
       schedule(state, 'call', state.day + CALL_GAP_DAYS);
@@ -106,7 +106,7 @@ export function hearthDay(state: GameState, _rng: RNG, log: Log): void {
   }
 
   if (h.rung === 'courting' && legalRung(state.legal) > 1) {
-    estrange(state, true, `${h.intended?.name ?? 'She'} has read what the paper says of your legal record. She will not be carried further down that road.`);
+    estrange(state, true, sayFixed('hearth.letter.estranged.record', state.day, { name: h.intended?.name ?? 'She' }));
     log.say('hearth.estranged.record', { name: h.intended?.name ?? 'She' }, 'bad');
   }
 
@@ -135,6 +135,17 @@ export function canPayAddresses(state: GameState): boolean {
   const h = state.hearth;
   return !!h.intended && h.rung === 'acquainted' &&
     (h.courtshipBurnedOn === 0 || state.day - h.courtshipBurnedOn >= COURTSHIP_BURN_DAYS);
+}
+
+/**
+ * A broken courtship does not bar the balls forever: after the burn period a new
+ * introduction may be made (§32.1) — never the same person, and never while wed.
+ */
+export function canMeetAtBall(state: GameState): boolean {
+  const h = state.hearth;
+  if (h.intended && h.rung !== 'estranged') return false;
+  if (h.rung === 'estranged' && h.weddingDay > 0) return false;
+  return h.courtshipBurnedOn === 0 || state.day - h.courtshipBurnedOn >= COURTSHIP_BURN_DAYS;
 }
 
 export function eventOpenHere(state: GameState): boolean {
@@ -190,15 +201,19 @@ export function hearthHealBonus(state: GameState): number {
 export function attendBall(state: GameState, rng: RNG, log: Log): boolean {
   if (!ballTonight(state) || state.standing < BALL_STANDING || state.moneyPence < BALL_TICKET) return false;
   state.moneyPence -= BALL_TICKET;
-  if (!state.hearth.intended &&
-      (state.hearth.courtshipBurnedOn === 0 || state.day - state.hearth.courtshipBurnedOn >= COURTSHIP_BURN_DAYS)) {
+  if (canMeetAtBall(state)) {
+    const h = state.hearth;
+    const names = NAMES.filter((n) => n !== h.intended?.name);
     const intended: Intended = {
-      name: rng.pick(NAMES), trade: rng.pick(TRADES), manner: rng.pick(MANNERS),
+      name: rng.pick(names), trade: rng.pick(TRADES), manner: rng.pick(MANNERS),
       metOn: state.day, metAt: 'ball' as MeetingPlace, callsKept: 0,
       lavishGifts: 0, lavishMissteps: 0, lastGiftOn: 0,
     };
-    state.hearth.intended = intended;
-    state.hearth.rung = 'acquainted';
+    h.intended = intended;
+    h.rung = 'acquainted';
+    h.herDecision = false;
+    h.missedRun = 0;
+    h.nextEvent = null;
     log.say('hearth.meet.ball', { name: intended.name, trade: intended.trade }, 'good');
   } else {
     log.say('hearth.ball.social', undefined, 'neutral');
@@ -266,7 +281,7 @@ export function proposeBanns(state: GameState, rng: RNG, log: Log): boolean {
     return false;
   }
   if (!consentRoll(state, rng)) {
-    estrange(state, true, `${h.intended?.name ?? 'She'} has considered the life you offer and declines it. Her answer is final, and it is her own.`);
+    estrange(state, true, sayFixed('hearth.letter.declined', state.day, { name: h.intended?.name ?? 'She' }));
     log.say('hearth.consent.no', { name: h.intended?.name ?? 'She' }, 'bad');
     return true;
   }
@@ -354,7 +369,7 @@ export function sendRemittance(state: GameState, log: Log, amount: number): bool
   if (!drawFrom(state, n)) return false;
   state.hearth.remittedPence += n;
   addJournal(state, `Sent ${formatMoney(n)} home by post-office order.`, 'neutral');
-  addLetter(state, `Your post-office order for ${formatMoney(n)} came safely. It was not required; it was understood.`, 'good');
+  addLetter(state, sayFixed('hearth.letter.remit', state.day, { amount: formatMoney(n) }), 'good');
   log.say('hearth.remit', { amount: formatMoney(n) }, 'neutral');
   return true;
 }

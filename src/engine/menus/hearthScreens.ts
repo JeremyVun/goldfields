@@ -13,6 +13,7 @@ import {
 import {
   ballAnnounced,
   ballTonight,
+  canMeetAtBall,
   canPayAddresses,
   canReconcile,
   eventOpenHere,
@@ -51,6 +52,11 @@ export function hearthView(state: GameState): ScreenView {
     body.push(`${intended.name} keeps her work as a ${intended.trade}; her manner is one of ${intended.manner}.`);
     if (h.rung === 'courting') body.push(`Calls kept at Port Gannet: ${intended.callsKept}.`);
   }
+  if (h.rung === 'estranged' && h.weddingDay === 0) {
+    body.push(canMeetAtBall(state)
+      ? 'Nothing binds you now. The subscription balls go on regardless of any one man’s history, and an introduction may in time come of one.'
+      : 'Nothing binds you now, though it is too soon after the letter for any new introduction to be made. The subscription balls will still be there when it is not.');
+  }
   const dated = nextEventLine(state);
   if (dated) body.push('', dated);
   if (h.cottage) {
@@ -79,9 +85,9 @@ export function hearthView(state: GameState): ScreenView {
   }
   if (h.rung === 'courting') {
     menu.push(
-      item('3', `Bring a small useful gift — ${formatMoney(GIFT_SMALL_MAX)}`, { type: 'giveGift', lavish: false }, 'colours the call; it cannot buy consent', state.moneyPence < GIFT_SMALL_MAX),
-      item('4', `Offer a lavish gift — ${formatMoney(GIFT_LAVISH_COST)}`, { type: 'giveGift', lavish: true }, 'generosity once; pressed or offered too early, it reads as purchase', state.moneyPence < GIFT_LAVISH_COST),
-      item('5', 'Ask whether she will have the banns read', { type: 'proposeBanns' }, `${intended?.callsKept ?? 0} of 3 calls kept; her answer weighs your name and conduct, never gifts`, (intended?.callsKept ?? 0) < 3),
+      item('3', `Bring a small useful gift — ${formatMoney(GIFT_SMALL_MAX)}`, { type: 'giveGift', lavish: false }, 'something from her trade’s wants, to colour the call', state.moneyPence < GIFT_SMALL_MAX),
+      item('4', `Offer a lavish gift — ${formatMoney(GIFT_LAVISH_COST)}`, { type: 'giveGift', lavish: true }, 'read in context: rare and well-earned it lands as generosity; pressed, it does not', state.moneyPence < GIFT_LAVISH_COST),
+      item('5', 'Ask whether she will have the banns read', { type: 'proposeBanns' }, `${intended?.callsKept ?? 0} of 3 calls kept; the answer is hers to give`, (intended?.callsKept ?? 0) < 3),
     );
   }
   if (h.rung === 'wed' && !h.cottage && state.location === 'suze-port') {
@@ -103,8 +109,8 @@ export function hearthView(state: GameState): ScreenView {
   }
   if (intended && (state.location === 'suze-port' || state.location === 'fields-town')) {
     menu.push(
-      item('R', 'Send £1 home by post-office order', { type: 'sendRemittance', amount: pounds(1) }, 'a pure gift; it changes letters, never consent', purse(state) < pounds(1)),
-      item('S', 'Send £5 home by post-office order', { type: 'sendRemittance', amount: pounds(5) }, 'a pure gift; it changes letters, never consent', purse(state) < pounds(5)),
+      item('R', 'Send £1 home by post-office order', { type: 'sendRemittance', amount: pounds(1) }, 'changes nothing here but the letters home', purse(state) < pounds(1)),
+      item('S', 'Send £5 home by post-office order', { type: 'sendRemittance', amount: pounds(5) }, 'changes nothing here but the letters home', purse(state) < pounds(5)),
     );
   }
   if (canReconcile(state)) menu.push(item('K', 'Remain in Port Gannet for a month and seek reconciliation', { type: 'seekReconciliation' }, 'one offer in the game; presence, not payment'));
@@ -141,9 +147,13 @@ export function ballView(state: GameState): ScreenView {
         { type: 'attendBall' },
         !on
           ? 'the doors are not open yet; be in Slateford on the night'
-          : state.hearth.intended
-            ? 'a social evening; no second prospective partner is rolled'
-            : 'an introduction may come of the evening',
+          : canMeetAtBall(state)
+            ? 'an introduction may come of the evening'
+            : state.hearth.rung === 'estranged'
+              ? state.hearth.weddingDay > 0
+                ? 'a social evening; you are a married man still'
+                : 'a social evening; it is too soon to be introduced again'
+              : 'a social evening; you are spoken for',
         !on || state.standing < BALL_STANDING || state.moneyPence < BALL_TICKET,
       ),
       back(homeScreenFor(state)),

@@ -1223,6 +1223,8 @@ export const TEXT: Record<string, string[]> = {
     'Four men are taken on at {wages} the week — a Cornishman who has worked deep ground at home, two Irish brothers, and a boy to work the windlass. {name} is an employer of labour now.',
     'You engage a crew: four wages-men at {wages} the week between them, found in their own tucker. They ask when they start and you find yourself saying "Monday", like a man who has done this before.',
     'The word goes round that {name} is taking on hands, and by noon there are a dozen at the office. You pick four and set the rate at {wages} the week.',
+    'Four sign on for {name} at {wages} the week: a sailor off a barque whose whole crew ran for the diggings, two farm boys who have never held a pick, and a grey-bearded Californian who has held little else.',
+    'You take on four hands: a quiet Scot who reads rock the way other men read scripture, a pair of mates from the Slateford alluvial, and a lad whose mother made him promise to keep clear of the powder. {wages} the week between them, and {name} must find it.',
   ],
   'company.crew.fire': [
     'You pay the crew off to the last shilling. They take it without complaint, shoulder their tools and are working for somebody else by Thursday.',

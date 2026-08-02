@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { COTTAGE_PRICE_SMALL, WEDDING_COST } from '../src/engine/constants';
+import { COTTAGE_PRICE_SMALL, COURTSHIP_BURN_DAYS, WEDDING_COST } from '../src/engine/constants';
 import { consentRoll, hearthDay, sleepsAtHearth } from '../src/engine/hearth';
 import { getView } from '../src/engine/menus';
 import { pounds, shillings } from '../src/engine/money';
@@ -107,6 +107,49 @@ describe('Hearth & Kin', () => {
     expect(s.hearth.rung).toBe('estranged');
     expect(s.moneyPence).toBe(money);
     expect(s.health).toBe(health);
+  });
+
+  it('lets an estranged man be introduced again at a later ball, and never to the same person', () => {
+    let s = acquaintance(31);
+    const first = s.hearth.intended!.name;
+    s.hearth.rung = 'estranged';
+    s.hearth.herDecision = true;
+    s.hearth.courtshipBurnedOn = s.day;
+
+    // Inside the burn period the ticket buys a social evening only.
+    s.location = 'fields-town';
+    s.screen = 'ball';
+    s.hearth.nextBallDay = s.day;
+    s = step(s, { type: 'attendBall' }, makeRng(31)).state;
+    expect(s.hearth.rung).toBe('estranged');
+    expect(s.hearth.intended?.name).toBe(first);
+
+    // Once it has passed, a new introduction may be made — to somebody else.
+    s.day = s.hearth.courtshipBurnedOn + COURTSHIP_BURN_DAYS;
+    s.location = 'fields-town';
+    s.screen = 'ball';
+    s.hearth.nextBallDay = s.day;
+    s = step(s, { type: 'attendBall' }, makeRng(32)).state;
+    expect(s.hearth.rung).toBe('acquainted');
+    expect(s.hearth.intended?.name).toBeTruthy();
+    expect(s.hearth.intended?.name).not.toBe(first);
+    expect(s.hearth.intended?.callsKept).toBe(0);
+    expect(s.hearth.herDecision).toBe(false);
+  });
+
+  it('keeps the ball a social evening for a man estranged after his wedding', () => {
+    let s = acquaintance(33);
+    const name = s.hearth.intended!.name;
+    s.hearth.rung = 'estranged';
+    s.hearth.weddingDay = 100;
+    s.hearth.courtshipBurnedOn = s.day;
+    s.day = s.day + COURTSHIP_BURN_DAYS * 2;
+    s.location = 'fields-town';
+    s.screen = 'ball';
+    s.hearth.nextBallDay = s.day;
+    s = step(s, { type: 'attendBall' }, makeRng(33)).state;
+    expect(s.hearth.rung).toBe('estranged');
+    expect(s.hearth.intended?.name).toBe(name);
   });
 
   it('keeps the cottage vault non-negative and rejects invented quantities', () => {
