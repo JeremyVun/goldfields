@@ -223,7 +223,7 @@ export function toTheLogs(
   if (isJP(state)) {
     noBilled(state, log);
     state.onLogs = false;
-    state.fineOwed = 0;
+    state.fineOwedPence = 0;
     checkYearEnd(state);
     return;
   }
@@ -247,7 +247,7 @@ export function toTheLogs(
     addJournal(state, 'Thirty days on the chain gang, breaking rock.', 'bad');
   }
   state.onLogs = false;
-  state.fineOwed = 0;
+  state.fineOwedPence = 0;
   checkYearEnd(state);
 }
 

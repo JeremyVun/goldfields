@@ -75,7 +75,7 @@ export interface Illness {
   severity: number;
   /** Day the affliction began. */
   since: number;
-  /** Days of work lost each day while it lasts (Sandy Blight blinds you). */
+  /** Sandy Blight: a man half-blind loses much of each day's work while it lasts. */
   blinding?: boolean;
 }
 
@@ -292,7 +292,7 @@ export interface Hearth {
   /** Consecutive missed events; two running is an estrangement (§32.3). */
   missedRun: number;
   homeStashPence: number;
-  homeStashGold: number;
+  homeStashCentiOz: number;
   /** Unread mail waiting at a post office (§32.2). */
   letters: Letter[];
   /** Day of the next subscription ball at Slateford; 0 until announced. */
@@ -313,8 +313,7 @@ export interface Hearth {
 
 export interface ShaftState {
   camp: CampId;
-  /** Feet sunk so far. */
-  depth: number;
+  depthFeet: number;
   /** Feet at which this shaft bottoms (20-100, faithful). */
   bottomAt: number;
   bottomed: boolean;
@@ -421,7 +420,7 @@ export interface SoldOut {
 
 export interface Employment {
   job: JobId;
-  /** Day the engagement ends; the player may work on beyond it. */
+  /** Day the engagement was taken up. Kept for the record; nothing reads it. */
   since: number;
   daysWorked: number;
 }
@@ -638,7 +637,7 @@ export interface GameState {
   jailUntilDay: number;
   onLogs: boolean;
   logsSince: number;
-  fineOwed: number;
+  fineOwedPence: number;
 
   items: Record<ItemId, number>;
   provisionDays: number;
@@ -691,8 +690,8 @@ export interface GameState {
   bigJobsDone: number;
   /** A trooper or a victim killed. The assizes hang for it (§24). */
   bloodShed: boolean;
-  /** The reward last printed in the Times, in pence. */
-  rewardPrinted: number;
+  /** The reward last printed in the Times. */
+  rewardPrintedPence: number;
   /** Day the harbourers' free warning was last spent (§23.5). */
   warnedOn: number;
   /** The gaol break is offered once and once only. */

@@ -241,7 +241,7 @@ function migrateHearth(raw: unknown): Hearth {
     nextEvent: h.nextEvent && typeof h.nextEvent === 'object' ? { ...h.nextEvent } as HearthEvent : null,
     letters: Array.isArray(h.letters) ? h.letters.filter((l) => l && typeof l === 'object') : [],
     homeStashPence: Math.max(0, h.homeStashPence ?? 0),
-    homeStashGold: Math.max(0, h.homeStashGold ?? 0),
+    homeStashCentiOz: Math.max(0, h.homeStashCentiOz ?? 0),
     cottagePaid: Math.max(0, h.cottagePaid ?? 0),
   };
 }
@@ -404,7 +404,7 @@ export function deserialise(text: string): GameState | null {
       diggersRobbed: raw.diggersRobbed ?? 0,
       bigJobsDone: raw.bigJobsDone ?? 0,
       bloodShed: raw.bloodShed ?? false,
-      rewardPrinted: raw.rewardPrinted ?? 0,
+      rewardPrintedPence: raw.rewardPrintedPence ?? 0,
       warnedOn: raw.warnedOn ?? 0,
       gaolBreakOffered: raw.gaolBreakOffered ?? false,
       pardonOffered: raw.pardonOffered ?? false,

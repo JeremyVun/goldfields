@@ -61,7 +61,7 @@ export function emptyHearth(): Hearth {
     eventsMissed: 0,
     missedRun: 0,
     homeStashPence: 0,
-    homeStashGold: 0,
+    homeStashCentiOz: 0,
     letters: [],
     nextBallDay: 0,
     courtshipBurnedOn: 0,
@@ -166,7 +166,7 @@ export function createInitialState(seed: number): GameState {
     jailUntilDay: 0,
     onLogs: false,
     logsSince: 0,
-    fineOwed: 0,
+    fineOwedPence: 0,
 
     items: emptyItems(),
     provisionDays: 0,
@@ -204,7 +204,7 @@ export function createInitialState(seed: number): GameState {
     diggersRobbed: 0,
     bigJobsDone: 0,
     bloodShed: false,
-    rewardPrinted: 0,
+    rewardPrintedPence: 0,
     warnedOn: 0,
     gaolBreakOffered: false,
     pardonOffered: false,
@@ -615,7 +615,7 @@ export function estateWorth(state: GameState): number {
 /** The cottage at its deed price, and what is laid by under its floor (§32.2). */
 export function hearthWorth(state: GameState): number {
   const h = state.hearth;
-  return h.cottagePaid + h.homeStashPence + goldValue(h.homeStashGold, state.bankRate);
+  return h.cottagePaid + h.homeStashPence + goldValue(h.homeStashCentiOz, state.bankRate);
 }
 
 /** Everything the player is worth, valued at today's bank rate. */

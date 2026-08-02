@@ -51,7 +51,7 @@ export function hearthView(state: GameState): ScreenView {
   const dated = nextEventLine(state);
   if (dated) body.push('', dated);
   if (h.cottage) {
-    body.push('', `Under the cottage floor: ${formatMoney(h.homeStashPence)} and ${formatGold(h.homeStashGold)}.`);
+    body.push('', `Under the cottage floor: ${formatMoney(h.homeStashPence)} and ${formatGold(h.homeStashCentiOz)}.`);
   }
 
   const menu: MenuItem[] = [];
@@ -92,7 +92,7 @@ export function hearthView(state: GameState): ScreenView {
       item('A', 'Put £10 beneath the floor', { type: 'homeStash', what: 'money', amount: pounds(10) }, 'theft-proof household storage', state.moneyPence < pounds(10)),
       item('B', 'Take £10 from beneath the floor', { type: 'homeUnstash', what: 'money', amount: pounds(10) }, undefined, h.homeStashPence <= 0),
       item('G', 'Put one ounce of gold beneath the floor', { type: 'homeStash', what: 'gold', amount: 100 }, undefined, state.goldCentiOz < 100),
-      item('H', 'Take one ounce of gold from beneath the floor', { type: 'homeUnstash', what: 'gold', amount: 100 }, undefined, h.homeStashGold <= 0),
+      item('H', 'Take one ounce of gold from beneath the floor', { type: 'homeUnstash', what: 'gold', amount: 100 }, undefined, h.homeStashCentiOz <= 0),
     );
   }
   if (hearthVerbsOpen(state) && state.location === 'fields-town') {

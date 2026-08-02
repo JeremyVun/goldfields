@@ -195,8 +195,8 @@ export function escapeChance(state: GameState): number {
 /** The Times prints the notice when it is first offered, and when it rises. */
 export function rewardNotice(state: GameState, log: Log): void {
   const reward = rewardFor(state);
-  if (reward <= state.rewardPrinted) return;
-  state.rewardPrinted = reward;
+  if (reward <= state.rewardPrintedPence) return;
+  state.rewardPrintedPence = reward;
   log.say('bandit.reward', { amount: formatMoney(reward) }, 'bad');
   addJournal(state, `The Crown offers ${formatMoney(reward)} for me, alive or otherwise.`, 'bad');
 }

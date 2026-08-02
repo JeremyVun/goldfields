@@ -49,7 +49,7 @@ export function campView(state: GameState): ScreenView {
   if (!isLicensed(state)) body.push('You have no licence. The troopers hunt diggers here.');
   if (state.shaft && state.shaft.camp === camp) {
     body.push(
-      `Your shaft stands at ${state.shaft.depth} feet${state.shaft.bottomed ? ', bottomed on payable wash' : ''}${state.shaft.timbered ? ', timbered' : ', untimbered'}.`,
+      `Your shaft stands at ${state.shaft.depthFeet} feet${state.shaft.bottomed ? ', bottomed on payable wash' : ''}${state.shaft.timbered ? ', timbered' : ', untimbered'}.`,
     );
   }
   body.push('');

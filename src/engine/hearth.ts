@@ -312,7 +312,7 @@ export function homeStash(state: GameState, log: Log, what: 'money' | 'gold', am
     state.moneyPence -= n; state.hearth.homeStashPence += n;
   } else {
     if (state.goldCentiOz < n) return false;
-    state.goldCentiOz -= n; state.hearth.homeStashGold += n;
+    state.goldCentiOz -= n; state.hearth.homeStashCentiOz += n;
   }
   log.raw(`Put ${what === 'money' ? formatMoney(n) : formatGold(n)} beneath the cottage floor.`, 'neutral');
   return true;
@@ -320,11 +320,11 @@ export function homeStash(state: GameState, log: Log, what: 'money' | 'gold', am
 
 export function homeUnstash(state: GameState, log: Log, what: 'money' | 'gold', amount: number): boolean {
   if (!hearthVerbsOpen(state) || state.location !== 'suze-port' || !Number.isFinite(amount) || amount <= 0) return false;
-  const held = what === 'money' ? state.hearth.homeStashPence : state.hearth.homeStashGold;
+  const held = what === 'money' ? state.hearth.homeStashPence : state.hearth.homeStashCentiOz;
   const n = Math.min(Math.floor(amount), held);
   if (n <= 0) return false;
   if (what === 'money') { state.hearth.homeStashPence -= n; state.moneyPence += n; }
-  else { state.hearth.homeStashGold -= n; state.goldCentiOz += n; }
+  else { state.hearth.homeStashCentiOz -= n; state.goldCentiOz += n; }
   log.raw(`Took up ${what === 'money' ? formatMoney(n) : formatGold(n)} from beneath the floor.`, 'neutral');
   return true;
 }

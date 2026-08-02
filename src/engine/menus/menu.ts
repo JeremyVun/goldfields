@@ -148,7 +148,7 @@ export function menuView(state: GameState): ScreenView {
     row(
       kit,
       'Shaft',
-      `${CAMP_DEFS[state.shaft.camp].name}, ${state.shaft.depth} feet down` +
+      `${CAMP_DEFS[state.shaft.camp].name}, ${state.shaft.depthFeet} feet down` +
         (state.shaft.bottomed ? ', bottomed on payable wash' : ', bottoming somewhere below') +
         `${state.shaft.timbered ? ', timbered' : ', untimbered'}${state.shaft.pumped ? ' and pumped' : ''}.`,
     );

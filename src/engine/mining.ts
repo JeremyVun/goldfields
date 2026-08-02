@@ -414,7 +414,7 @@ export function mineOneDay(
     if (!state.shaft || state.shaft.camp !== camp) {
       state.shaft = {
         camp,
-        depth: 0,
+        depthFeet: 0,
         bottomAt: rng.int(SHAFT_DEPTH.lo, SHAFT_DEPTH.hi),
         bottomed: false,
         payable: false,
@@ -437,10 +437,10 @@ export function mineOneDay(
       );
       if (hasMate(state)) feet = Math.round(feet * 1.4);
       if (state.health < 50) feet = Math.max(1, Math.round(feet * 0.7));
-      shaft.depth += feet;
+      shaft.depthFeet += feet;
       const gone = wearClaim(state, camp, 'shaft');
-      if (shaft.depth >= shaft.bottomAt) {
-        shaft.depth = shaft.bottomAt;
+      if (shaft.depthFeet >= shaft.bottomAt) {
+        shaft.depthFeet = shaft.bottomAt;
         shaft.bottomed = true;
         const payChance =
           camp === 'deep-mountains' ? SHAFT_PAYABLE_CHANCE_DEEP : SHAFT_PAYABLE_CHANCE;
@@ -458,7 +458,7 @@ export function mineOneDay(
           state.shaft = null;
         }
       } else {
-        log.say('mine.shaft.sink', { feet, depth: shaft.depth }, 'neutral');
+        log.say('mine.shaft.sink', { feet, depth: shaft.depthFeet }, 'neutral');
       }
       if (shaftHazards(state, rng, log)) return { stop: state.gameOver ? 'dead' : 'shaftGone', gold: 0 };
       if (gone) {
