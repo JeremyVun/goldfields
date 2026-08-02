@@ -608,6 +608,15 @@ function companyEntryNote(state: GameState): string {
     : `${met} of ${reqs.length} requirements met — see what the registrar still needs`;
 }
 
+/**
+ * The standing phrases end "on the field" because they are written to be read
+ * in a sentence. Under a square captioned ON THE FIELD they would say it twice,
+ * and the second saying costs a whole line of a phone. The caption keeps it.
+ */
+function unlocated(phrase: string): string {
+  return phrase.replace(/ on the field$/, '');
+}
+
 /** How a man would speak of what is left in his sacks, rather than count it. */
 function keepPhrase(days: number): string {
   if (days <= 0) return 'none left';
@@ -661,10 +670,10 @@ export function menuView(state: GameState): ScreenView {
   if (state.briggsBlacklisted) figure("At Bell's", '—', 'blacklisted from the counter', 'bad');
   else if (briggsNext === null) figure("At Bell's", briggsPct, 'top staff standing', 'good');
   else figure("At Bell's", briggsPct, `${state.briggsDays} of ${briggsNext} days served`);
-  figure('On the field', `${standingNumber(state.standing)}/100`, `reckoned ${standingPhrase(state.standing)}`);
+  figure('On the field', `${standingNumber(state.standing)}/100`, `reckoned ${unlocated(standingPhrase(state.standing))}`);
   // The eighth square is the dark one, and stays empty until a man has earned it.
   if (state.notoriety > 0 || state.outlawed) {
-    figure('To the traps', `${standingNumber(state.notoriety)}/100`, notorietyPhrase(state.notoriety), 'bad');
+    figure('To the traps', `${standingNumber(state.notoriety)}/100`, unlocated(notorietyPhrase(state.notoriety)), 'bad');
   }
 
   const panels: ViewPanel[] = [];
