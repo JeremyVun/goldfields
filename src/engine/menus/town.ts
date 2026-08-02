@@ -73,6 +73,14 @@ export function ftownLodgingsView(state: GameState): ScreenView {
     body: [
       'Beds and dry ground are dear wherever the rush has raised a street.',
       'The inn and stable include a plain evening meal; tent ground does not.',
+      ...(state.hearth.cottage
+        ? []
+        : [
+            '',
+            'No dwelling-house is sold in Slateford at any price. A man who wants',
+            'a roof of his own takes the cottage at Port Gannet, and takes it as',
+            'a married man.',
+          ]),
     ],
     menu: [
       item('1', 'Inn dormitory — 10s a night', { type: 'setLodging', kind: 'inn' }, 'flea-ridden stretchers, but safe enough'),

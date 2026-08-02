@@ -161,6 +161,15 @@ export function estateView(state: GameState): ScreenView {
     'bought with clean money, and pays in something other than gold.',
     '',
   ];
+  if (!state.hearth.cottage) {
+    body.push(
+      'No agent in this district will sell a single man a dwelling-house. The',
+      'one house to be had is the cottage at Port Gannet, bought by a married',
+      'man, and the acquaintance that leads to it begins at the subscription',
+      'balls in Slateford.',
+      '',
+    );
+  }
   const deeds = estateDeeds(state);
   if (deeds.length) {
     body.push('YOUR DEEDS');

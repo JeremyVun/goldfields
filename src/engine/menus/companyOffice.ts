@@ -2,6 +2,7 @@
 
 import {
   canFloat,
+  developWeeksNeeded,
   floatRequirements,
   leaseIsWet,
   leaseWord,
@@ -23,8 +24,53 @@ import {
 import { formatGold, formatMoney, pounds, shillings } from '../money';
 import { companyWorth } from '../state';
 import { formatDate } from '../time';
-import type { AsideRow, GameState, MenuItem, ScreenView } from '../types';
-import { item, MENU_LETTERS, back } from './shared';
+import type { AsideRow, Company, Crew, GameState, Lease, MenuItem, ScreenView } from '../types';
+import { item, MENU_LETTERS, back, warned } from './shared';
+
+function developProgress(lease: Lease): string {
+  return `${lease.progressCrewWeeks} of ${developWeeksNeeded(lease)} crew-weeks`;
+}
+
+/** The verb a crew put to develop this lease would answer to. */
+function developVerb(lease: Lease): string {
+  if (lease.flooded) return 'de-water';
+  return lease.plan === 'sink' ? 'sink' : lease.plan === 'drive' ? 'drive' : 'develop';
+}
+
+/**
+ * What stands between a crew and any development work on this lease. A shut
+ * row cannot be highlighted, so the reason travels in the alert as well.
+ */
+function developBar(lease: Lease): { alert: string; note: string } | null {
+  if (lease.flooded && !lease.pump) {
+    return { alert: 'wants a pump', note: 'a pumping plant must be installed before the water can be got out' };
+  }
+  if (!lease.flooded && leaseIsWet(lease) && !lease.pump) {
+    return { alert: 'wants a pump', note: 'wet ground: install a pumping plant before it can be worked' };
+  }
+  if (!lease.flooded && !lease.plan) {
+    return { alert: 'no work ordered', note: 'choose sinking or driving under Manage the mines first' };
+  }
+  return null;
+}
+
+/** Where a crew stands this week, as the manager would report it to the books. */
+function crewWord(c: Company, crew: Crew): { text: string; idle: boolean } {
+  const working = (text: string) => ({ text, idle: false });
+  const idle = (text: string) => ({ text, idle: true });
+  if (crew.task === 'prospect') return working('prospecting the ranges');
+  const lease = crew.lease !== undefined ? c.leases[crew.lease] : c.leases[0];
+  if (!lease) return idle('no ground to work');
+  if (crew.task === 'mine') return working(`at the reef, ${lease.name}`);
+  if (lease.flooded) {
+    return lease.pump
+      ? working(`de-watering ${lease.name}, ${developProgress(lease)}`)
+      : idle(`idle at ${lease.name}, wanting a pump`);
+  }
+  if (leaseIsWet(lease) && !lease.pump) return idle(`idle at ${lease.name}, wanting a pump`);
+  if (!lease.plan) return idle(`idle at ${lease.name}, no work ordered`);
+  return working(`${lease.plan === 'sink' ? 'sinking' : 'driving'} ${lease.name}, ${developProgress(lease)}`);
+}
 
 export function companyEntryNote(state: GameState): string {
   if (state.company) return 'treasury, scrip, crews and leases';
@@ -81,6 +127,7 @@ export function companyView(state: GameState): ScreenView {
     const menu: MenuItem[] = [];
     c.crews.forEach((crew, crewIndex) => {
       c.leases.forEach((lease, leaseIndex) => {
+        const bar = developBar(lease);
         menu.push(
           item(
             MENU_LETTERS[menu.length],
@@ -89,12 +136,16 @@ export function companyView(state: GameState): ScreenView {
             leaseWord(lease),
             crew.task === 'mine' && crew.lease === leaseIndex,
           ),
-          item(
+          warned(
             MENU_LETTERS[menu.length + 1],
-            `No. ${crewIndex + 1} crew: develop ${lease.name}`,
+            `No. ${crewIndex + 1} crew: ${developVerb(lease)} ${lease.name}`,
             { type: 'setCrewTask', index: crewIndex, task: 'develop', lease: leaseIndex },
-            lease.plan ? `${lease.plan}ing is ordered; each crew-week advances it` : 'choose sinking or driving under Manage the mines first',
-            crew.task === 'develop' && crew.lease === leaseIndex,
+            bar?.alert,
+            bar?.note
+              ?? (lease.flooded
+                ? `the pump is set; ${developProgress(lease)} to clear her`
+                : `${lease.plan}ing is ordered — ${developProgress(lease)} done, and each crew-week advances it`),
+            !!bar || (crew.task === 'develop' && crew.lease === leaseIndex),
           ),
         );
       });
@@ -114,17 +165,53 @@ export function companyView(state: GameState): ScreenView {
       title: 'THE CREWS',
       subtitle: c.name,
       body: c.crews.length
-        ? ['Assign each crew to a mine, its development, or the country beyond the pegs.']
-        : ['There are no men on the books. Take on crews at the workings in Blackcap Ranges.'],
+        ? [
+            'Every crew draws its wage, at work or not. A mining crew breaks stone',
+            'at a bottomed level; a developing crew sinks, drives or pumps out the',
+            'one mine it is put to, and wins nothing while it does.',
+            '',
+            'Development must be ordered first under Manage the mines: until sinking',
+            'or driving is set there, no crew can be put to develop.',
+          ]
+        : [
+            'There are no men on the books. Crews are taken on at the workings',
+            'in the Blackcap Ranges, and nowhere else.',
+          ],
       menu,
     };
   }
 
   if (state.screen === 'company-ground') {
-    const body = c.leases.flatMap((lease, i) => [
-      `${i + 1}. ${leaseWord(lease)}.`,
-      `   ${lease.pump ? 'Pumping plant installed' : 'No pumping plant'}; ${lease.timbered ? 'timbered throughout' : 'no standing timber-work'}${lease.plan ? `; ordered to ${lease.plan}` : ''}.`,
-    ]);
+    const developing = (leaseIndex: number) =>
+      c.crews.some((k) => k.task === 'develop' && (k.lease ?? 0) === leaseIndex);
+    const body = c.leases.length
+      ? [
+          'Ground is taken up by prospecting crews and worked level by level.',
+          'What is given here is the order only: a crew must be put to develop',
+          'the mine under Assign the crews before a foot of it is sunk or driven.',
+          '',
+          ...c.leases.flatMap((lease, i) => {
+            const lines = [
+              `${i + 1}. ${leaseWord(lease)}.`,
+              `   ${lease.pump ? 'Pumping plant installed' : 'No pumping plant'}; ${lease.timbered ? 'timbered throughout' : 'no standing timber-work'}.`,
+            ];
+            if (lease.flooded) {
+              lines.push(
+                lease.pump
+                  ? `   Full of water: a developing crew pumps her out, ${developProgress(lease)}.`
+                  : '   Full of water, and no plant to get it out.',
+              );
+            } else if (lease.plan) {
+              lines.push(
+                `   Ordered to ${lease.plan}: ${developProgress(lease)} done${developing(i) ? '' : ', and no crew is put to it'}.`,
+              );
+            } else {
+              lines.push('   No development ordered.');
+            }
+            return lines;
+          }),
+        ]
+      : ['The company holds no ground. Put a crew to prospect the ranges for it.'];
     const menu: MenuItem[] = [];
     c.leases.forEach((lease, i) => {
       const prefix = c.leases.length > 1 ? `${i + 1}. ` : '';
@@ -193,12 +280,10 @@ export function companyView(state: GameState): ScreenView {
   if (c.crews.length === 0) {
     rows.push({ label: 'None at work', value: 'nothing is got out of it', tone: 'bad' });
   } else {
-    c.crews.forEach((k, i) =>
-      rows.push({
-        label: `No. ${i + 1}`,
-        value: k.task === 'mine' ? 'at the reef' : 'prospecting the ranges',
-      }),
-    );
+    c.crews.forEach((k, i) => {
+      const word = crewWord(c, k);
+      rows.push({ label: `No. ${i + 1}`, value: word.text, tone: word.idle ? 'bad' : undefined });
+    });
   }
   if (c.leases.length) {
     rows.push({ label: 'The ground', value: '', heading: true });
@@ -206,6 +291,11 @@ export function companyView(state: GameState): ScreenView {
   }
 
   const body: string[] = [`Founded on day ${c.foundedOn}.`];
+  if (c.crews.length === 0) {
+    body.push('There are no men on the books. Crews are taken on at the', 'workings in the Blackcap Ranges.');
+  } else if (c.leases.length === 0) {
+    body.push('The company holds no ground. A prospecting crew must find', 'it before a shovel can be put in.');
+  }
   const trail = c.weekProfitPence.slice(-6);
   if (trail.length) {
     // A run of sums set as a sentence wraps in the middle of a figure and can
@@ -231,8 +321,8 @@ export function companyView(state: GameState): ScreenView {
     const supplied = (c.supplyContractUntilDay ?? 0) >= state.day;
     menu.push(item('Q', supplied ? `Supplies contracted through day ${c.supplyContractUntilDay}` : 'Arrange a four-week supply contract — £4', { type: 'companySupplyContract' }, supplied ? 'the present contract must run its course before another is made' : 'costs £4 now; trims crew wages and weekly operating costs by ten per cent for 28 days', supplied || state.moneyPence < pounds(4)));
   }
-  menu.push(item('1', 'Assign the crews', { type: 'goto', screen: 'company-crews' }, 'put each crew to a named mine, development, or prospecting', c.crews.length === 0));
-  menu.push(item('2', 'Manage the mines', { type: 'goto', screen: 'company-ground' }, 'sink deeper, drive a fresh face, install plant, or abandon ground'));
+  menu.push(item('1', 'Assign the crews', { type: 'goto', screen: 'company-crews' }, c.crews.length === 0 ? 'no men on the books; they are taken on at the workings' : 'put each crew to mining a named mine, to its development, or to prospecting', c.crews.length === 0));
+  menu.push(item('2', 'Manage the mines', { type: 'goto', screen: 'company-ground' }, 'order sinking or driving, install plant, or abandon ground; a crew must then be put to the work'));
   menu.push(item('3', 'Plant and driving policy', { type: 'goto', screen: 'company-policy' }, 'risk, output and the company stamping battery'));
   menu.push(
     item(

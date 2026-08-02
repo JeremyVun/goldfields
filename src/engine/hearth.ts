@@ -1,6 +1,7 @@
 /** Hearth & kin — courtship, dated pulls, home and letters (§32). */
 
 import {
+  BALL_NOTICE_DAYS,
   BALL_STANDING,
   BALL_TICKET,
   CALL_GAP_DAYS,
@@ -122,6 +123,12 @@ export function hearthDay(state: GameState, _rng: RNG, log: Log): void {
 
 export function ballTonight(state: GameState): boolean {
   return state.location === 'fields-town' && state.day === state.hearth.nextBallDay;
+}
+
+/** The stewards' notice runs in the Times for a fortnight before the night (§32.1). */
+export function ballAnnounced(state: GameState): boolean {
+  const day = state.hearth.nextBallDay;
+  return day >= state.day && day - state.day <= BALL_NOTICE_DAYS;
 }
 
 export function canPayAddresses(state: GameState): boolean {

@@ -160,6 +160,14 @@ export function suzeLodgingsView(state: GameState): ScreenView {
       'Lodgings are scarce. There were no beds at the inn for us, at least none',
       'that we could afford.',
       'The inn and stable include a plain evening meal; tent ground does not.',
+      ...(state.hearth.cottage
+        ? []
+        : [
+            '',
+            'Every bed in the port is let by the night. The one house a man may',
+            'own here is the cottage a married man buys, and that road begins at',
+            'a Slateford subscription ball.',
+          ]),
     ],
     menu: [
       item('1', 'Inn dormitory — 10s a night', { type: 'setLodging', kind: 'inn' }, 'flea-ridden stretchers, but safe enough'),

@@ -1,6 +1,7 @@
 import { AGITATION_STORIES, CAMP_TALK, GAZETTE_ADS, GAZETTE_STORIES } from '../content/library';
 import { companyReport } from './company';
-import { AFTERMATH_DAY, CAMP_DEFS, FLUSH_DAYS, MINERS_RIGHT_COST, STOCKADE_CAMP } from './constants';
+import { AFTERMATH_DAY, BALL_TICKET, CAMP_DEFS, FLUSH_DAYS, MINERS_RIGHT_COST, STOCKADE_CAMP } from './constants';
+import { ballAnnounced } from './hearth';
 import { rateTrendPhrase } from './market';
 import { formatMoney } from './money';
 import { inAftermath, rewardFor } from './state';
@@ -111,6 +112,13 @@ export function gazetteFor(state: GameState): string[] {
   if (state.secret && !state.secret.chased) {
     lines.push(
       `CORRESPONDENCE. A correspondent writes of a working somewhere beyond ${CAMP_DEFS[state.secret.fromCamp].name}, kept quiet by a handful of men. We print the letter as we received it, and vouch for nothing.`,
+    );
+  }
+
+  if (ballAnnounced(state)) {
+    const night = state.hearth.nextBallDay;
+    lines.push(
+      `THE SUBSCRIPTION BALL. The stewards give notice that a subscription ball will be held at the Assembly Room, Slateford, on ${formatDate(night)}${night === state.day ? ', that is to say this evening' : ''}. Tickets ${formatMoney(BALL_TICKET)}, to be had at the door. The stewards will make no introduction for a man whose name is not known on the field.`,
     );
   }
 

@@ -11,6 +11,7 @@ import {
   WEDDING_COST,
 } from '../constants';
 import {
+  ballAnnounced,
   ballTonight,
   canPayAddresses,
   canReconcile,
@@ -29,6 +30,8 @@ export function hearthHubItems(state: GameState): MenuItem[] {
   const out: MenuItem[] = [];
   if (ballTonight(state)) {
     out.push(item('U', 'The subscription ball tonight', { type: 'goto', screen: 'ball' }, `ticket ${formatMoney(BALL_TICKET)}; introductions begin at standing ${BALL_STANDING}`, state.standing < BALL_STANDING || state.moneyPence < BALL_TICKET));
+  } else if (ballAnnounced(state)) {
+    out.push(item('U', `The subscription ball, ${formatDate(state.hearth.nextBallDay)}`, { type: 'goto', screen: 'ball' }, `at the Assembly Room in Slateford; ticket ${formatMoney(BALL_TICKET)}, and introductions begin at standing ${BALL_STANDING}`));
   }
   if (state.hearth.intended) {
     out.push(item('Y', state.hearth.cottage ? 'Your hearth in Port Gannet' : `Your understanding with ${state.hearth.intended.name}`, { type: 'goto', screen: 'hearth' }, nextEventLine(state) ?? hearthResumeLine(state) ?? undefined));
@@ -112,18 +115,41 @@ export function hearthView(state: GameState): ScreenView {
 
 export function ballView(state: GameState): ScreenView {
   const on = ballTonight(state);
+  const night = state.hearth.nextBallDay > 0 ? state.hearth.nextBallDay : state.day;
+  const received = state.standing < BALL_STANDING
+    ? `At ${Math.floor(state.standing)}/100 standing, no one is ready to make the introduction.`
+    : 'Your name is known well enough to be received.';
+  const body = on
+    ? [
+        'The Assembly Room is hung with flags and gum leaves. Storekeepers, nurses,',
+        'clerks and diggers have put off the dust for one evening, though not their opinions.',
+        received,
+      ]
+    : [
+        'The stewards have taken the Assembly Room at Slateford for the night',
+        `of ${formatDate(night)}. Tickets are ${formatMoney(BALL_TICKET)} at the door, and a man must be in`,
+        `the town on the night; no introduction is made under ${BALL_STANDING}/100 standing.`,
+        '',
+        received,
+      ];
   return {
     screen: 'ball',
     title: 'THE SUBSCRIPTION BALL',
-    subtitle: formatDate(state.day),
-    body: [
-      'The Assembly Room is hung with flags and gum leaves. Storekeepers, nurses,',
-      'clerks and diggers have put off the dust for one evening, though not their opinions.',
-      state.standing < BALL_STANDING ? `At ${Math.floor(state.standing)}/100 standing, no one is ready to make the introduction.` : 'Your name is known well enough to be received.',
-    ],
+    subtitle: formatDate(night),
+    body,
     menu: [
-      item('1', `Attend — ${formatMoney(BALL_TICKET)}`, { type: 'attendBall' }, state.hearth.intended ? 'a social evening; no second prospective partner is rolled' : 'an introduction may come of the evening', !on || state.standing < BALL_STANDING || state.moneyPence < BALL_TICKET),
-      back('ftown'),
+      item(
+        '1',
+        on ? `Attend — ${formatMoney(BALL_TICKET)}` : `Attend on ${formatDate(night)} — ${formatMoney(BALL_TICKET)}`,
+        { type: 'attendBall' },
+        !on
+          ? 'the doors are not open yet; be in Slateford on the night'
+          : state.hearth.intended
+            ? 'a social evening; no second prospective partner is rolled'
+            : 'an introduction may come of the evening',
+        !on || state.standing < BALL_STANDING || state.moneyPence < BALL_TICKET,
+      ),
+      back(homeScreenFor(state)),
     ],
   };
 }

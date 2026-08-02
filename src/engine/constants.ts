@@ -985,6 +985,8 @@ export const BALL_STANDING = 25;
 export const SHAMROCK_MEETING_STANDING = 40;
 /** Balls a year, announced in the Times. */
 export const BALLS_PER_YEAR = 3;
+/** How long before the night the stewards' notice runs in the Times (§32.1). */
+export const BALL_NOTICE_DAYS = 12;
 /** Evening calls at Port Gannet: the window, and how far apart they come. */
 export const CALL_WINDOW_DAYS = 5;
 export const CALL_GAP_DAYS = 24;

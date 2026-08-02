@@ -4,6 +4,8 @@ import { consentRoll, hearthDay, sleepsAtHearth } from '../src/engine/hearth';
 import { getView } from '../src/engine/menus';
 import { pounds, shillings } from '../src/engine/money';
 import { Log } from '../src/engine/narrate';
+import { gazetteFor } from '../src/engine/news';
+import { formatDate } from '../src/engine/time';
 import { step } from '../src/engine/reduce';
 import { makeRng } from '../src/engine/rng';
 import { createInitialState } from '../src/engine/state';
@@ -119,5 +121,86 @@ describe('Hearth & Kin', () => {
     expect(s.hearth.homeStashPence).toBe(0);
     s = step(s, { type: 'homeUnstash', what: 'money', amount: pounds(50) }, makeRng(17)).state;
     expect(s.hearth.homeStashPence).toBe(0);
+  });
+});
+
+/** A man standing in Slateford a few days before the first ball of the year. */
+function beforeTheBall(day = 70): GameState {
+  const s = createInitialState(21);
+  s.location = 'fields-town';
+  s.day = day;
+  hearthDay(s, makeRng(21), new Log(makeRng(21)));
+  return s;
+}
+
+describe('the subscription ball is announced before the night (§32.1)', () => {
+  it('runs the stewards’ notice in the Times, with the date of the ball', () => {
+    const s = beforeTheBall();
+    expect(s.hearth.nextBallDay).toBe(75);
+    const paper = gazetteFor(s).join('\n');
+    expect(paper).toMatch(/SUBSCRIPTION BALL/);
+    expect(paper).toContain(formatDate(75));
+    expect(paper).toMatch(/Assembly Room/);
+  });
+
+  it('keeps the notice out of the paper when no ball is near', () => {
+    const s = beforeTheBall(120);
+    expect(s.hearth.nextBallDay).toBe(185);
+    expect(gazetteFor(s).join('\n')).not.toMatch(/SUBSCRIPTION BALL/);
+  });
+
+  it('dates the ball in the Slateford hub before the night, and calls it tonight on the night', () => {
+    const s = beforeTheBall();
+    s.screen = 'ftown';
+    const upcoming = getView(s).menu.find((m) => m.key === 'U')!;
+    expect(upcoming.label).toBe(`The subscription ball, ${formatDate(75)}`);
+    expect(upcoming.action).toEqual({ type: 'goto', screen: 'ball' });
+    expect(upcoming.disabled).toBeFalsy();
+
+    s.day = 75;
+    const tonight = getView(s).menu.find((m) => m.key === 'U')!;
+    expect(tonight.label).toMatch(/tonight/);
+  });
+
+  it('shows the ball screen ahead of the night, with the date and the door kept shut', () => {
+    const s = beforeTheBall();
+    s.screen = 'ball';
+    const view = getView(s);
+    const body = view.body.join('\n');
+    expect(view.subtitle).toBe(formatDate(75));
+    expect(body).toContain(formatDate(75));
+    expect(body).toMatch(/Assembly Room/);
+    expect(body).toMatch(/standing/);
+    expect(view.menu[0].action).toEqual({ type: 'attendBall' });
+    expect(view.menu[0].disabled).toBe(true);
+
+    s.day = 75;
+    s.standing = 50;
+    s.moneyPence = pounds(5);
+    expect(getView(s).menu[0].disabled).toBe(false);
+  });
+});
+
+describe('the road to a house of one’s own is signposted (§32.1)', () => {
+  const trail = /cottage at Port Gannet|cottage a married man buys/;
+
+  it('names the cottage and the balls on the property screen', () => {
+    const s = createInitialState(22);
+    s.location = 'fields-town';
+    s.screen = 'estate';
+    const body = getView(s).body.join(' ');
+    expect(body).toMatch(trail);
+    expect(body).toMatch(/subscription\s+balls/);
+  });
+
+  it('names it at both sets of lodgings, where a man goes looking for a bed', () => {
+    const s = createInitialState(23);
+    s.location = 'suze-port';
+    s.screen = 'suze-lodgings';
+    expect(getView(s).body.join(' ')).toMatch(trail);
+
+    s.location = 'fields-town';
+    s.screen = 'ftown-lodgings';
+    expect(getView(s).body.join(' ')).toMatch(trail);
   });
 });

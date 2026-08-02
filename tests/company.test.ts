@@ -614,6 +614,92 @@ describe('the company in the kitty', () => {
   });
 });
 
+describe('the books and the crew orders read alike', () => {
+  it('reports each crew at its own work, and never a developing crew as prospecting', () => {
+    const { state } = floated(140, 12);
+    const c = state.company!;
+    c.leases = [leaseAt(120)];
+    c.leases[0].name = 'the North Star';
+    c.leases[0].plan = 'sink';
+    c.leases[0].progressCrewWeeks = 1;
+    c.crews = [{ task: 'develop', lease: 0 }, { task: 'mine', lease: 0 }, { task: 'prospect' }];
+    state.screen = 'company';
+
+    const rows = getView(state).aside!.rows;
+    const valueOf = (label: string) => rows.find((r) => r.label === label)!;
+    // Sinking a level 1 mine wants COMPANY_SINK_BASE_WEEKS + floor(level/2) = 2.
+    expect(valueOf('No. 1').value).toBe('sinking the North Star, 1 of 2 crew-weeks');
+    expect(valueOf('No. 1').value).not.toMatch(/prospecting/);
+    expect(valueOf('No. 2').value).toMatch(/^at the reef, the North Star/);
+    expect(valueOf('No. 3').value).toBe('prospecting the ranges');
+  });
+
+  it('marks a developing crew idle when the mine has no work ordered', () => {
+    const { state } = floated(142, 12);
+    const c = state.company!;
+    c.leases = [leaseAt(120)];
+    c.crews = [{ task: 'develop', lease: 0 }];
+    state.screen = 'company';
+    const row = getView(state).aside!.rows.find((r) => r.label === 'No. 1')!;
+    expect(row.value).toMatch(/idle at the Test Mine/);
+    expect(row.tone).toBe('bad');
+  });
+
+  it('refuses a develop order on ground with no plan, and offers de-watering where a pump is set', () => {
+    const { state } = floated(141, 12);
+    const c = state.company!;
+    c.crews = [{ task: 'mine', lease: 0 }];
+    c.leases = [leaseAt(120)];
+    state.screen = 'company-crews';
+    const developRow = () => {
+      const menu = getView(state).menu;
+      expect(menu[0].label).toMatch(/crew: mine the Test Mine/);
+      return menu[1];
+    };
+
+    expect(developRow().label).toMatch(/crew: develop the Test Mine/);
+    expect(developRow().disabled).toBe(true);
+    expect(developRow().note).toMatch(/Manage the mines/);
+    // A shut row cannot be highlighted, so its reason must be in the alert.
+    expect(developRow().alert).toBe('no work ordered');
+
+    c.leases[0].plan = 'sink';
+    expect(developRow().label).toMatch(/crew: sink the Test Mine/);
+    expect(developRow().disabled).toBeFalsy();
+    expect(developRow().note).toMatch(/0 of 2 crew-weeks/);
+
+    c.leases[0].plan = 'drive';
+    expect(developRow().label).toMatch(/crew: drive the Test Mine/);
+    expect(developRow().disabled).toBeFalsy();
+
+    c.leases[0].plan = null;
+    c.leases[0].flooded = true;
+    expect(developRow().disabled).toBe(true);
+    expect(developRow().note).toMatch(/pumping plant/);
+    expect(developRow().alert).toBe('wants a pump');
+
+    c.leases[0].pump = true;
+    expect(developRow().label).toMatch(/crew: de-water the Test Mine/);
+    expect(developRow().disabled).toBeFalsy();
+  });
+
+  it('tells the mines screen what is ordered, how far it has got, and whether a crew is on it', () => {
+    const { state } = floated(143, 12);
+    const c = state.company!;
+    c.leases = [leaseAt(120)];
+    c.crews = [{ task: 'mine', lease: 0 }];
+    state.screen = 'company-ground';
+    expect(getView(state).body.join('\n')).toMatch(/No development ordered/);
+
+    c.leases[0].plan = 'sink';
+    c.leases[0].progressCrewWeeks = 1;
+    expect(getView(state).body.join('\n')).toMatch(/Ordered to sink: 1 of 2 crew-weeks done, and no crew is put to it/);
+
+    c.crews[0] = { task: 'develop', lease: 0 };
+    expect(getView(state).body.join('\n')).not.toMatch(/no crew is put to it/);
+  });
+});
+
 describe('running a company through the reducer', () => {
   it('floats, hires, works the weeks and pays a dividend, all by menu actions', () => {
     const { state } = promoter(111);

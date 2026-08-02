@@ -323,6 +323,12 @@ export function setCrewTask(
 // Development, plant and policy (§19.4).
 // ---------------------------------------------------------------------------
 
+/** Crew-weeks an ordered plan wants before it comes to anything. */
+export function developWeeksNeeded(lease: Lease): number {
+  if (lease.flooded) return COMPANY_DEWATER_WEEKS;
+  return lease.plan === 'sink' ? COMPANY_SINK_BASE_WEEKS + Math.floor(lease.level / 2) : 1;
+}
+
 /** What the developing crews are to do with a mine whose face has cut out. */
 export function setLeasePlan(state: GameState, log: Log, lease: number, plan: LeasePlan): boolean {
   const c = state.company;
@@ -609,9 +615,7 @@ export function companyWeek(state: GameState, rng: RNG, log: Log): void {
       c.treasuryPence -= cost;
       development += cost;
       l.progressCrewWeeks += 1;
-      const needed =
-        l.plan === 'sink' ? COMPANY_SINK_BASE_WEEKS + Math.floor(l.level / 2) : 1;
-      if (l.progressCrewWeeks >= needed) {
+      if (l.progressCrewWeeks >= developWeeksNeeded(l)) {
         l.progressCrewWeeks = 0;
         if (l.plan === 'sink') {
           l.level += 1;
