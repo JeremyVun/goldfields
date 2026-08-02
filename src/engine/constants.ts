@@ -829,16 +829,8 @@ export const SHAMROCK_SHAKEDOWN_AGITATION = 70;
 export const STORE_PRICE = pounds(120);
 export const STORE_STOCK_PRICE = pounds(30);
 export const STORE_STANDING = 30;
-/**
- * A week behind your own counter, on ground still worth digging. §26 wrote
- * this at £1, which is a tenth of what the store costs to open every year and
- * flatly contradicts the Journal's own thesis that the suppliers were "more
- * likely to make a fortune than the diggers" (§31.5). At £8 a week — against
- * the £2-£3 a careful digger clears after his mate, his licence and the price
- * of flour — the storekeeper beats the average digger, loses to the lucky one,
- * and still waits half a year to see his £150 back. Tuned against §29's
- * notable-bot median (§31.5 is the target this knob exists to hit).
- */
+/** A week behind your own counter, on ground still worth digging. §26 records
+ *  why £8 and not £1; tuned against §29's notable-bot median toward §31.5. */
 export const STORE_WEEK_BASE = pounds(8);
 export const STORE_RUSH_FACTOR = 3;
 export const STORE_GOUGE_FACTOR = 2;

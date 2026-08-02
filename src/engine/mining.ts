@@ -200,6 +200,7 @@ export interface SeasonEffect {
 export function seasonEffect(state: GameState, method: MiningMethod): SeasonEffect {
   const s = season(state.day);
   if (method === 'pan' || method === 'cradle') {
+    // The creeks dry up in summer (faithful).
     if (s === 'summer') return { factor: 0.7, note: 'the creeks are low, and washing goes slow' };
     if (s === 'winter') return { factor: 1.1, note: 'the creek is running well with the winter' };
     return { factor: 1 };

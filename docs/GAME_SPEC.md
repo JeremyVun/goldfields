@@ -930,8 +930,12 @@ Each purchase: journal entry, newspaper story, and the deed named in the kitty.
   discreet. Liability: brawl damages £1–£5 some weeks; if agitation > 70 the troopers
   lean on licensed houses (one shakedown event, £5 or +5 agitation).
 - **A store of your own** — **£120 + £30 opening stock**, standing ≥ 30, at any camp
-  (one store). The rush economy inverts: weekly profit `£1 × campFreshness × (rush at
+  (one store). The rush economy inverts: weekly profit `£8 × campFreshness × (rush at
   camp ? 3 : 1)` — when the rush hits *your* camp, you are the one selling £16 pans.
+  (The first draft said £1 — a tenth of what the store costs to open every year, and a
+  flat contradiction of §31.5's thesis that the suppliers out-earned the diggers. At £8
+  a week the storekeeper beats the average digger, loses to the lucky one, and still
+  waits half a year to see his £150 back; tuned against §29's notable-bot median.)
   New verb `setStorePolicy`: **fair dealing** (profit ×1, +0.5 standing/week, the camp's
   night-theft rolls against *you* halved — the field protects its honest man) or
   **gouge** (profit ×2, −0.5 standing/week, claim-jump and theft rolls against you

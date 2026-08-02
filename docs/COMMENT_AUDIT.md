@@ -46,23 +46,29 @@ not edit them.
 
 `src/engine/constants.ts` has 207 comment starts in 1,037 lines. Its comments
 mix units and invariants with source claims, balance history, and long design
-arguments. Across `src/` and `tests/`, 24 comment lines use “faithful” and 419
-refer to a numbered game-spec section.
+arguments. Across `src/` and `tests/`, 42 comment lines use “faithful” and about
+420 refer to a numbered game-spec section.
 
-The section references provide useful traceability. The word “faithful” does
-not: it usually names no source, page, edition, or exact rule. Numeric prose is
-also prone to drift, as the depletion comment demonstrated. The long store
-income rationale near `STORE_INCOME_BASE` is design history better kept in the
-spec or a tuning note.
+The section references provide useful traceability. So does “faithful”, which a
+first draft of this audit wrongly proposed removing: the header of
+`constants.ts` defines it — values lifted from The New Chum's Companion or the
+Teacher's Guide, as opposed to invented values tuned by the bot harness. The
+tag's working meaning is *this is a historical fact, not a free tuning knob*,
+and it is a guardrail for every future balance pass. Keep it. Numeric prose is
+still prone to drift, as the depletion comment demonstrated, and the long store
+income rationale that sat on `STORE_WEEK_BASE` was reconciled into §26 of the
+spec (the spec had said £1 while the code used £8).
 
 Next pass:
 
 1. Treat the constant as the sole numeric truth. Comments should state units,
    scope, or a non-obvious relationship, not repeat its value in prose.
-2. Replace each historical claim worth preserving with a precise citation in a
-   provenance section of `docs/GAME_SPEC.md`; otherwise remove “faithful”.
-3. Move tuning narratives and benchmark results out of `constants.ts`. Keep a
-   short link beside the constant.
+2. Keep the “faithful” tags and the legend at the head of `constants.ts` that
+   defines them. Do not delete a “faithful” tag when trimming an adjacent
+   comment.
+3. Move tuning narratives and benchmark results out of `constants.ts` into the
+   spec, reconciling any spec/code contradiction rather than relocating it.
+   Keep a short pointer beside the constant.
 4. Check prose claims against their constants and balance assertions before
    deleting anything in bulk.
 
@@ -155,3 +161,23 @@ The next session should start with `constants.ts` and the “faithful” claims,
 then review `types.ts` with save migration, then run the balance harness before
 editing bot comments. The reducer/menu and UI passes are larger refactors and
 should not be mixed with a broad deletion sweep.
+
+## Corrections from the adversarial review (2026-08-02)
+
+- The first pass ranked hotspots by raw comment starts, which surfaces
+  declaration files (`constants.ts`, `types.ts`) where doc comments are the
+  most legitimate form. The better proxy for *structure that needs uplift* is
+  comments inside function bodies of logic files. On that metric:
+  `src/ui/app.ts` (64), `src/engine/reduce.ts` (55), `src/engine/menus.ts`
+  (53), `src/engine/bandit.ts` (28), and — missed entirely by the first pass —
+  `src/engine/daily.ts` (26 in 228 lines, the highest density in the engine,
+  including a real double-execution trap around the detention callback).
+- A third comment category exists alongside “delete” and “refactor, then
+  delete”: design-decision records (why a menu row carries the season note,
+  why the company books are ruled off in columns). No refactor obsoletes
+  these; total comment count is not a KPI.
+- The first pass's own edits deleted one “faithful” provenance tag in
+  `mining.ts` (the summer creek factor) while trimming narration; it has been
+  restored. Bot/benchmark volatility (hotspot 3) was overstated: sampling
+  found the balance-test comments state design targets beside the assertions
+  that encode them, which is the good kind.
