@@ -1516,6 +1516,46 @@ body {
   .gf-overlay-panel--menu .gf-overlay-hint {
     display: none;
   }
+
+  /*
+   * The date and place go on a line of their own beneath the title, with the
+   * whole width of the panel to run in. Beside the ✕ they had forty fewer
+   * pixels than they needed and took two lines for want of them — and a
+   * sticky head is paid for twice, once in its own height and once in what it
+   * pushes off the foot of the page.
+   *
+   * `display: contents` lifts the title and the date out of their wrapper and
+   * into the row itself, so the date can be given a line without the markup
+   * being different on a phone than on a desk.
+   *
+   * The menu alone. The map and the journal have no such pressure on their
+   * heads, and lifting the wrapper out from under a title with no date after
+   * it only frees the ✕ to wrap onto a line of its own and land on the title.
+   */
+  .gf-overlay-panel--menu .gf-overlay-titlewrap {
+    display: contents;
+  }
+  .gf-overlay-panel--menu .gf-overlay-titlerow {
+    flex-wrap: wrap;
+    /* The gap is there to hold the title and the date apart on one line. Once
+       they are on two, it is only air above the fold. */
+    row-gap: 0;
+  }
+  /*
+   * The ✕ is a tap target and so stands taller than the title it sits beside.
+   * Hung from the top of the head rather than centred on the title, its whole
+   * height is spent inside the first line and none of it comes down over the
+   * date — which can then have the full width, and one line instead of two.
+   */
+  .gf-overlay-panel--menu .gf-overlay-close {
+    order: 2;
+    align-self: start;
+    margin: -8px -6px 0 0;
+  }
+  .gf-overlay-panel--menu .gf-overlay-sub {
+    order: 3;
+    flex-basis: 100%;
+  }
 }
 
 /*
@@ -1610,6 +1650,24 @@ body {
     margin-top: 1px;
     font-size: 11.5px;
     line-height: 1.2;
+  }
+
+  /* The rule under the head is a wide band of nothing on a glass this size. */
+  .gf-overlay-panel--menu .gf-rule {
+    margin: 6px 0 8px;
+  }
+
+  /*
+   * The menu overlay is the one page where every last line is spoken for, and
+   * a margin at the foot of it is a line of the reckoning that a player has to
+   * push a thumb to reach. The other overlays keep their breathing room.
+   */
+  .gf-overlay-panel--menu {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+  .gf-overlay-panel--menu .gf-menu {
+    padding-bottom: 0;
   }
 
   /* The prose beneath the squares is wound in to match. */
