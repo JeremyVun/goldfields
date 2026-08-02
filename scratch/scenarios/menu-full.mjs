@@ -46,7 +46,7 @@ export async function setup(d) {
   s.claims['dry-camp'] = { quality: 90, workedDays: 3, peggedOn: 200, proven: false };
   s.shaft = {
     camp: 'damp-camp',
-    depth: 62,
+    depthFeet: 62,
     bottomAt: 70,
     bottomed: true,
     payable: true,

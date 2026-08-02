@@ -229,7 +229,7 @@ describe('directed playthroughs', () => {
         if (s.health < 45) { pressLabel(p, 'Rest a spell'); continue; }
         if (!isLicensed(s) || s.provisionDays < 6 || s.goldCentiOz > 150 || s.items.timber < 1) { pressLabel(p, 'Back to Slateford'); continue; }
         if (!s.claims['deep-mountains']) { pressLabel(p, 'Peg a claim'); continue; }
-        if (has(p, 'Timber the shaft')) { notes.push(`d${s.day} timbering at ${s.shaft?.depth}ft`); pressLabel(p, 'Timber the shaft'); continue; }
+        if (has(p, 'Timber the shaft')) { notes.push(`d${s.day} timbering at ${s.shaft?.depthFeet}ft`); pressLabel(p, 'Timber the shaft'); continue; }
         press(p, '1');
         if (!buy(p, 'Sink and work a shaft')) { notes.push(`d${s.day} shaft blocked: ${has(p, 'Sink and work')?.note}`); press(p, '0'); pressLabel(p, 'Back to Slateford'); continue; }
         continue;
