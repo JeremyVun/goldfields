@@ -546,7 +546,6 @@ describe('the dark mirror (§28.3)', () => {
     expect(acquittals).toBeGreaterThan(40);
     expect(acquittals).toBeLessThan(160);
 
-    // Blood is blood.
     const rng = makeRng(9);
     const bloody = { ...state, bloodShed: true, claims: { ...state.claims }, gang: [] };
     assizes(bloody, new Log(rng), false, rng);

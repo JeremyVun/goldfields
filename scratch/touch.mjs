@@ -53,7 +53,7 @@ if (/NEW ARRIVALS/.test(await title())) {
     await page.waitForTimeout(60);
   }
 }
-check((await title()) === 'SUZE PORT', 'the arrival is paged through by tapping');
+check((await title()) === 'PORT GANNET', 'the arrival is paged through by tapping');
 
 // The flavour of a choice can be read before the choice is taken.
 check(
@@ -69,21 +69,17 @@ await page.locator('.gf-overlay-close').tap();
 check((await page.locator('.gf-overlay-panel').count()) === 0, 'and shuts again from the cross');
 
 await page.locator('.gf-legend-act', { hasText: 'MAP' }).tap();
-check(/MAP OF THE GOLDFIELDS/.test(await page.textContent('.gf-overlay-title')), 'the map opens the same way');
-check(await page.locator('.gf-map-hint').isVisible(), 'and says the drawing runs on past the edge');
-// Dragging the drawing must not be taken for a press.
-const box = await page.locator('.gf-map').boundingBox();
-await page.mouse.move(box.x + box.width - 20, box.y + 30);
-await page.mouse.down();
-await page.mouse.move(box.x + 20, box.y + 30, { steps: 8 });
-await page.mouse.up();
-await page.waitForTimeout(120);
-check((await page.locator('.gf-overlay-panel').count()) === 1, 'dragging the map does not shut it');
+check(/MAP/.test(await page.textContent('.gf-overlay-title')), 'the map opens the same way');
+// The chart module is fetched on first opening; the prose follows it in.
+check(
+  await page.locator('.gf-map-prose').waitFor({ timeout: 5000 }).then(() => true, () => false),
+  'and the drawing is there to read',
+);
 await page.locator('.gf-overlay-close').tap();
 
 // Shopping: a store row, and back again.
-await rowByText("BRIGGS' AGENCY STORE").tap();
-check(/BRIGGS/.test(await title()), 'a shop opens');
+await rowByText("BELL'S OUTFITTERS").tap();
+check(/BELL/.test(await title()), 'a shop opens');
 // Every article on the shelves must be reachable, not laid off the edge of the
 // frame where a finger cannot follow it.
 const shelves = await page.evaluate(() => {
@@ -106,7 +102,7 @@ while (await page.locator('.gf-prompt').count()) {
   await page.waitForTimeout(60);
 }
 check(/·\s*2s\s*·/.test(await page.textContent('.gf-status-line')), 'a purchase is paid for (8s of 10s gone)');
-check(/BRIGGS/.test(await title()), 'and leaves the player at the counter');
+check(/BELL/.test(await title()), 'and leaves the player at the counter');
 
 // Putting the game down, and taking it up again by its number — the one place
 // the frame must ask the glass for a keypad of its own.

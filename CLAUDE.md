@@ -35,6 +35,13 @@ Run a single suite with `npx vitest run tests/<name>.test.ts`.
 - `scratch/` — throwaway drivers, screenshot scripts, and exploratory tests; has
   its own `vitest.config.ts` (`npx vitest run -c scratch/vitest.config.ts`,
   10-min timeout). Not part of `npm test`.
+  - Screenshots (do not write new harnesses):
+    `node scratch/shot.mjs [scenario.mjs] [--screen NAME] [--vp LIST] [--keys LIST] [--theme ID] [--out DIR] [--port N]`
+    — any game state, any screen, any responsive viewports; audits each shot
+    for overlapping/spilling rows, sideways scroll, and tap size. Needs
+    `npm run dev`. Scenario templates in `scratch/scenarios/`; usage in header.
+  - Browser smoke checks: `node scratch/keys.mjs [port]` (keyboard-only),
+    `node scratch/touch.mjs [port]` (touch-only).
 - `docs/GAME_SPEC.md` — the design spec (numbered §-sections);
   `docs/CODE_REVIEW.md` — review notes.
 

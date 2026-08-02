@@ -9,7 +9,7 @@ import {
   tryLoadGame,
   trySaveGame,
 } from '../engine/save';
-import type { Action, AsidePanel, GameState, NarrationEvent, ViewPanel } from '../engine/types';
+import type { Action, AsidePanel, GameState, NarrationEvent, ViewFigure, ViewPanel } from '../engine/types';
 import type { JournalSection } from '../content/journal';
 
 import { el, clear } from './dom';
@@ -483,6 +483,30 @@ export class App {
   }
 
   /**
+   * A man's own figures, ruled off into squares like a printed return: the
+   * number set large, the caption under it in small capitals, and beneath that
+   * the dim word that says what the number means.
+   *
+   * A fixed four across (two on a narrow glass), so a figure keeps its square
+   * between one opening of the menu and the next. The engine never omits a
+   * cell, so nothing here shuffles.
+   */
+  private menuFigures(figures: ViewFigure[]): HTMLElement {
+    const grid = el('div', { className: 'gf-figures' });
+    for (const f of figures) {
+      const cell = el('div', { className: 'gf-figure' });
+      const value = el('div', { className: 'gf-figure-value', text: this.say(f.value) });
+      if (f.tone) value.classList.add(`gf-tone-${f.tone}`);
+      cell.append(value, el('div', { className: 'gf-figure-caption', text: this.say(f.caption) }));
+      // The note comes last, so a square without one simply ends sooner: the
+      // captions of a row still sit level, and no paper is held for nothing.
+      if (f.note) cell.appendChild(el('div', { className: 'gf-figure-note', text: this.say(f.note) }));
+      grid.appendChild(cell);
+    }
+    return grid;
+  }
+
+  /**
    * A view's panels set side by side: headed blocks of label and value, laid
    * into as many columns as the glass will take. The whole reckoning is meant
    * to be read at one glance, so nothing here is a paragraph — a label in the
@@ -525,6 +549,7 @@ export class App {
     const panel = el('div', { className: 'gf-overlay-panel gf-overlay-panel--menu' });
     panel.appendChild(this.overlayHead(view.title, view.subtitle));
 
+    if (view.figures?.length) panel.appendChild(this.menuFigures(view.figures));
     panel.appendChild(this.menuPanelGrid(view.panels ?? []));
 
     const menuEl = el('nav', { className: 'gf-menu' });
@@ -539,7 +564,7 @@ export class App {
         else this.dispatch(m.action, { fromOverlay: true });
       },
     }));
-    items.splice(items.length - 1, 0, this.themeMenuItem('D', () => this.renderOverlay()));
+    items.splice(items.length - 1, 0, this.themeMenuItem('T', () => this.renderOverlay()));
     const inspector = el('p', { className: 'gf-inspector', attrs: { 'aria-live': 'polite' } });
     panel.appendChild(inspector);
     this.overlayMenu = new MenuController(items, {
@@ -966,12 +991,20 @@ export class App {
     this.activeMenu?.fitColumns(Math.max(budget, 0));
   }
 
-  /** The colour scheme is the player's affair, not the game's — a UI-only item. */
+  /**
+   * The colour scheme is the player's affair, not the game's — a UI-only item.
+   * Under a finger the row is not told which colour it is presently set to:
+   * the naming costs a second line of a narrow row, and the answer is the paper
+   * the question is printed on.
+   */
   private themeMenuItem(key: string, rerender: () => void): UIMenuItem {
     return {
       key,
-      label: `The colour of the glass — ${currentTheme().name}`,
-      note: 'as you please; the diggings are the same in any light',
+      label: isTouch() ? 'The colour of the glass' : `The colour of the glass — ${currentTheme().name}`,
+      // Under a finger a note is printed in the row itself, and this one is
+      // flavour on a setting rather than anything a player must weigh. It is
+      // two lines that the menu would rather spend on the choices.
+      note: isTouch() ? undefined : 'as you please; the diggings are the same in any light',
       onSelect: () => {
         cycleTheme();
         rerender();

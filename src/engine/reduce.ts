@@ -499,7 +499,6 @@ function handleBushrangerChoice(state: GameState, rng: RNG, log: Log, action: Ac
       }
     }
   }
-  // They take what there is.
   state.stats.timesRobbed += 1;
   if (state.goldCentiOz > 0 && rng.chance(0.7)) {
     const lost = Math.floor(state.goldCentiOz * rng.range(0.5, 1));

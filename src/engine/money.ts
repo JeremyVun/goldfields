@@ -7,7 +7,7 @@
 
 export const PENCE_PER_SHILLING = 12;
 export const SHILLINGS_PER_POUND = 20;
-export const PENCE_PER_POUND = PENCE_PER_SHILLING * SHILLINGS_PER_POUND; // 240
+export const PENCE_PER_POUND = PENCE_PER_SHILLING * SHILLINGS_PER_POUND;
 
 /** Build a pence total from pounds/shillings/pence. */
 export function lsd(pounds = 0, shillings = 0, pence = 0): number {

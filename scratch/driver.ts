@@ -75,7 +75,7 @@ export function kittyPress(p: Player, key: string): NarrationEvent[] {
   return dispatch(p, m.action);
 }
 
-/** Get to Suze Port from a cold start. */
+/** Get to Port Gannet from a cold start. */
 export function begin(p: Player, seed?: number): void {
   dispatch(p, { type: 'newGame', seed: seed ?? p.state.seed });
   dispatch(p, { type: 'continue' });

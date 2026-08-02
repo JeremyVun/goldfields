@@ -1,8 +1,6 @@
 /**
- * Integration agent's empirical loop: the seams BETWEEN Agent A's civic
- * systems and Agent B's town life. Run with:
- *   npx tsx scratch/integration.ts
- * Not committed. Every scenario prints every narration line for reading.
+ * Manual integration scenarios for civic systems and town life. Each scenario
+ * prints its narration for review. Run with `npx tsx scratch/integration.ts`.
  */
 import { makeRng } from '../src/engine/rng';
 import { createInitialState } from '../src/engine/state';

@@ -295,7 +295,6 @@ describe('balance additions (§25) — the dark ladder', () => {
       // A proclaimed outlaw is a wanted criminal, always (§25).
       if (r.outlawed) expect(r.legal).toBe('wanted criminal');
       if (r.outlawEnd === 'hanged') expect(r.died).toBe(true);
-      // The year always ends.
       expect(r.steps).toBeLessThan(4000);
     }
   });

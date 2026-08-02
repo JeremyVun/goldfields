@@ -436,6 +436,10 @@ body {
 /* ------------------------------------------------------------------ */
 
 .gf-menu {
+  /* How many columns this width of glass will bear. The menu asks for this
+     back before it deals the rows out, so the breakpoint is written once, in
+     the stylesheet, and not repeated in the script. */
+  --gf-menu-columns: 2;
   /* The scroll box may shrink to the pane; its rows never do, so the choices
      scroll instead of being crushed or clipped. */
   flex: 0 1 auto;
@@ -471,35 +475,44 @@ body {
   background-attachment: local, local, scroll, scroll;
 }
 
-/* Only when a list will not fit in one honest column — the store's twenty-odd
-   articles — is it laid across the width. Grid keeps the original column-major
-   reading order while allowing the whole two-column shelf to scroll vertically;
-   CSS newspaper columns would instead make more columns off the right edge when
-   given a height limit. */
+/*
+ * Only when a list will not fit in one honest column — the store's twenty-odd
+ * articles — is it laid across the width, and then it is dealt into two boxes
+ * side by side, each keeping its own rows' heights.
+ *
+ * Not a grid and not newspaper columns, both of which have been tried and both
+ * of which break here. A grid's rows run the width of the shelf, so one
+ * three-line article on the right sets every short row on the left adrift in
+ * white paper; worse, once this box has a height cap the grid's rows are pinned
+ * at the tap floor and every wrapped row prints over the one below it. CSS
+ * columns, given the same cap, answer by making further columns off the right
+ * edge, where they cannot be reached at all.
+ */
 .gf-menu--dense {
-  --gf-menu-columns: 2;
-  display: grid;
-  grid-template-columns: repeat(var(--gf-menu-columns), minmax(0, 1fr));
-  grid-template-rows: repeat(var(--gf-menu-rows), auto);
-  grid-auto-flow: column;
-  align-content: start;
-  column-gap: clamp(20px, 3vw, 40px);
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 0 clamp(20px, 3vw, 40px);
 }
 
-.gf-menu--dense .gf-menu-item {
-  margin-bottom: 2px;
+.gf-menu-col {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 /* Too narrow for two columns of prices. The menu is the part being used, so
    here it takes the room and the prose above it gives way instead. */
 @media (max-width: 900px) {
-  .gf-menu--dense {
+  .gf-menu {
     --gf-menu-columns: 1;
   }
   .gf-main.has-aside .gf-body {
     max-height: 30%;
   }
 }
+
 
 .gf-menu-item {
   display: flex;
@@ -575,14 +588,23 @@ body {
 
 .gf-menu-label {
   /* Basis nought, so that a long label never shoulders itself onto a line of
-     its own below the key — it stays in its column and wraps its own words. */
+     its own below the key — it stays in its column and wraps its own words.
+     It keeps its own min-width, though: allowed to shrink below one word, it
+     would give the whole line up to a warning that refuses to wrap and be set
+     out a word to a line — FILL / THE / WATER / BAGS. A floor of some eleven
+     characters under it sends the warning down to a line of its own instead,
+     which is where it belongs; the `min()` keeps that floor from ever being
+     wider than the column it stands in. */
   flex: 1 1 0;
-  min-width: 0;
+  min-width: min(11em, 100%);
   color: inherit;
   text-transform: uppercase;
 }
 
 .gf-menu-alert {
+  /* Held to the right whether it shares the label's line or has taken one of
+     its own, so warnings down a column line up with each other. */
+  margin-left: auto;
   color: var(--gf-bad);
   font-weight: 700;
   text-transform: none;
@@ -921,6 +943,78 @@ body {
 
 .gf-overlay-body {
   margin-top: 10px;
+}
+
+/*
+ * A man's own figures, ruled off into squares like a printed mining return.
+ * Four across, and a fixed four — not `auto-fit`, which would re-deal the
+ * squares every time the glass changed size and cost the player the one thing
+ * the grid is for: knowing where to look before he has looked.
+ *
+ * The rules are drawn as inner borders on the cells rather than gaps in a
+ * background, so the last row of three leaves paper where its fourth square
+ * would be instead of a stub of rule hanging in the air.
+ */
+.gf-figures {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin-top: 8px;
+  border-top: 1px solid var(--gf-frame-border-light);
+  border-bottom: 1px solid var(--gf-frame-border-light);
+}
+
+.gf-figure {
+  padding: 6px 10px;
+  text-align: center;
+  /* A hairline between squares, and none down the outer edges: the two borders
+     above carry the top and foot. */
+  border-left: 1px solid var(--gf-frame-border-light);
+}
+
+.gf-figure:nth-child(4n + 1) {
+  border-left: 0;
+}
+
+/* The second row is ruled off from the first. */
+.gf-figure:nth-child(n + 5) {
+  border-top: 1px solid var(--gf-frame-border-light);
+}
+
+.gf-figure-value {
+  font-size: var(--gf-fs-loud);
+  font-weight: 700;
+  line-height: 1.15;
+  /* Figures in a column must line up as figures, not as letters. */
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: break-word;
+}
+
+.gf-figure-caption {
+  margin-top: 1px;
+  font-size: var(--gf-fs-note);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gf-body-dim);
+}
+
+/* The field's own words for the figure above. */
+.gf-figure-note {
+  margin-top: 3px;
+  font-size: var(--gf-fs-note);
+  line-height: 1.25;
+  font-style: italic;
+  color: var(--gf-body-dim);
+  overflow-wrap: break-word;
+}
+
+/* A figure in trouble is coloured on the number alone; its note keeps the dim
+   ink, or two shouts in one square cancel each other out. */
+.gf-figure-value.gf-tone-bad {
+  color: var(--gf-bad);
+}
+
+.gf-figure-value.gf-tone-good {
+  color: var(--gf-good);
 }
 
 /*
@@ -1411,6 +1505,17 @@ body {
   .gf-inspector {
     display: none;
   }
+
+  /*
+   * On a screen with no ESC to press, the head of an overlay already carries a
+   * sticky ✕, and the menu's last row is RETURN TO WHAT YOU WERE DOING. A third
+   * way out at the foot is a tap target's worth of paper spent saying what two
+   * other things on the same page already say — and the menu is the one overlay
+   * that cannot spare it. The others keep theirs; they have room.
+   */
+  .gf-overlay-panel--menu .gf-overlay-hint {
+    display: none;
+  }
 }
 
 /*
@@ -1468,6 +1573,60 @@ body {
     padding-bottom: 4px;
   }
 
+  /*
+   * Two squares across rather than four. The order the engine deals them in is
+   * chosen for this: money and gold on the first line, food and water on the
+   * second, so the two questions a man opens the menu to ask are answered
+   * without a thumb, on the smallest glass we serve.
+   *
+   * Four rows of squares is a great deal of a phone, so everything in them is
+   * wound in — the figure a size down, the leading tight, the padding halved.
+   * The words stay: they are what the square is for.
+   */
+  .gf-figures {
+    grid-template-columns: repeat(2, 1fr);
+    margin-top: 5px;
+  }
+  .gf-figure {
+    padding: 3px 6px;
+  }
+  .gf-figure:nth-child(4n + 1) {
+    border-left: 1px solid var(--gf-frame-border-light);
+  }
+  .gf-figure:nth-child(odd) {
+    border-left: 0;
+  }
+  .gf-figure:nth-child(n + 3) {
+    border-top: 1px solid var(--gf-frame-border-light);
+  }
+  .gf-figure-value {
+    font-size: var(--gf-fs-prose);
+  }
+  .gf-figure-caption {
+    font-size: 11.5px;
+    letter-spacing: 0.1em;
+  }
+  .gf-figure-note {
+    margin-top: 1px;
+    font-size: 11.5px;
+    line-height: 1.2;
+  }
+
+  /* The prose beneath the squares is wound in to match. */
+  .gf-panels {
+    margin-top: 4px;
+  }
+  .gf-panel {
+    margin-bottom: 5px;
+  }
+  .gf-panel-head {
+    margin-bottom: 1px;
+    padding-bottom: 1px;
+  }
+  .gf-panel-row {
+    line-height: 1.25;
+  }
+
   /* Rows this tall will not all fit, and a menu given its head takes the whole
      pane and leaves the prose nothing — the shopkeeper's advice vanishing off
      a screen that has room for it. It keeps three-quarters and no more; the
@@ -1493,11 +1652,25 @@ body {
     white-space: normal;
   }
 
-  /* No room for a column beside the counter: the ledger becomes a strip of
-     facts above it, wrapped and stripped of its dotted rules. */
+}
+
+/*
+ * No room for a column beside the counter: the ledger becomes a strip of facts
+ * above it, wrapped and stripped of its dotted rules.
+ *
+ * A tablet is caught by this too, though it is nowhere near as narrow. Under a
+ * finger the rows carry their own flavour and stand 44px high, so a store's
+ * twenty articles want every inch of the width they can get — while the ledger
+ * is seven short facts that were leaving a third of the glass as an empty
+ * ruled card. As a strip it costs two lines and gives the counter its second
+ * column back.
+ */
+@media (max-width: 760px), (pointer: coarse) and (max-width: 1100px) {
   .gf-main.has-aside {
     grid-template-columns: 1fr;
     grid-template-rows: auto 1fr;
+    /* The prose has the full width back; it takes the ordinary scale with it. */
+    --gf-fs-prose: inherit;
   }
   .gf-aside {
     display: flex;

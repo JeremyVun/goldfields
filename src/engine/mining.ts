@@ -121,10 +121,6 @@ export function rushOn(state: GameState, camp: CampId): boolean {
   return !!rush && rush.camp === camp && rush.since <= state.day && rush.untilDay >= state.day;
 }
 
-/**
- * The ground gives full measure for a dozen days, then thins away to a third by
- * the fiftieth. A claim that reaches the floor is worked out for good.
- */
 export function depletionFactor(workedDays: number): number {
   if (workedDays <= DEPLETION_FREE_DAYS) return 1;
   if (workedDays >= DEPLETION_FLOOR_DAYS) return DEPLETION_FLOOR;
@@ -204,13 +200,11 @@ export interface SeasonEffect {
 export function seasonEffect(state: GameState, method: MiningMethod): SeasonEffect {
   const s = season(state.day);
   if (method === 'pan' || method === 'cradle') {
-    // creeks dry up (faithful)
     if (s === 'summer') return { factor: 0.7, note: 'the creeks are low, and washing goes slow' };
     if (s === 'winter') return { factor: 1.1, note: 'the creek is running well with the winter' };
     return { factor: 1 };
   }
   if (method === 'puddle') {
-    // good in winter when the creeks run
     if (s === 'winter') return { factor: 1.25, note: 'the winter water keeps the machine turning' };
     // A race brings water to the machine in February as in July, and the
     // puddlers work the year round (§27).

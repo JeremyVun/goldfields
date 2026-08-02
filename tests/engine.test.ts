@@ -409,24 +409,71 @@ function menuKeysUnique(view: ScreenView): boolean {
 }
 
 describe('screens and menus', () => {
-  it('the kitty shows money, gold, rate, kit, health, law and licence (faithful)', () => {
+  it('the menu shows a man his own figures, his hands and what he carries', () => {
     const state = createInitialState(41);
     state.goldCentiOz = 120;
     state.items.pan = 1;
     const view = menuView(state);
+
+    const figures = Object.fromEntries((view.figures ?? []).map((f) => [f.caption, f.value]));
+    expect(figures['Gold']).toBe('1.20 oz');
+    expect(figures['In hand']).toBeDefined();
+    expect(figures['Food']).toBe('0 days');
+    expect(figures['On the field']).toBe('0/100');
+    expect(figures["At Bell's"]).toBe('0%');
+
     const text = view.body.join('\n');
-    expect(text).toMatch(/Money in hand/);
+    // Every figure is in `body` too — the flattened reading is the contract.
     expect(text).toMatch(/Gold: 1\.20 oz/);
-    expect(text).toMatch(/Exchange rate of the day/);
-    expect(text).toMatch(/Health:/);
-    expect(text).toMatch(/Legal record:/);
-    expect(text).toMatch(/Licence:/);
-    expect(text).toMatch(/Standing on the field: 0\/100/);
-    expect(text).toMatch(/partner or company at 30/);
+    expect(text).toMatch(/a new chum at the wash and a new chum underground/);
+    expect(text).toMatch(/Kit: tin pan/);
+    expect(text).toMatch(/Claims: none pegged/);
+
     const labels = view.menu.map((m) => m.label.toLowerCase()).join(' | ');
-    expect(labels).toMatch(/sell gold to the bank/);
     expect(labels).toMatch(/save the game/);
     expect(labels).toMatch(/finish the game/);
+    // Gold is sold at the buyer's counter or the bank, where the rate is shown.
+    expect(labels).not.toMatch(/sell gold/);
+  });
+
+  it('repeats nothing the status bar is already carrying', () => {
+    const state = createInitialState(41);
+    const text = menuView(state).body.join('\n');
+    for (const gone of [/Exchange rate/, /^Health:/m, /^Legal record:/m, /^Licence:/m]) {
+      expect(text).not.toMatch(gone);
+    }
+  });
+
+  it('keeps every figure in the same square whatever the state', () => {
+    // The whole point of the grid: a man learns where to look. The first seven
+    // squares are fixed, and the eighth is the dark one, empty until earned.
+    const fresh = createInitialState(41);
+    const rich = createInitialState(41);
+    rich.moneyPence = 120000;
+    rich.bankPence = 50000;
+    rich.goldCentiOz = 4500;
+    rich.provisionDays = 30;
+    rich.items.waterBags = 2;
+    rich.waterDays = 12;
+    rich.briggsDays = 25;
+    rich.standing = 64;
+    rich.skill.wash = 95;
+    rich.skill.shaft = 40;
+
+    const captions = (s: GameState) => (menuView(s).figures ?? []).map((f) => f.caption);
+    expect(captions(fresh)).toEqual(captions(rich));
+    expect(captions(fresh)).toEqual([
+      'In hand',
+      'Gold',
+      'Food',
+      'Water',
+      'In the bank',
+      "At Bell's",
+      'On the field',
+    ]);
+
+    const outlaw = { ...rich, notoriety: 40, outlawed: true };
+    expect(captions(outlaw)).toEqual([...captions(rich), 'To the traps']);
   });
 
   it('the status line is the one-line kitty summary shown on every screen', () => {

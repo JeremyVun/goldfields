@@ -22,6 +22,13 @@ export interface UIMenuItem {
   onSelect: () => void;
 }
 
+/**
+ * The narrowest column worth splitting into, in px. Under this the store's
+ * longer articles wrap to three lines apiece and two columns cost more height
+ * than the one they saved.
+ */
+const MIN_COLUMN = 290;
+
 export interface MenuOptions {
   /** Told the flavour of whatever sits under the marker, or null for none. */
   onHighlight?: (note: string | null) => void;
@@ -89,26 +96,47 @@ export class MenuController {
   fitColumns(budget: number): void {
     const c = this.container;
     if (!c) return;
-    c.classList.remove('gf-menu--dense');
+    this.layOut(1);
     c.style.removeProperty('max-height');
-    c.style.removeProperty('--gf-menu-rows');
     if (c.scrollHeight <= budget) return;
 
-    // Bound the scroll box before laying the choices across it. Grid, unlike
-    // CSS multi-column flow, can keep two columns inside this height and scroll
-    // down to their final rows instead of creating hidden columns to the right.
+    // Bound the scroll box, so that what will not fit is scrolled to rather
+    // than shouldering the prose off the top of the pane.
     c.style.maxHeight = `${budget}px`;
-    c.style.setProperty('--gf-menu-rows', String(Math.ceil(this.rows.length / 2)));
-    c.classList.add('gf-menu--dense');
 
     // Below the width at which the stylesheet allows a second column there is
-    // nothing for this to do. Ask the glass what it actually gave us rather
-    // than repeating its breakpoint here.
-    if (getComputedStyle(c).getPropertyValue('--gf-menu-columns').trim() === '1') {
-      c.classList.remove('gf-menu--dense');
-      c.style.removeProperty('--gf-menu-rows');
+    // nothing further to do. Ask the glass what it actually gave us rather than
+    // repeating its breakpoint here.
+    if (getComputedStyle(c).getPropertyValue('--gf-menu-columns').trim() === '1') return;
+    // The glass may be wide while this box is not: a ledger standing beside the
+    // counter takes a third of the frame with it. Two columns are only worth
+    // having if a price still lands on the same line as the article.
+    if (c.clientWidth < 2 * MIN_COLUMN) return;
+    this.layOut(2);
+  }
+
+  /**
+   * Deal the rows into one column or two. Two columns are two boxes of their
+   * own, not one grid: rows in a grid share their height across the whole
+   * shelf, so a three-line article on the right would set every short one on
+   * the left adrift in a third of a screen of empty paper.
+   */
+  private layOut(columns: 1 | 2): void {
+    const c = this.container;
+    if (!c) return;
+    clear(c);
+    c.classList.toggle('gf-menu--dense', columns === 2);
+    if (columns === 1) {
+      this.rows.forEach((row) => c.appendChild(row));
       return;
     }
+    // Column-major: the first half of the list reads down the left, as it would
+    // on a printed price list.
+    const half = Math.ceil(this.rows.length / 2);
+    const left = el('div', { className: 'gf-menu-col' });
+    const right = el('div', { className: 'gf-menu-col' });
+    this.rows.forEach((row, i) => (i < half ? left : right).appendChild(row));
+    c.append(left, right);
   }
 
   /** True when the menu is currently laid across columns. */

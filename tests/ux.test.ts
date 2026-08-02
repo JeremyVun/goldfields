@@ -180,11 +180,13 @@ describe('the trend of the gold rate (§21)', () => {
     expect(rateWeekAgo({ ...fresh(), rateTrail: [] })).toBe(BANK_RATE_START);
   });
 
-  it('is told to the player at the kitty, at the bank and in the Times', () => {
+  it('is told to the player at the bank and in the Times', () => {
     const state = fresh();
     state.rateTrail = [800, 810, 820, 830, 840, 850, 860, 900];
     state.bankRate = 900;
-    expect(menuView(state).body.join('\n')).toMatch(/Gold is rising this week/);
+    // Not in the menu: the menu is the man's own reckoning, and the price of
+    // gold is the market's. It is told where gold is actually sold.
+    expect(menuView(state).body.join('\n')).not.toMatch(/Gold is rising this week/);
 
     const bank = getView({ ...state, screen: 'ftown-bank', location: 'fields-town' });
     expect(bank.body.join('\n')).toMatch(/Gold is rising this week/);

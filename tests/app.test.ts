@@ -114,7 +114,8 @@ describe('menu controller', () => {
     expect(selected).toEqual(['third']);
   });
 
-  it('keeps an overflowing two-column menu inside its vertical scroll budget', () => {
+  /** A menu of four, overflowing whatever budget it is given. */
+  function overflowingMenu(width: number): { host: HTMLElement; menu: MenuController } {
     const host = document.createElement('nav');
     const menu = new MenuController([
       { key: '1', label: 'First', note: 'A touch row carries this description.', onSelect: () => {} },
@@ -124,22 +125,80 @@ describe('menu controller', () => {
     ]);
     menu.render(host);
     Object.defineProperty(host, 'scrollHeight', { configurable: true, value: 500 });
-    const originalGetComputedStyle = globalThis.getComputedStyle;
+    Object.defineProperty(host, 'clientWidth', { configurable: true, value: width });
+    return { host, menu };
+  }
+
+  /** Stand in for the stylesheet's answer on how many columns this width bears. */
+  function withStyleColumns<T>(columns: string, run: () => T): T {
+    const original = globalThis.getComputedStyle;
     Object.defineProperty(globalThis, 'getComputedStyle', {
       configurable: true,
-      value: () => ({
-        getPropertyValue: () => '2',
-      }) as unknown as CSSStyleDeclaration,
+      value: () => ({ getPropertyValue: () => columns }) as unknown as CSSStyleDeclaration,
     });
+    try {
+      return run();
+    } finally {
+      Object.defineProperty(globalThis, 'getComputedStyle', { configurable: true, value: original });
+    }
+  }
 
-    menu.fitColumns(100);
+  it('deals an overflowing menu into two boxes inside its vertical scroll budget', () => {
+    const { host, menu } = overflowingMenu(900);
+
+    withStyleColumns('2', () => menu.fitColumns(100));
 
     expect(host.classList.contains('gf-menu--dense')).toBe(true);
     expect(host.style.maxHeight).toBe('100px');
-    expect(host.style.getPropertyValue('--gf-menu-rows')).toBe('2');
-    Object.defineProperty(globalThis, 'getComputedStyle', {
-      configurable: true,
-      value: originalGetComputedStyle,
-    });
+    // Two boxes of their own, each keeping its rows' heights — not one grid,
+    // whose shared rows are squeezed flat by the cap and print over each other.
+    const columns = [...host.querySelectorAll('.gf-menu-col')];
+    expect(columns).toHaveLength(2);
+    const labels = columns.map((c) =>
+      [...c.querySelectorAll('.gf-menu-label')].map((l) => l.textContent),
+    );
+    expect(labels).toEqual([['First', 'Second'], ['Third', 'Back']]);
+  });
+
+  it('keeps one column where the stylesheet says the glass is too narrow', () => {
+    const { host, menu } = overflowingMenu(900);
+
+    withStyleColumns('1', () => menu.fitColumns(100));
+
+    expect(host.classList.contains('gf-menu--dense')).toBe(false);
+    expect(host.querySelectorAll('.gf-menu-col')).toHaveLength(0);
+    // Still bounded, so what will not fit is scrolled to rather than shouldering
+    // the prose off the top of the pane.
+    expect(host.style.maxHeight).toBe('100px');
+  });
+
+  it('keeps one column where the box itself is narrow, wide glass or no', () => {
+    // A ledger standing beside the counter takes a third of the frame with it:
+    // the stylesheet may allow two columns while this box cannot hold them.
+    const { host, menu } = overflowingMenu(420);
+
+    withStyleColumns('2', () => menu.fitColumns(100));
+
+    expect(host.classList.contains('gf-menu--dense')).toBe(false);
+  });
+
+  it('lays the columns back into one when the glass grows and the menu fits', () => {
+    const { host, menu } = overflowingMenu(900);
+    withStyleColumns('2', () => menu.fitColumns(100));
+    expect(host.classList.contains('gf-menu--dense')).toBe(true);
+
+    // The window is dragged wider: the menu now fits in one honest column, and
+    // nothing of the two-column layout may be left behind.
+    withStyleColumns('2', () => menu.fitColumns(600));
+
+    expect(host.classList.contains('gf-menu--dense')).toBe(false);
+    expect(host.querySelectorAll('.gf-menu-col')).toHaveLength(0);
+    expect(host.style.maxHeight).toBe('');
+    expect([...host.querySelectorAll('.gf-menu-label')].map((l) => l.textContent)).toEqual([
+      'First',
+      'Second',
+      'Third',
+      'Back',
+    ]);
   });
 });

@@ -12,3 +12,5 @@ dist/
 coverage/
 scratch/shots/
 scratch/shots-map/
+scratch/shots-out/
+scratch/shots-*/

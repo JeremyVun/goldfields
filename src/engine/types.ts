@@ -799,11 +799,35 @@ export interface ViewPanel {
   rows: { label?: string; text: string }[];
 }
 
+/**
+ * One figure off a man's own account, set large enough to be read at a glance:
+ * the number, the small-caps caption saying what it counts, and a dim word
+ * underneath putting it in the field's own language.
+ *
+ * A figure is only ever a number. Anything that wants a sentence belongs in a
+ * `ViewPanel` — a cell that has to be read is a cell that has failed.
+ */
+export interface ViewFigure {
+  /** The small-caps caption: IN HAND, FOOD, ON THE FIELD. */
+  caption: string;
+  /** The figure itself, and nothing else: `10s`, `0.00 oz`, `0/100`. */
+  value: string;
+  /** The dim line beneath — `none left`, `reckoned a stranger`. */
+  note?: string;
+  tone?: 'good' | 'bad';
+}
+
 export interface ScreenView {
   screen: Screen;
   title: string;
   subtitle?: string;
   body: string[];
+  /**
+   * A man's own figures, in a fixed order that does not shift between one
+   * opening of the menu and the next: the cell for a thing he has none of is
+   * still drawn, holding a dash. Set above `panels`.
+   */
+  figures?: ViewFigure[];
   /** Set beside one another where the frame has the width for it. */
   panels?: ViewPanel[];
   menu: MenuItem[];

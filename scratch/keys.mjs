@@ -28,7 +28,7 @@ check(!(await page.locator('.gf-menu-note').first().isVisible()), 'flavour stays
 await press('Space');
 while (await page.locator('.gf-prompt').count()) await press('Space');
 if (/NEW ARRIVALS/.test(await title())) { await press('Space'); while (await page.locator('.gf-prompt').count()) await press('Space'); }
-check((await title()) === 'SUZE PORT', 'space bar carries a man ashore');
+check((await title()) === 'PORT GANNET', 'space bar carries a man ashore');
 
 const before = await page.locator('.gf-menu-item.is-highlight').textContent();
 await press('ArrowDown');
@@ -46,6 +46,53 @@ check((await page.locator('.gf-overlay-panel').count()) === 0, 'and any key shut
 
 check((await page.textContent('.gf-legend')).includes('menu'), 'the legend still teaches the keys');
 
+// A store: the one place a menu is laid across two columns, which the left and
+// right arrows must be able to cross — and no row of which may be printed over
+// another, whatever height the box has been given.
+await page.locator('.gf-menu-item', { hasText: "BELL'S OUTFITTERS" }).click();
+await page.waitForTimeout(120);
+check(await page.locator('.gf-menu--dense').count() === 1, 'a store lays its shelves across two columns');
+const columnOf = () => page.evaluate(() => {
+  const row = document.querySelector('.gf-menu-item.is-highlight');
+  return row ? Math.round(row.getBoundingClientRect().left) : -1;
+});
+const leftCol = await columnOf();
+await press('ArrowRight');
+const rightCol = await columnOf();
+check(rightCol > leftCol, 'the right arrow crosses to the far column');
+await press('ArrowLeft');
+check((await columnOf()) === leftCol, 'and the left arrow comes back');
+const printedOver = await page.evaluate(() => {
+  const b = [...document.querySelectorAll('.gf-menu-item')].map((r) => r.getBoundingClientRect());
+  let n = 0;
+  for (let i = 0; i < b.length; i++)
+    for (let j = i + 1; j < b.length; j++)
+      if (Math.min(b[i].right, b[j].right) - Math.max(b[i].left, b[j].left) > 2 &&
+          Math.min(b[i].bottom, b[j].bottom) - Math.max(b[i].top, b[j].top) > 2) n++;
+  return n;
+});
+check(printedOver === 0, `no article is printed over another (${printedOver} pairs overlap)`);
+
+// The same glass changing size under the hand, which is not the same thing as
+// two glasses of fixed size: a shelf laid out for one width and then given
+// another has been known to keep the first layout, print its rows one over
+// another, and still be doing it after the window was dragged back again.
+const overlapCount = () => page.evaluate(() => {
+  const b = [...document.querySelectorAll('.gf-menu-item')].map((r) => r.getBoundingClientRect());
+  let n = 0;
+  for (let i = 0; i < b.length; i++)
+    for (let j = i + 1; j < b.length; j++)
+      if (Math.min(b[i].right, b[j].right) - Math.max(b[i].left, b[j].left) > 2 &&
+          Math.min(b[i].bottom, b[j].bottom) - Math.max(b[i].top, b[j].top) > 2) n++;
+  return n;
+});
+for (const size of [{ width: 1024, height: 768 }, { width: 820, height: 1180 }, { width: 1280, height: 800 }]) {
+  await page.setViewportSize(size);
+  await page.waitForTimeout(300);
+  check(await overlapCount() === 0, `dragged to ${size.width}x${size.height}, the shelves keep their own rows`);
+}
+await press('0');
+
 // A game number, typed at the frame with nothing focused.
 await page.goto(`http://localhost:${PORT}/`, { waitUntil: 'networkidle' });
 await page.click('#screen');
@@ -58,7 +105,7 @@ check((await page.textContent('.gf-input-buffer')) === '4', 'and backspace takes
 await press('Enter');
 check(/No such game/.test(await page.textContent('.gf-input-error')), 'RETURN sends it');
 await press('Escape');
-check((await title()) === 'GOLDFIELDS', 'ESC comes back to the title');
+check((await title()) === 'GOLDRUSH', 'ESC comes back to the title');
 
 await ctx.close();
 await browser.close();

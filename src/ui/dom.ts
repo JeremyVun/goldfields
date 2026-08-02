@@ -1,7 +1,3 @@
-/**
- * Tiny DOM-building helpers. Plain DOM only — no framework.
- */
-
 export interface ElOptions {
   className?: string;
   text?: string;

@@ -187,7 +187,6 @@ export function travelOneDay(state: GameState, rng: RNG, log: Log): TravelStop {
   } else if (rng.chance(0.14)) {
     log.say('travel.travellers', undefined, 'neutral');
     if (rng.chance(0.25)) {
-      // a little news changes hands
       if (state.rush && state.rush.since <= state.day) {
         log.raw(
           `They speak of a rush at ${CAMP_DEFS[state.rush.camp].name}; every man on the road is bound for it.`,

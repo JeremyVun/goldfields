@@ -28,7 +28,6 @@ import {
   COMPANY_CREW_WAGES,
   COMPANY_BATTERY_COST,
   COMPANY_DRIVE_COST,
-  COMPANY_FLOAT_STANDING,
   COMPANY_MAX_CREWS,
   COMPANY_PUMP_PLANT,
   COMPANY_REGISTRATION_FEE,
@@ -107,6 +106,7 @@ import {
 import {
   ITEM_HINTS,
   ITEM_NAMES,
+  briggsDiscount,
   briggsDiscountLabel,
   buybackPriceOf,
   greensPrice,
@@ -167,6 +167,7 @@ import type {
   MiningMethod,
   Route,
   ScreenView,
+  ViewFigure,
   ViewPanel,
   SkillRank,
   WorkId,
@@ -607,15 +608,65 @@ function companyEntryNote(state: GameState): string {
     : `${met} of ${reqs.length} requirements met — see what the registrar still needs`;
 }
 
+/** How a man would speak of what is left in his sacks, rather than count it. */
+function keepPhrase(days: number): string {
+  if (days <= 0) return 'none left';
+  if (days <= 3) return 'running short';
+  if (days <= 7) return 'enough for the week';
+  if (days >= 21) return 'well found';
+  return 'a fair stock';
+}
+
+function keepTone(days: number): 'good' | 'bad' | undefined {
+  if (days <= 3) return 'bad';
+  if (days >= 21) return 'good';
+  return undefined;
+}
+
 /**
  * The menu (opened with ESC; the original "@" remains an alias).
  *
- * The matter is grouped into panels of label/value rows so the frame can set
- * them beside one another and show a man his whole reckoning at one glance,
- * without a scroll. `body` carries the same thing flattened for anything that
- * reads the view as prose.
+ * Only what belongs to the man himself. The day, the season, his money, his
+ * gold, his health, his legal rung and his licence are already standing in the
+ * status bar at the foot of every screen, and the price of gold is a thing of
+ * the market, told where gold is sold — none of it is repeated here. What is
+ * left is what a man cannot read anywhere else: his keep, his name, his hands,
+ * and what he is carrying.
+ *
+ * His figures go in `figures`, in an order that never changes, so that the
+ * answer to "how much water have I left" is in the same square of the page
+ * every time the menu is opened. Everything that wants a sentence goes in
+ * `panels` beneath, where growing does no harm. `body` carries the same matter
+ * flattened for anything that reads the view as prose.
  */
 export function menuView(state: GameState): ScreenView {
+  // The figures, fixed in their order and never omitted: a cell holding a dash
+  // is a cell whose neighbours have not moved.
+  const figures: ViewFigure[] = [];
+  const figure = (caption: string, value: string, note?: string, tone?: 'good' | 'bad') =>
+    figures.push({ caption, value, note, tone });
+
+  figure('In hand', formatMoney(state.moneyPence));
+  figure('Gold', formatGold(state.goldCentiOz), state.goldCentiOz > 0 ? 'unsold' : undefined);
+  figure('Food', days(state.provisionDays), keepPhrase(state.provisionDays), keepTone(state.provisionDays));
+  if (state.items.waterBags > 0) {
+    figure('Water', days(state.waterDays), keepPhrase(state.waterDays), keepTone(state.waterDays));
+  } else {
+    figure('Water', '—', 'no bags to carry it', 'bad');
+  }
+
+  figure('In the bank', state.bankPence > 0 ? formatMoney(state.bankPence) : '—');
+  const briggsPct = `${Math.round(briggsDiscount(state) * 100)}%`;
+  const briggsNext = state.briggsDays < 7 ? 7 : state.briggsDays < 21 ? 21 : state.briggsDays < 42 ? 42 : null;
+  if (state.briggsBlacklisted) figure("At Bell's", '—', 'blacklisted from the counter', 'bad');
+  else if (briggsNext === null) figure("At Bell's", briggsPct, 'top staff standing', 'good');
+  else figure("At Bell's", briggsPct, `${state.briggsDays} of ${briggsNext} days served`);
+  figure('On the field', `${standingNumber(state.standing)}/100`, `reckoned ${standingPhrase(state.standing)}`);
+  // The eighth square is the dark one, and stays empty until a man has earned it.
+  if (state.notoriety > 0 || state.outlawed) {
+    figure('To the traps', `${standingNumber(state.notoriety)}/100`, notorietyPhrase(state.notoriety), 'bad');
+  }
+
   const panels: ViewPanel[] = [];
   const panel = (heading: string): ViewPanel => {
     const p: ViewPanel = { heading, rows: [] };
@@ -624,35 +675,30 @@ export function menuView(state: GameState): ScreenView {
   };
   const row = (p: ViewPanel, label: string | undefined, text: string) => p.rows.push({ label, text });
 
-  // The purse ------------------------------------------------------------
-  const purse = panel('PURSE');
-  row(purse, 'Money in hand', formatMoney(state.moneyPence));
-  if (state.bankPence > 0) row(purse, 'In the bank', formatMoney(state.bankPence));
-  row(purse, 'Gold', formatGold(state.goldCentiOz));
+  // The man --------------------------------------------------------------
+  // His hands in the field's own words and not in days worked: the game says a
+  // new chum, a digger, an old hand, and a man knows what those mean without
+  // being shown the arithmetic behind them.
+  const man = panel('THE MAN');
   row(
-    purse,
-    'Exchange rate of the day',
-    `${formatMoney(rateAt(state, state.location))} the ounce here` +
-      (state.location === 'fields-town' ? '' : ` (Slateford: ${formatMoney(state.bankRate)})`),
+    man,
+    undefined,
+    `Reckoned ${article(washRank(state))} at the wash and ${article(shaftRank(state))} underground; ` +
+      `in the bush, ${state.skill.bush > 0 ? bushArticle(bushRankOf(state)) : 'no hand at all'}.`,
   );
-  row(purse, undefined, rateTrendPhrase(state));
+  // Health itself is in the status bar; the name of what has hold of you is not.
+  if (state.illness) row(man, undefined, `Down with ${ILLNESS_NAMES[state.illness.id]}.`);
+  if (state.employment) row(man, 'Last engaged as', JOBS[state.employment.job].name);
 
-  // The kit --------------------------------------------------------------
-  // Not the reckoning's prose sentence: a bare list under a label, which is
-  // three lines where the sentence was six.
-  const kit = panel('KIT AND CLAIMS');
+  // What he is carrying --------------------------------------------------
+  const kit = panel('WHAT YOU CARRY');
   const owned = STORE_ORDER.filter((i) => state.items[i] > 0).map(
     (i) => `${bareItem(ITEM_NAMES[i])}${state.items[i] > 1 ? ` ×${state.items[i]}` : ''}`,
   );
   if (state.horse !== 'none') owned.push(state.horse);
   row(kit, 'Kit', owned.length ? owned.join(', ') : 'nothing but the clothes you stand in');
-  row(kit, 'Stores', `${days(state.provisionDays)} provisions, ${days(state.waterDays)} water`);
   const pegged = (Object.keys(state.claims) as CampId[]).filter((c) => state.claims[c]);
-  if (pegged.length) row(kit, 'Claims pegged at', pegged.map((c) => CAMP_DEFS[c].name).join(', '));
-  if (state.company) {
-    row(kit, state.company.name, `${state.company.sharesOwned} of the twenty shares, at ${formatMoney(state.company.sharePrice)}`);
-  }
-  if (state.salvage > 0) row(kit, 'Salvage', `${state.salvage} scavenged chest${state.salvage === 1 ? '' : 's'} from the road`);
+  row(kit, 'Claims', pegged.length ? pegged.map((c) => CAMP_DEFS[c].name).join(', ') : 'none pegged');
   if (state.shaft) {
     row(
       kit,
@@ -662,30 +708,19 @@ export function menuView(state: GameState): ScreenView {
         `${state.shaft.timbered ? ', timbered' : ', untimbered'}${state.shaft.pumped ? ' and pumped' : ''}.`,
     );
   }
-
-  // The man --------------------------------------------------------------
-  const man = panel('CONDITION');
-  row(man, 'Health', `${healthWord(state.health)}${state.illness ? ` — ${ILLNESS_NAMES[state.illness.id]}` : ''}`);
-  row(man, 'Legal record', state.outlawed ? 'Proclaimed an outlaw' : titleCase(state.legal));
-  row(man, 'Licence', licenceWord(state));
-  row(man, 'Hands', `${article(washRank(state))} at the wash, ${article(shaftRank(state))} underground`);
-  if (state.employment) row(man, 'Last engaged as', JOBS[state.employment.job].name);
-
-  // Standing -------------------------------------------------------------
-  const field = panel('STANDING');
-  row(field, 'Standing on the field', `${standingNumber(state.standing)}/100 — reckoned ${standingPhrase(state.standing)}`);
-  row(field, 'Opens doors at', `Council work at ${STANDING_COUNCIL_JOB}; a partner or company at ${COMPANY_FLOAT_STANDING}`);
-  row(field, "Bell's prices", 'follow days served and your legal record');
+  if (state.company) {
+    row(kit, state.company.name, `${state.company.sharesOwned} of the twenty shares, at ${formatMoney(state.company.sharePrice)}`);
+  }
+  if (state.salvage > 0) row(kit, 'Salvage', `${state.salvage} scavenged chest${state.salvage === 1 ? '' : 's'} from the road`);
 
   // The traps ------------------------------------------------------------
-  if (state.notoriety > 0 || state.outlawed || state.hideout || state.gang.length > 0) {
+  // The number and what the colony calls it are figures above; what is left
+  // here is only what wants a sentence.
+  if (state.outlawed || state.hideout || state.gang.length > 0 || rewardFor(state) > 0) {
     const dark = panel('THE TRAPS');
-    if (state.notoriety > 0 || state.outlawed) {
-      row(dark, 'To the traps', `${notorietyPhrase(state.notoriety)}; in the bush ${bushArticle(bushRankOf(state))}`);
-      const reward = rewardFor(state);
-      if (reward > 0) row(dark, 'On your head', formatMoney(reward));
-      if (state.outlawed) row(dark, undefined, 'Proclaimed an outlaw. There is no reforming out of this one.');
-    }
+    const reward = rewardFor(state);
+    if (reward > 0) row(dark, 'On your head', formatMoney(reward));
+    if (state.outlawed) row(dark, undefined, 'Proclaimed an outlaw. There is no reforming out of this one.');
     if (state.hideout) {
       row(
         dark,
@@ -699,6 +734,14 @@ export function menuView(state: GameState): ScreenView {
   const body: string[] = [
     `${formatDate(state.day)} — day ${state.day} of your year, in ${seasonPhrase(state.day)}.`,
     `You are at ${locationName(state.location)}.`,
+    '',
+    // A dash is a drawn thing, standing in for a figure that would be nothing.
+    // Read aloud it is not worth saying, so the note speaks for the square.
+    ...figures.map((f) =>
+      f.value === '—'
+        ? `${f.caption}: ${f.note ?? 'none'}`
+        : `${f.caption}: ${f.value}${f.note ? ` — ${f.note}` : ''}`,
+    ),
   ];
   for (const p of panels) {
     body.push('');
@@ -706,16 +749,18 @@ export function menuView(state: GameState): ScreenView {
     for (const r of p.rows) body.push(r.label ? `${r.label}: ${r.text}` : r.text);
   }
 
-  const atBank = state.location === 'fields-town' || state.location === 'suze-port';
-  const atCamp = isCamp(state.location);
+  // Gold is sold at the buyer's counter and at the bank, where the rate of the
+  // day is on the wall beside it. A shortcut from here sold it blind.
   const menu: MenuItem[] = [
-    item('A', atBank ? 'Sell gold to the bank' : atCamp ? 'Sell gold here, watching the scales' : 'Gold is sold at a bank in town', atBank ? { type: 'sellGold', where: 'bank', watch: false } : atCamp ? { type: 'sellGold', where: 'camp', watch: true } : { type: 'continue' }, atBank ? undefined : atCamp ? 'a poorer rate than town, with your eye on the weights' : undefined, state.goldCentiOz <= 0 || (!atBank && !atCamp)),
-    item('B', 'Save the game', { type: 'save' }),
-    item('C', 'Finish the game', { type: 'finish' }),
+    item('A', 'Save the game', { type: 'save' }),
+    item('B', 'Finish the game', { type: 'finish' }),
     item('0', 'Return to what you were doing', { type: 'continue' }),
   ];
-  const subtitle = `${formatDate(state.day)} — day ${state.day}, ${seasonPhrase(state.day)} — at ${locationName(state.location)}`;
-  return { screen: 'camp', title: 'MENU', subtitle, body, panels, menu };
+  // The day's number and the season are in the status bar under every screen,
+  // so the head carries only the date proper and where you are standing —
+  // which on a phone is the difference between one line and three.
+  const subtitle = `${formatDate(state.day)} — at ${locationName(state.location)}`;
+  return { screen: 'camp', title: 'MENU', subtitle, body, figures, panels, menu };
 }
 
 /**
