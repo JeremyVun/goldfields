@@ -59,12 +59,12 @@ function hash(a: number, b: number): number {
 /** The bank's rate performs a small daily random walk within period bounds. */
 export function walkRate(state: GameState, rng: RNG): void {
   const step = rng.int(-RATE_WALK_STEP, RATE_WALK_STEP);
-  let r = state.bankRate + step;
+  let r = state.bankRatePencePerOz + step;
   // Gentle pull back towards the middle of the band.
   const mid = (BANK_RATE_CEILING + BANK_RATE_FLOOR) / 2;
   r += Math.round((mid - r) * 0.04);
-  state.bankRate = Math.max(BANK_RATE_FLOOR, Math.min(BANK_RATE_CEILING, Math.round(r)));
-  state.rateTrail.push(state.bankRate);
+  state.bankRatePencePerOz = Math.max(BANK_RATE_FLOOR, Math.min(BANK_RATE_CEILING, Math.round(r)));
+  state.rateTrail.push(state.bankRatePencePerOz);
   while (state.rateTrail.length > RATE_TRAIL_DAYS) state.rateTrail.shift();
 }
 
@@ -77,14 +77,14 @@ export type RateTrend = 'rising' | 'easing' | 'steady';
 /** What the rate stood at a week since, so far as the trail remembers. */
 export function rateWeekAgo(state: GameState): number {
   const trail = state.rateTrail;
-  if (trail.length === 0) return state.bankRate;
+  if (trail.length === 0) return state.bankRatePencePerOz;
   const i = Math.max(0, trail.length - 1 - RATE_TREND_WINDOW);
   return trail[i];
 }
 
 /** No arrows and no figures: the word a storekeeper would use. */
 export function rateTrend(state: GameState): RateTrend {
-  const move = state.bankRate - rateWeekAgo(state);
+  const move = state.bankRatePencePerOz - rateWeekAgo(state);
   if (move >= RATE_TREND_THRESHOLD) return 'rising';
   if (move <= -RATE_TREND_THRESHOLD) return 'easing';
   return 'steady';
@@ -95,9 +95,9 @@ export function rateTrendPhrase(state: GameState): string {
   const then = rateWeekAgo(state);
   switch (rateTrend(state)) {
     case 'rising':
-      return `Gold is rising this week: ${formatMoney(then)} the ounce seven days since, and ${formatMoney(state.bankRate)} today.`;
+      return `Gold is rising this week: ${formatMoney(then)} the ounce seven days since, and ${formatMoney(state.bankRatePencePerOz)} today.`;
     case 'easing':
-      return `Gold is easing this week: ${formatMoney(then)} the ounce seven days since, and ${formatMoney(state.bankRate)} today.`;
+      return `Gold is easing this week: ${formatMoney(then)} the ounce seven days since, and ${formatMoney(state.bankRatePencePerOz)} today.`;
     default:
       return `Gold is steady this week, and has scarcely stirred from ${formatMoney(then)} the ounce.`;
   }
@@ -105,25 +105,25 @@ export function rateTrendPhrase(state: GameState): string {
 
 /** What an ounce fetches here today. */
 export function rateAt(state: GameState, where: LocationId): number {
-  if (where === 'fields-town') return state.bankRate;
+  if (where === 'fields-town') return state.bankRatePencePerOz;
   if (where === 'suze-port') {
     const f = 0.88 + hash(state.day, 991) * 0.07;
-    return Math.round(state.bankRate * f);
+    return Math.round(state.bankRatePencePerOz * f);
   }
   if (isCamp(where)) {
     const idx = CAMPS.indexOf(where);
     const f =
       CAMP_RATE_FACTOR.lo + hash(state.day, 17 + idx) * (CAMP_RATE_FACTOR.hi - CAMP_RATE_FACTOR.lo);
-    return Math.round(state.bankRate * f);
+    return Math.round(state.bankRatePencePerOz * f);
   }
-  return Math.round(state.bankRate * 0.7);
+  return Math.round(state.bankRatePencePerOz * 0.7);
 }
 
 /** Bell's Outfitters in Slateford will take gold too, at a shave off the bank. */
 export function storeRate(state: GameState): number {
   const f =
     STORE_RATE_FACTOR.lo + hash(state.day, 313) * (STORE_RATE_FACTOR.hi - STORE_RATE_FACTOR.lo);
-  return Math.round(state.bankRate * f);
+  return Math.round(state.bankRatePencePerOz * f);
 }
 
 export function bestLocalRate(state: GameState): number {
@@ -427,7 +427,7 @@ export function sellGold(
       ? // The Slateford bank pays best in the colony; the Port Gannet branch shaves a little.
         state.location === 'suze-port'
         ? rateAt(state, 'suze-port')
-        : state.bankRate
+        : state.bankRatePencePerOz
       : where === 'store'
         ? storeRate(state)
         : rateAt(state, state.location);

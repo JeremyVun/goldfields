@@ -28,10 +28,10 @@ function outlaw(over: Partial<GameState> = {}): GameState {
   s.outlawed = true;
   s.legal = 'wanted criminal';
   s.heat = { trickeys: 64, pass: 31, town: 48, camps: 22 };
-  s.hideout = { stashPence: 128_400, stashGold: 3120, discovered: false, madeOn: 190 };
+  s.hideout = { stashPence: 128_400, stashCentiOz: 3120, discovered: false, madeOn: 190 };
   s.gang = [
-    { name: 'Long Bill Foy', joined: 214, loyalty: 0.8 },
-    { name: 'Mick the Cobbler', joined: 256, loyalty: 0.4 },
+    { name: 'Long Bill Foy', joined: 214, loyaltyFrac: 0.8 },
+    { name: 'Mick the Cobbler', joined: 256, loyaltyFrac: 0.4 },
   ];
   s.diggersRobbed = 0;
   s.bigJobsDone = 2;
@@ -65,7 +65,7 @@ it('looks', () => {
   rule('MAP — before he has a hideout, no reward');
   const clean = createInitialState(7);
   clean.day = 40;
-  clean.claims['damp-camp'] = { camp: 'damp-camp', quality: 90, workedDays: 2, pegged: 10, proven: false } as never;
+  clean.claims['damp-camp'] = { camp: 'damp-camp', richnessPct: 90, workedDays: 2, pegged: 10, proven: false } as never;
   console.log(buildMap(clean).words.join(' | '));
 
   rule('STATUS LINES');
@@ -85,7 +85,7 @@ it('looks', () => {
     if (end === 'hanged') st.causeOfDeath = 'hanged at the Fields Town assizes';
     if (end === 'pardoned') {
       st.outlawed = false;
-      st.hideout = { ...st.hideout!, stashPence: 0, stashGold: 0 };
+      st.hideout = { ...st.hideout!, stashPence: 0, stashCentiOz: 0 };
     }
     const v = endView(st);
     console.log(v.body.join('\n'));

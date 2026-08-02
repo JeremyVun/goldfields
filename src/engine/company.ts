@@ -214,19 +214,19 @@ export function floatCompany(state: GameState, rng: RNG, log: Log, shares: numbe
   }
 
   const claim = state.claims['deep-mountains'];
-  const reef = claim ? claim.quality : 100;
+  const reef = claim ? claim.richnessPct : 100;
   // The founding claim comes in bottomed at the first level: a going concern.
   const lease: Lease = {
     name: mineName(rng, []),
-    reef,
+    reefPct: reef,
     level: 1,
-    face: rng.int(4, 6),
-    yieldNow: rollYield(rng, reef, 1),
+    faceCrewWeeks: rng.int(4, 6),
+    yieldNowPct: rollYield(rng, reef, 1),
     wet: rng.chance(COMPANY_LEASE_WET),
     pump: false,
     timbered: false,
     flooded: false,
-    progress: 0,
+    progressCrewWeeks: 0,
     plan: null,
   };
   state.claims['deep-mountains'] = null;
@@ -235,15 +235,15 @@ export function floatCompany(state: GameState, rng: RNG, log: Log, shares: numbe
   const name = companyName(rng);
   state.company = {
     name,
-    treasury: subscriptionCost(shares),
+    treasuryPence: subscriptionCost(shares),
     sharesOwned: shares,
     sharesPublic: 0,
     sharesUnsold: COMPANY_SHARES - shares,
-    sharePrice: COMPANY_SHARE_PRICE,
+    sharePricePence: COMPANY_SHARE_PRICE,
     crews: [],
     leases: [lease],
-    weekProfit: [],
-    lastWeekGold: 0,
+    weekProfitPence: [],
+    lastWeekGoldCentiOz: 0,
     foundedOn: state.day,
     lastDividendDay: 0,
     relations: 0,
@@ -276,7 +276,7 @@ export function hireCrew(state: GameState, log: Log): boolean {
     log.raw('Three crews are as many as the ground will carry.', 'neutral');
     return false;
   }
-  if (c.treasury < COMPANY_CREW_WAGES) {
+  if (c.treasuryPence < COMPANY_CREW_WAGES) {
     log.raw('You cannot take on men you have no week\'s wages for.', 'bad');
     return false;
   }
@@ -334,7 +334,7 @@ export function setLeasePlan(state: GameState, log: Log, lease: number, plan: Le
   }
   if (l.plan === plan) return false;
   l.plan = plan;
-  l.progress = 0;
+  l.progressCrewWeeks = 0;
   log.say(plan === 'sink' ? 'company.plan.sink' : 'company.plan.drive', { name: l.name }, 'neutral');
   return true;
 }
@@ -351,11 +351,11 @@ export function installPlant(
   if (!c || !l) return false;
   const cost = plant === 'pump' ? COMPANY_PUMP_PLANT : COMPANY_TIMBER_PLANT;
   if ((plant === 'pump' && l.pump) || (plant === 'timber' && l.timbered)) return false;
-  if (c.treasury < cost) {
+  if (c.treasuryPence < cost) {
     log.raw('The treasury will not stand the machinery.', 'bad');
     return false;
   }
-  c.treasury -= cost;
+  c.treasuryPence -= cost;
   if (plant === 'pump') l.pump = true;
   else l.timbered = true;
   log.say(plant === 'pump' ? 'company.plant.pump' : 'company.plant.timber', { name: l.name }, 'good');
@@ -366,11 +366,11 @@ export function installPlant(
 export function buyBattery(state: GameState, log: Log): boolean {
   const c = state.company;
   if (!c || c.battery) return false;
-  if (c.treasury < COMPANY_BATTERY_COST) {
+  if (c.treasuryPence < COMPANY_BATTERY_COST) {
     log.raw('The treasury will not stand a battery.', 'bad');
     return false;
   }
-  c.treasury -= COMPANY_BATTERY_COST;
+  c.treasuryPence -= COMPANY_BATTERY_COST;
   c.battery = true;
   log.say('company.battery.bought', { name: c.name }, 'good');
   addJournal(state, `${c.name} raised its own stamping battery.`, 'good');
@@ -403,20 +403,20 @@ export function abandonLease(state: GameState, log: Log, lease: number): boolean
 
 /** What the stone at the face is worth today, as a multiplier of an ordinary week. */
 export function leaseValue(lease: Lease): number {
-  if (lease.level === 0 || lease.face <= 0 || lease.flooded || (leaseIsWet(lease) && !lease.pump)) return 0;
-  return lease.yieldNow / 100;
+  if (lease.level === 0 || lease.faceCrewWeeks <= 0 || lease.flooded || (leaseIsWet(lease) && !lease.pump)) return 0;
+  return lease.yieldNowPct / 100;
 }
 
 /** No stone at the face: the mine waits on a decision, it does not lapse (§19.4). */
 export function leaseCutOut(lease: Lease): boolean {
-  return lease.level > 0 && lease.face <= 0;
+  return lease.level > 0 && lease.faceCrewWeeks <= 0;
 }
 
 /** Never a number to the shareholders: a word, as the manager would put it. */
 export function leaseWord(lease: Lease): string {
   if (lease.flooded) return `${lease.name}, full of water`;
   if (lease.level === 0) return `${lease.name}, an unbottomed show`;
-  const v = lease.yieldNow / 100;
+  const v = lease.yieldNowPct / 100;
   const stone =
     v < 0.6
       ? 'poor stone'
@@ -447,7 +447,7 @@ function bestLease(c: Company): Lease | null {
 /** How readily the public will take up scrip this week (§19.1). */
 export function uptakeChance(state: GameState): number {
   const c = state.company;
-  const profitable = !!c && c.weekProfit.slice(-13).reduce((a, b) => a + b, 0) > 0;
+  const profitable = !!c && c.weekProfitPence.slice(-13).reduce((a, b) => a + b, 0) > 0;
   const p =
     COMPANY_UPTAKE_BASE +
     state.standing / COMPANY_UPTAKE_STANDING +
@@ -460,7 +460,7 @@ export function uptakeChance(state: GameState): number {
 function walkPrice(state: GameState, rng: RNG, caveIns: number): void {
   const c = state.company;
   if (!c) return;
-  const recent = c.weekProfit.slice(-4);
+  const recent = c.weekProfitPence.slice(-4);
   const trend = recent.reduce((a, b) => a + b, 0);
   let factor = 1 + rng.range(-COMPANY_PRICE_WALK, COMPANY_PRICE_WALK);
   factor += trend > 0 ? COMPANY_PRICE_PROFIT : trend < 0 ? -COMPANY_PRICE_LOSS : 0;
@@ -468,9 +468,9 @@ function walkPrice(state: GameState, rng: RNG, caveIns: number): void {
   factor -= caveIns * COMPANY_PRICE_CAVEIN;
   factor -= state.agitation / 2000;
   factor += (c.relations ?? 0) / 5000;
-  c.sharePrice = Math.max(
+  c.sharePricePence = Math.max(
     COMPANY_PRICE_CLAMP.lo,
-    Math.min(COMPANY_PRICE_CLAMP.hi, Math.round(c.sharePrice * factor)),
+    Math.min(COMPANY_PRICE_CLAMP.hi, Math.round(c.sharePricePence * factor)),
   );
 }
 
@@ -483,8 +483,8 @@ function sellPublicShares(state: GameState, rng: RNG, log: Log): void {
   if (sold <= 0) return;
   c.sharesUnsold -= sold;
   c.sharesPublic += sold;
-  const proceeds = sold * c.sharePrice;
-  c.treasury += proceeds;
+  const proceeds = sold * c.sharePricePence;
+  c.treasuryPence += proceeds;
   log.say('company.shares.taken', { n: sold, amount: formatMoney(proceeds) }, 'good');
 }
 
@@ -492,7 +492,7 @@ function crewsWalkOff(state: GameState, log: Log): void {
   const c = state.company;
   if (!c) return;
   c.crews = [];
-  c.sharePrice = Math.max(COMPANY_PRICE_CLAMP.lo, Math.round(c.sharePrice / 2));
+  c.sharePricePence = Math.max(COMPANY_PRICE_CLAMP.lo, Math.round(c.sharePricePence / 2));
   addStanding(state, -COMPANY_WALKOFF_STANDING);
   log.say('company.wages.unpaid', { name: c.name }, 'bad');
   addJournal(state, `${c.name} could not find the wages, and the men walked off.`, 'bad');
@@ -522,8 +522,8 @@ export function companyWeek(state: GameState, rng: RNG, log: Log): void {
   for (const lease of c.leases) {
     if (lease.pump && rng.chance(COMPANY_PUMP_BREAK)) {
       const repair = rng.int(COMPANY_PUMP_REPAIR.lo, COMPANY_PUMP_REPAIR.hi);
-      if (c.treasury >= repair) {
-        c.treasury -= repair;
+      if (c.treasuryPence >= repair) {
+        c.treasuryPence -= repair;
         upkeep += repair;
         log.say('company.pump.repaired', { name: lease.name, amount: formatMoney(repair) }, 'neutral');
       } else {
@@ -539,7 +539,7 @@ export function companyWeek(state: GameState, rng: RNG, log: Log): void {
       rng.chance(COMPANY_FLOOD_CHANCE)
     ) {
       lease.flooded = true;
-      lease.progress = 0;
+      lease.progressCrewWeeks = 0;
       log.say('company.flood', { name: lease.name }, 'bad');
     }
   }
@@ -556,19 +556,19 @@ export function companyWeek(state: GameState, rng: RNG, log: Log): void {
             (CLAIM_QUALITY_BASE + CLAIM_QUALITY_SPREAD * rng.exponential()),
         );
         const reef = Math.max(CLAIM_QUALITY_CLAMP.lo, Math.min(CLAIM_QUALITY_CLAMP.hi, q));
-        if (c.leases.length < COMPANY_MAX_LEASES && c.treasury >= COMPANY_TAKEUP_FEE) {
-          c.treasury -= COMPANY_TAKEUP_FEE;
+        if (c.leases.length < COMPANY_MAX_LEASES && c.treasuryPence >= COMPANY_TAKEUP_FEE) {
+          c.treasuryPence -= COMPANY_TAKEUP_FEE;
           const lease: Lease = {
             name: mineName(rng, c.leases.map((l) => l.name)),
-            reef,
+            reefPct: reef,
             level: 0,
-            face: 0,
-            yieldNow: 0,
+            faceCrewWeeks: 0,
+            yieldNowPct: 0,
             wet: rng.chance(COMPANY_LEASE_WET),
             pump: false,
             timbered: false,
             flooded: false,
-            progress: 0,
+            progressCrewWeeks: 0,
             plan: null,
           };
           c.leases.push(lease);
@@ -580,8 +580,8 @@ export function companyWeek(state: GameState, rng: RNG, log: Log): void {
           let worst = c.leases[0];
           for (const l of c.leases) if (leaseValue(l) < leaseValue(worst)) worst = l;
           if (worst.level > 0 && !worst.flooded) {
-            worst.yieldNow = Math.max(worst.yieldNow, rollYield(rng, reef, worst.level));
-            worst.face += rng.int(3, 5);
+            worst.yieldNowPct = Math.max(worst.yieldNowPct, rollYield(rng, reef, worst.level));
+            worst.faceCrewWeeks += rng.int(3, 5);
             log.say('company.prospect.extend', { name: c.name, word: leaseWord(worst) }, 'good');
             addJournal(state, `${c.name} drove ${worst.name} into fresh stone.`, 'good');
           }
@@ -595,9 +595,9 @@ export function companyWeek(state: GameState, rng: RNG, log: Log): void {
       if (!l) continue;
       if (l.flooded) {
         if (!l.pump) continue;
-        l.progress += 1;
-        if (l.progress >= COMPANY_DEWATER_WEEKS) {
-          l.progress = 0;
+        l.progressCrewWeeks += 1;
+        if (l.progressCrewWeeks >= COMPANY_DEWATER_WEEKS) {
+          l.progressCrewWeeks = 0;
           l.flooded = false;
           log.say('company.dewatered', { name: l.name }, 'good');
         }
@@ -605,24 +605,24 @@ export function companyWeek(state: GameState, rng: RNG, log: Log): void {
       }
       if (!l.plan || (leaseIsWet(l) && !l.pump)) continue;
       const cost = l.plan === 'sink' ? COMPANY_SINK_COST : COMPANY_DRIVE_COST;
-      if (c.treasury < cost) continue;
-      c.treasury -= cost;
+      if (c.treasuryPence < cost) continue;
+      c.treasuryPence -= cost;
       development += cost;
-      l.progress += 1;
+      l.progressCrewWeeks += 1;
       const needed =
         l.plan === 'sink' ? COMPANY_SINK_BASE_WEEKS + Math.floor(l.level / 2) : 1;
-      if (l.progress >= needed) {
-        l.progress = 0;
+      if (l.progressCrewWeeks >= needed) {
+        l.progressCrewWeeks = 0;
         if (l.plan === 'sink') {
           l.level += 1;
-          l.yieldNow = rollYield(rng, l.reef, l.level);
-          l.face = rng.int(COMPANY_FACE_WEEKS.lo, COMPANY_FACE_WEEKS.hi);
+          l.yieldNowPct = rollYield(rng, l.reefPct, l.level);
+          l.faceCrewWeeks = rng.int(COMPANY_FACE_WEEKS.lo, COMPANY_FACE_WEEKS.hi);
           log.say('company.sink.bottomed', { name: l.name, word: leaseWord(l) }, 'good');
         } else if (rng.chance(COMPANY_DRIVE_DUFFER)) {
           log.say('company.drive.duffer', { name: l.name }, 'bad');
         } else {
-          l.yieldNow = Math.round(rollYield(rng, l.reef, l.level) * COMPANY_DRIVE_YIELD);
-          l.face += rng.int(COMPANY_DRIVE_FACE.lo, COMPANY_DRIVE_FACE.hi);
+          l.yieldNowPct = Math.round(rollYield(rng, l.reefPct, l.level) * COMPANY_DRIVE_YIELD);
+          l.faceCrewWeeks += rng.int(COMPANY_DRIVE_FACE.lo, COMPANY_DRIVE_FACE.hi);
           log.say('company.drive.fresh', { name: l.name, word: leaseWord(l) }, 'good');
         }
         l.plan = null;
@@ -644,7 +644,7 @@ export function companyWeek(state: GameState, rng: RNG, log: Log): void {
       caveIns += 1;
       const cost = rng.int(COMPANY_CAVEIN_COST.lo, COMPANY_CAVEIN_COST.hi);
       compensation += cost;
-      lease.face = Math.max(0, lease.face - 1);
+      lease.faceCrewWeeks = Math.max(0, lease.faceCrewWeeks - 1);
       log.say('company.cavein', { name: c.name, amount: formatMoney(cost) }, 'bad');
       if (rng.chance(COMPANY_CAVEIN_QUIT)) quitters.add(crew);
       continue;
@@ -656,24 +656,24 @@ export function companyWeek(state: GameState, rng: RNG, log: Log): void {
     const fee = c.battery ? 0 : Math.round(gross * COMPANY_CRUSH_FEE);
     revenue += gross;
     crushing += fee;
-    gold += Math.round((gross * 100) / Math.max(1, state.bankRate));
-    lease.face = Math.max(0, lease.face - drive.wear);
+    gold += Math.round((gross * 100) / Math.max(1, state.bankRatePencePerOz));
+    lease.faceCrewWeeks = Math.max(0, lease.faceCrewWeeks - drive.wear);
     if (leaseCutOut(lease) && !lease.plan) {
       log.say('company.face.cut', { name: lease.name }, 'neutral');
     }
   }
 
   if (c.battery) {
-    const paid = Math.min(COMPANY_BATTERY_UPKEEP, Math.max(0, c.treasury + revenue - crushing));
+    const paid = Math.min(COMPANY_BATTERY_UPKEEP, Math.max(0, c.treasuryPence + revenue - crushing));
     upkeep += paid;
   }
 
-  c.treasury += revenue - crushing - upkeep;
-  c.lastWeekGold = gold;
+  c.treasuryPence += revenue - crushing - upkeep;
+  c.lastWeekGoldCentiOz = gold;
 
   if (compensation > 0) {
-    const paid = Math.min(compensation, c.treasury);
-    c.treasury -= paid;
+    const paid = Math.min(compensation, c.treasuryPence);
+    c.treasuryPence -= paid;
     compensation = paid;
   }
   if (quitters.size > 0) {
@@ -687,12 +687,12 @@ export function companyWeek(state: GameState, rng: RNG, log: Log): void {
   const wages = Math.round(c.crews.length * COMPANY_CREW_WAGES * contractFactor);
   let wagesPaid = 0;
   if (wages > 0) {
-    if (c.treasury >= wages) {
-      c.treasury -= wages;
+    if (c.treasuryPence >= wages) {
+      c.treasuryPence -= wages;
       wagesPaid = wages;
-    } else if (c.treasury + state.moneyPence >= wages) {
-      const fromPocket = wages - c.treasury;
-      c.treasury = 0;
+    } else if (c.treasuryPence + state.moneyPence >= wages) {
+      const fromPocket = wages - c.treasuryPence;
+      c.treasuryPence = 0;
       state.moneyPence -= fromPocket;
       wagesPaid = wages;
       log.say('company.wages.pocket', { amount: formatMoney(fromPocket) }, 'bad');
@@ -702,8 +702,8 @@ export function companyWeek(state: GameState, rng: RNG, log: Log): void {
   }
 
   const net = revenue - crushing - wagesPaid - development - upkeep - compensation;
-  c.weekProfit.push(net);
-  if (c.weekProfit.length > 60) c.weekProfit.shift();
+  c.weekProfitPence.push(net);
+  if (c.weekProfitPence.length > 60) c.weekProfitPence.shift();
   c.lastWeek = {
     revenue,
     crushing,
@@ -743,17 +743,17 @@ export function declareDividend(state: GameState, log: Log, perShare: number): b
   if (!c) return false;
   if (perShare <= 0) return false;
   const total = perShare * issuedShares(c);
-  if (total > c.treasury) {
+  if (total > c.treasuryPence) {
     log.raw('The treasury will not stand a dividend of that size.', 'bad');
     return false;
   }
-  c.treasury -= total;
+  c.treasuryPence -= total;
   const own = perShare * c.sharesOwned;
   state.moneyPence += own;
   c.lastDividendDay = state.day;
-  c.sharePrice = Math.min(
+  c.sharePricePence = Math.min(
     COMPANY_PRICE_CLAMP.hi,
-    Math.round(c.sharePrice * (1 + Math.min(0.25, perShare / c.sharePrice))),
+    Math.round(c.sharePricePence * (1 + Math.min(0.25, perShare / c.sharePricePence))),
   );
   log.say(
     'company.dividend',
@@ -769,7 +769,7 @@ export function sellOut(state: GameState, log: Log): boolean {
   const c = state.company;
   if (!c) return false;
   const amount = Math.round(
-    c.sharesOwned * c.sharePrice + (c.treasury * c.sharesOwned) / COMPANY_SHARES,
+    c.sharesOwned * c.sharePricePence + (c.treasuryPence * c.sharesOwned) / COMPANY_SHARES,
   );
   state.moneyPence += amount;
   state.soldOut = { name: c.name, amount, day: state.day };
@@ -794,7 +794,7 @@ export function sellOwnShares(state: GameState, rng: RNG, log: Log, n: number): 
     log.say('company.shares.noappetite', { name: c.name }, 'bad');
     return false;
   }
-  const amount = sold * c.sharePrice;
+  const amount = sold * c.sharePricePence;
   c.sharesOwned -= sold;
   c.sharesPublic += sold;
   state.moneyPence += amount;
@@ -807,7 +807,7 @@ export function buyBackShares(state: GameState, log: Log, n: number): boolean {
   const c = state.company;
   if (!c) return false;
   const available = c.sharesPublic + c.sharesUnsold;
-  const want = Math.min(n, available, Math.floor(state.moneyPence / Math.max(1, c.sharePrice)));
+  const want = Math.min(n, available, Math.floor(state.moneyPence / Math.max(1, c.sharePricePence)));
   if (want <= 0) {
     log.raw(
       available <= 0
@@ -819,14 +819,14 @@ export function buyBackShares(state: GameState, log: Log, n: number): boolean {
   }
   const fromUnsold = Math.min(want, c.sharesUnsold);
   const fromPublic = want - fromUnsold;
-  const amount = want * c.sharePrice;
+  const amount = want * c.sharePricePence;
   state.moneyPence -= amount;
   c.sharesUnsold -= fromUnsold;
   c.sharesPublic -= fromPublic;
   c.sharesOwned += want;
   // Scrip bought back off the company's own hands puts money in the treasury;
   // scrip bought off a shareholder puts it in his.
-  c.treasury += fromUnsold * c.sharePrice;
+  c.treasuryPence += fromUnsold * c.sharePricePence;
   log.say('company.shares.buy', { n: want, amount: formatMoney(amount), name: c.name }, 'neutral');
   return true;
 }
@@ -835,9 +835,9 @@ export function buyBackShares(state: GameState, log: Log, n: number): boolean {
 export function shakeSharePrice(state: GameState, factor: number): void {
   const c = state.company;
   if (!c) return;
-  c.sharePrice = Math.max(
+  c.sharePricePence = Math.max(
     COMPANY_PRICE_CLAMP.lo,
-    Math.min(COMPANY_PRICE_CLAMP.hi, Math.round(c.sharePrice * factor)),
+    Math.min(COMPANY_PRICE_CLAMP.hi, Math.round(c.sharePricePence * factor)),
   );
 }
 
@@ -847,12 +847,12 @@ export const JOIN_PRICE_FACTOR = 1 - COMPANY_JOIN_PRICE_DROP;
 export function companyReport(state: GameState): string | null {
   const c = state.company;
   if (!c) return null;
-  const last = c.weekProfit[c.weekProfit.length - 1] ?? 0;
+  const last = c.weekProfitPence[c.weekProfitPence.length - 1] ?? 0;
   if (c.crews.length === 0) {
-    return `MINING INTELLIGENCE. ${c.name} reports no men at work this week; the shares are quoted at ${formatMoney(c.sharePrice)}, and quoted thinly.`;
+    return `MINING INTELLIGENCE. ${c.name} reports no men at work this week; the shares are quoted at ${formatMoney(c.sharePricePence)}, and quoted thinly.`;
   }
-  if (c.lastWeekGold > 0) {
-    return `MINING INTELLIGENCE. ${c.name} washed ${formatGold(c.lastWeekGold)} for the week, ${last >= 0 ? 'to a profit' : 'and still to a loss'}. Shares ${formatMoney(c.sharePrice)}.`;
+  if (c.lastWeekGoldCentiOz > 0) {
+    return `MINING INTELLIGENCE. ${c.name} washed ${formatGold(c.lastWeekGoldCentiOz)} for the week, ${last >= 0 ? 'to a profit' : 'and still to a loss'}. Shares ${formatMoney(c.sharePricePence)}.`;
   }
-  return `MINING INTELLIGENCE. ${c.name} reports a poor week at the workings and nothing worth crushing. Shares ${formatMoney(c.sharePrice)}.`;
+  return `MINING INTELLIGENCE. ${c.name} reports a poor week at the workings and nothing worth crushing. Shares ${formatMoney(c.sharePricePence)}.`;
 }

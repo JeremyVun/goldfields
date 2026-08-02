@@ -20,7 +20,7 @@ describe('the ledger fields that carry their unit in the name', () => {
     state.shaft = {
       camp: 'snakey-gully',
       depthFeet: 46,
-      bottomAt: 64,
+      bottomAtFeet: 64,
       bottomed: false,
       payable: false,
       richDaysLeft: 0,
@@ -35,7 +35,7 @@ describe('the ledger fields that carry their unit in the name', () => {
     expect(back?.hearth.homeStashCentiOz).toBe(431);
     expect(back?.hearth.homeStashPence).toBe(1_200);
     expect(back?.shaft?.depthFeet).toBe(46);
-    expect(back?.shaft?.bottomAt).toBe(64);
+    expect(back?.shaft?.bottomAtFeet).toBe(64);
   });
 
   it('gives a fresh game a clean sheet under every one of them', () => {

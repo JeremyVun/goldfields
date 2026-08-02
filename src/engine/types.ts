@@ -87,8 +87,8 @@ export type Route = 'trickeys' | 'pass';
 export type TravelMode = 'walk' | 'wagon' | 'horse';
 
 export interface Claim {
-  /** Hidden richness multiplier ×100 (so 100 = 1.0×). Rolled when pegged. */
-  quality: number;
+  /** Hidden, and rolled when the ground is pegged. 100 is ordinary dirt. */
+  richnessPct: number;
   /** Days of digging done on this ground. */
   workedDays: number;
   peggedOn: number;
@@ -153,7 +153,7 @@ export interface Estate {
   gazetteShare: boolean;
   works: PublicWork[];
   /** Day gazetted Justice of the Peace; null until the commission (§28.1). */
-  jpSince: number | null;
+  jpSinceDay: number | null;
   /** Next monthly court day, once commissioned. */
   nextCourtDay: number;
   /** Day of the last placed story; the press runs one in fourteen days. */
@@ -199,7 +199,7 @@ export const HEAT_ZONES: HeatZone[] = ['trickeys', 'pass', 'town', 'camps'];
 /** A camp in the ranges, and the outlaw's bank under a flat stone. */
 export interface Hideout {
   stashPence: number;
-  stashGold: number;
+  stashCentiOz: number;
   discovered: boolean;
   madeOn: number;
 }
@@ -207,8 +207,8 @@ export interface Hideout {
 export interface GangMember {
   name: string;
   joined: number;
-  /** 0 to 1. A man who shares fairly in a job grows loyal; a poor one informs. */
-  loyalty: number;
+  /** A man who shares fairly in a job grows loyal; a poor one informs. */
+  loyaltyFrac: number;
 }
 
 /** What a harbourer or a shanty keeper sold you, and how long it is good for. */
@@ -285,7 +285,7 @@ export interface Hearth {
   /** The Port Gannet household exists. */
   cottage: boolean;
   /** What was paid for it; the deed's value in the net-worth ledger. */
-  cottagePaid: number;
+  cottagePaidPence: number;
   nextEvent: HearthEvent | null;
   eventsKept: number;
   eventsMissed: number;
@@ -314,8 +314,8 @@ export interface Hearth {
 export interface ShaftState {
   camp: CampId;
   depthFeet: number;
-  /** Feet at which this shaft bottoms (20-100, faithful). */
-  bottomAt: number;
+  /** Where this shaft bottoms (20-100, faithful). */
+  bottomAtFeet: number;
   bottomed: boolean;
   /** True once bottomed and the reef proved payable. */
   payable: boolean;
@@ -346,14 +346,14 @@ export interface Crew {
 export interface Lease {
   /** "the North Star" — fixed at discovery, and printed everywhere. */
   name: string;
-  /** ×100 quality of the lode, rolled at discovery. Never shown as a number. */
-  reef: number;
+  /** The lode's own richness, rolled at discovery. Never shown as a number. */
+  reefPct: number;
   /** 0 = an unbottomed show; each level after is a sunk development project. */
   level: number;
-  /** Crew-weeks of payable stone left at the current level. */
-  face: number;
-  /** ×100 worth of the stone now being broken; rolled when a level or drive opens. */
-  yieldNow: number;
+  /** Payable stone left at the current level. */
+  faceCrewWeeks: number;
+  /** Worth of the stone now being broken; rolled when a level or drive opens. */
+  yieldNowPct: number;
   /** Rolled at discovery; all ground below level 2 counts wet regardless. */
   wet: boolean;
   /** Pumping plant installed (treasury capital, §19.4). */
@@ -362,8 +362,8 @@ export interface Lease {
   timbered: boolean;
   /** A flooded mine yields nothing until a crew and a pump dewater it. */
   flooded: boolean;
-  /** Crew-weeks put into the current development job (sinking, driving, dewatering). */
-  progress: number;
+  /** Work done on the current development job (sinking, driving, dewatering). */
+  progressCrewWeeks: number;
   /** What a developing crew is at on this lease. */
   plan: LeasePlan | null;
 }
@@ -381,19 +381,18 @@ export interface WeekBooks {
 
 export interface Company {
   name: string;
-  /** Pence in the company's own account. */
-  treasury: number;
+  treasuryPence: number;
   sharesOwned: number;
   sharesPublic: number;
   sharesUnsold: number;
-  /** Pence a share; walks weekly. */
-  sharePrice: number;
+  /** Walks weekly. */
+  sharePricePence: number;
   crews: Crew[];
   leases: Lease[];
-  /** Trailing weekly profit in pence, most recent last. */
-  weekProfit: number[];
-  /** Centi-ounces the crews washed last week, for the report. */
-  lastWeekGold: number;
+  /** Trailing weekly profit, most recent last. */
+  weekProfitPence: number[];
+  /** What the crews washed last week, for the report. */
+  lastWeekGoldCentiOz: number;
   foundedOn: number;
   lastDividendDay: number;
   /** Confidence built by meeting investors and agents at Port Gannet, 0-100. */
@@ -646,10 +645,10 @@ export interface GameState {
   horseKnowledge: number;
   horseInspection: { brumby: number; hack: number };
   lodging: Lodging;
-  tentGroundPaidUntil: number;
+  tentGroundPaidUntilDay: number;
   /** Lodging chosen at Slateford; Port Gannet keeps the legacy fields above. */
   slatefordLodging: Lodging;
-  slatefordTentGroundPaidUntil: number;
+  slatefordTentGroundPaidUntilDay: number;
   salvage: number;
   /** A bought or earned meal waiting to be eaten at the next day-end. */
   fedToday: boolean;
@@ -724,8 +723,8 @@ export interface GameState {
   minersRightUntilDay: number;
   aftermathNoted: boolean;
 
-  /** Bank of Australasia buying rate, pence per ounce. */
-  bankRate: number;
+  /** The Bank of Australasia's buying rate. */
+  bankRatePencePerOz: number;
   /** The last fortnight of the bank's rate, oldest first (§21). */
   rateTrail: number[];
   /** What the player was worth, sampled every seventh day (§21). */

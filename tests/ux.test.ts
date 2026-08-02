@@ -132,10 +132,10 @@ describe('the ledger of what a man is worth (§21)', () => {
     delete old.rateTrail;
     const migrated = deserialise(JSON.stringify(old)) as GameState;
     expect(migrated.worthHistory).toEqual([]);
-    expect(migrated.rateTrail).toEqual([state.bankRate]);
+    expect(migrated.rateTrail).toEqual([state.bankRatePencePerOz]);
     // A trail of rubbish is thrown out rather than charted.
     const junk = deserialise(JSON.stringify({ ...old, rateTrail: ['x', null] })) as GameState;
-    expect(junk.rateTrail).toEqual([state.bankRate]);
+    expect(junk.rateTrail).toEqual([state.bankRatePencePerOz]);
   });
 });
 
@@ -147,7 +147,7 @@ describe('the trend of the gold rate (§21)', () => {
   function trail(...rates: number[]): GameState {
     const state = fresh();
     state.rateTrail = rates.slice();
-    state.bankRate = rates[rates.length - 1];
+    state.bankRatePencePerOz = rates[rates.length - 1];
     return state;
   }
 
@@ -156,7 +156,7 @@ describe('the trend of the gold rate (§21)', () => {
     const rng = makeRng(5);
     for (let i = 0; i < 40; i++) walkRate(state, rng);
     expect(state.rateTrail).toHaveLength(RATE_TRAIL_DAYS);
-    expect(state.rateTrail[RATE_TRAIL_DAYS - 1]).toBe(state.bankRate);
+    expect(state.rateTrail[RATE_TRAIL_DAYS - 1]).toBe(state.bankRatePencePerOz);
   });
 
   it('reads the week’s movement in words, and never in arrows', () => {
@@ -183,7 +183,7 @@ describe('the trend of the gold rate (§21)', () => {
   it('is told to the player at the bank and in the Times', () => {
     const state = fresh();
     state.rateTrail = [800, 810, 820, 830, 840, 850, 860, 900];
-    state.bankRate = 900;
+    state.bankRatePencePerOz = 900;
     // Not in the menu: the menu is the man's own reckoning, and the price of
     // gold is the market's. It is told where gold is actually sold.
     expect(menuView(state).body.join('\n')).not.toMatch(/Gold is rising this week/);
@@ -318,23 +318,23 @@ describe('the sheet, marked up (§21)', () => {
 
   it('marks pegged ground, a rush, and the company’s workings in the player’s own hand', () => {
     const state = digger('deep-mountains', 200);
-    state.claims['damp-camp'] = { quality: 120, workedDays: 3, peggedOn: 100, proven: false };
-    state.claims['snakey-gully'] = { quality: 80, workedDays: 60, peggedOn: 60, proven: false };
+    state.claims['damp-camp'] = { richnessPct: 120, workedDays: 3, peggedOn: 100, proven: false };
+    state.claims['snakey-gully'] = { richnessPct: 80, workedDays: 60, peggedOn: 60, proven: false };
     state.rush = { camp: 'snakey-gully', untilDay: 214, factor: 2, since: 198, base: 1 };
     state.company = {
       name: 'The Golden Hope Quartz Mining Co.',
-      treasury: pounds(50),
+      treasuryPence: pounds(50),
       sharesOwned: 12,
       sharesPublic: 4,
       sharesUnsold: 4,
-      sharePrice: pounds(14),
+      sharePricePence: pounds(14),
       crews: [{ task: 'mine' }],
       leases: [{
-        name: 'the North Star', reef: 140, level: 1, face: 5, yieldNow: 140,
-        wet: false, pump: false, timbered: false, flooded: false, progress: 0, plan: null,
+        name: 'the North Star', reefPct: 140, level: 1, faceCrewWeeks: 5, yieldNowPct: 140,
+        wet: false, pump: false, timbered: false, flooded: false, progressCrewWeeks: 0, plan: null,
       }],
-      weekProfit: [],
-      lastWeekGold: 0,
+      weekProfitPence: [],
+      lastWeekGoldCentiOz: 0,
       foundedOn: 150,
       lastDividendDay: 0,
       battery: false,
@@ -362,7 +362,7 @@ describe('the sheet, marked up (§21)', () => {
     // Six short lines at the very most, and none of them a paragraph: the
     // drawing is the map, and the prose is only what a man's year has added.
     const state = digger('deep-mountains', 300);
-    state.claims['damp-camp'] = { quality: 120, workedDays: 3, peggedOn: 100, proven: false };
+    state.claims['damp-camp'] = { richnessPct: 120, workedDays: 3, peggedOn: 100, proven: false };
     state.rush = { camp: 'snakey-gully', untilDay: 320, factor: 2, since: 298, base: 1 };
     const body = mapView(state).body;
     expect(body.length).toBeLessThanOrEqual(6);
@@ -448,15 +448,15 @@ describe('camps that read like different places (§21)', () => {
     const state = digger('deep-mountains', 200);
     state.company = {
       name: 'The Try Again Consols',
-      treasury: shillings(40),
+      treasuryPence: shillings(40),
       sharesOwned: 12,
       sharesPublic: 0,
       sharesUnsold: 8,
-      sharePrice: pounds(10),
+      sharePricePence: pounds(10),
       crews: [],
       leases: [],
-      weekProfit: [],
-      lastWeekGold: 0,
+      weekProfitPence: [],
+      lastWeekGoldCentiOz: 0,
       foundedOn: 150,
       lastDividendDay: 0,
       battery: false,

@@ -38,7 +38,7 @@ function equipmentLines(state: GameState): string[] {
   if (claims.length) lines.push(`Claims pegged at ${claims.map((c) => CAMP_DEFS[c].name).join(', ')}.`);
   if (state.company) {
     lines.push(
-      `${state.company.sharesOwned} of the twenty shares in ${state.company.name}, at ${formatMoney(state.company.sharePrice)}.`,
+      `${state.company.sharesOwned} of the twenty shares in ${state.company.name}, at ${formatMoney(state.company.sharePricePence)}.`,
     );
   }
   if (state.salvage > 0) lines.push(`${state.salvage} scavenged chest${state.salvage === 1 ? '' : 's'} from the road.`);
@@ -138,7 +138,7 @@ function deathNotice(state: GameState): string {
 function buriedRumourLines(state: GameState): string[] {
   const h = state.hideout;
   if (!h || h.discovered) return [];
-  if (h.stashPence <= 0 && h.stashGold <= 0) return [];
+  if (h.stashPence <= 0 && h.stashCentiOz <= 0) return [];
   if (!state.outlawed && state.notoriety < 15) return [];
   return [sayFixed('end.buried.rumour', state.seed ^ (state.day * 7919)), ''];
 }
@@ -206,7 +206,7 @@ function otherLedgerLines(state: GameState): string[] {
     out.push(
       tally(
         'Under the stone',
-        `${formatMoney(state.hideout.stashPence)} and ${formatGold(state.hideout.stashGold)}, worth ${formatMoney(stashWorth(state))}`,
+        `${formatMoney(state.hideout.stashPence)} and ${formatGold(state.hideout.stashCentiOz)}, worth ${formatMoney(stashWorth(state))}`,
       ),
     );
   }
@@ -224,7 +224,7 @@ function otherLedgerLines(state: GameState): string[] {
 function estateLedgerLines(state: GameState): string[] {
   const e = state.estate;
   const deeds = estateDeeds(state);
-  if (deeds.length === 0 && e.works.length === 0 && e.jpSince === null) return [];
+  if (deeds.length === 0 && e.works.length === 0 && e.jpSinceDay === null) return [];
   const out: string[] = ['', 'THE ESTATE — WHAT YOUR NAME IS ON'];
   for (const d of deeds) out.push(tally('Deed', d));
   for (const w of e.works) {
@@ -232,7 +232,7 @@ function estateLedgerLines(state: GameState): string[] {
     out.push(`    ${plaqueLine(state, w.id)}`);
   }
   if (isJP(state)) {
-    out.push(tally('Commission', `Justice of the Peace, gazetted day ${e.jpSince}`));
+    out.push(tally('Commission', `Justice of the Peace, gazetted day ${e.jpSinceDay}`));
     out.push('    Arrived a new chum; sits on the Slateford bench now.');
   }
   return out;
@@ -266,7 +266,7 @@ export function endView(state: GameState): ScreenView {
   body.push(tally('Money in hand', formatMoney(state.moneyPence)));
   body.push(tally('On deposit', formatMoney(state.bankPence)));
   body.push(
-    tally('Gold held', `${formatGold(gold)} (worth ${formatMoney(Math.floor((gold * state.bankRate) / 100))})`),
+    tally('Gold held', `${formatGold(gold)} (worth ${formatMoney(Math.floor((gold * state.bankRatePencePerOz) / 100))})`),
   );
   if (c) body.push(tally('Scrip and treasury', formatMoney(scrip)));
   if (buried > 0) body.push(tally('Buried in the ranges', `${formatMoney(buried)} (no bank knows of it)`));
@@ -283,9 +283,9 @@ export function endView(state: GameState): ScreenView {
   }
   if (c) {
     body.push(`${c.name.toUpperCase()} — THE COMPANY'S BOOKS`);
-    body.push(tally('Treasury', formatMoney(c.treasury)));
+    body.push(tally('Treasury', formatMoney(c.treasuryPence)));
     body.push(
-      tally('Shares', `${c.sharesOwned} yours of ${COMPANY_SHARES}, at ${formatMoney(c.sharePrice)} the share`),
+      tally('Shares', `${c.sharesOwned} yours of ${COMPANY_SHARES}, at ${formatMoney(c.sharePricePence)} the share`),
     );
     body.push(
       tally(

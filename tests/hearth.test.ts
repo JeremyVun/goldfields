@@ -58,7 +58,7 @@ describe('Hearth & Kin', () => {
     const beforeCottage = s.moneyPence + s.bankPence;
     s = step(s, { type: 'buyCottage', size: 'small' }, rng).state;
     expect(s.hearth.rung).toBe('settled');
-    expect(s.hearth.cottagePaid).toBe(COTTAGE_PRICE_SMALL);
+    expect(s.hearth.cottagePaidPence).toBe(COTTAGE_PRICE_SMALL);
     expect(s.moneyPence + s.bankPence).toBe(beforeCottage - COTTAGE_PRICE_SMALL);
     expect(sleepsAtHearth(s)).toBe(true);
   });
@@ -112,7 +112,7 @@ describe('Hearth & Kin', () => {
     s.location = 'suze-port';
     s.hearth.rung = 'settled';
     s.hearth.cottage = true;
-    s.hearth.cottagePaid = pounds(60);
+    s.hearth.cottagePaidPence = pounds(60);
     const before = s.moneyPence;
     s = step(s, { type: 'homeStash', what: 'money', amount: -shillings(5) }, makeRng(16)).state;
     expect(s.moneyPence).toBe(before);

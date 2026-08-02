@@ -55,7 +55,7 @@ export function emptyHearth(): Hearth {
     intended: null,
     rung: 'none',
     cottage: false,
-    cottagePaid: 0,
+    cottagePaidPence: 0,
     nextEvent: null,
     eventsKept: 0,
     eventsMissed: 0,
@@ -82,7 +82,7 @@ export function emptyEstate(): Estate {
     store: null,
     gazetteShare: false,
     works: [],
-    jpSince: null,
+    jpSinceDay: null,
     nextCourtDay: 0,
     storyPlacedOn: 0,
     calledRushBurnedOn: 0,
@@ -175,9 +175,9 @@ export function createInitialState(seed: number): GameState {
     horseKnowledge: 0,
     horseInspection: { brumby: 0, hack: 0 },
     lodging: 'rough',
-    tentGroundPaidUntil: 0,
+    tentGroundPaidUntilDay: 0,
     slatefordLodging: 'rough',
-    slatefordTentGroundPaidUntil: 0,
+    slatefordTentGroundPaidUntilDay: 0,
     salvage: 0,
     fedToday: false,
 
@@ -228,7 +228,7 @@ export function createInitialState(seed: number): GameState {
     minersRightUntilDay: 0,
     aftermathNoted: false,
 
-    bankRate: BANK_RATE_START,
+    bankRatePencePerOz: BANK_RATE_START,
     rateTrail: [BANK_RATE_START],
     worthHistory: [STARTING_MONEY],
     rush: null,
@@ -288,7 +288,7 @@ export function cloneCompany(c: Company | null): Company | null {
     ...c,
     crews: c.crews.map((crew) => ({ ...crew })),
     leases: c.leases.map((lease) => ({ ...lease })),
-    weekProfit: c.weekProfit.slice(),
+    weekProfitPence: c.weekProfitPence.slice(),
   };
 }
 
@@ -495,7 +495,7 @@ export function fieldSympathy(state: GameState): boolean {
 export function stashWorth(state: GameState): number {
   const h = state.hideout;
   if (!h) return 0;
-  return h.stashPence + goldValue(h.stashGold, state.bankRate);
+  return h.stashPence + goldValue(h.stashCentiOz, state.bankRatePencePerOz);
 }
 
 export function addStanding(state: GameState, amount: number): void {
@@ -588,7 +588,7 @@ export function companyWorth(state: GameState): number {
   if (!c) return 0;
   return Math.max(
     0,
-    Math.round(c.sharesOwned * c.sharePrice + (c.treasury * c.sharesOwned) / COMPANY_SHARES),
+    Math.round(c.sharesOwned * c.sharePricePence + (c.treasuryPence * c.sharesOwned) / COMPANY_SHARES),
   );
 }
 
@@ -615,7 +615,7 @@ export function estateWorth(state: GameState): number {
 /** The cottage at its deed price, and what is laid by under its floor (§32.2). */
 export function hearthWorth(state: GameState): number {
   const h = state.hearth;
-  return h.cottagePaid + h.homeStashPence + goldValue(h.homeStashCentiOz, state.bankRate);
+  return h.cottagePaidPence + h.homeStashPence + goldValue(h.homeStashCentiOz, state.bankRatePencePerOz);
 }
 
 /** Everything the player is worth, valued at today's bank rate. */
@@ -623,7 +623,7 @@ export function netWorth(state: GameState): number {
   return (
     state.moneyPence +
     state.bankPence +
-    goldValue(state.goldCentiOz, state.bankRate) +
+    goldValue(state.goldCentiOz, state.bankRatePencePerOz) +
     companyWorth(state) +
     stashWorth(state) +
     estateWorth(state) +

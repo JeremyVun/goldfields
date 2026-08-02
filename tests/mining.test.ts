@@ -21,7 +21,7 @@ import type { CampId, Claim, GameState, MiningMethod } from '../src/engine/types
 
 /** Ordinary, unworked ground, so that yields are not confounded by quality. */
 export function ordinaryClaim(day = 1): Claim {
-  return { quality: 100, workedDays: 0, peggedOn: day, proven: false };
+  return { richnessPct: 100, workedDays: 0, peggedOn: day, proven: false };
 }
 
 function atCamp(camp: CampId, seed = 4): { state: GameState; rng: ReturnType<typeof makeRng>; log: Log } {
@@ -191,7 +191,7 @@ describe('shafts', () => {
       const { state, rng, log } = atCamp('deep-mountains', seed);
       state.items.pick = state.items.shovel = state.items.ropeBucket = 1;
       mineOneDay(state, rng, log, 'shaft');
-      if (state.shaft) depths.add(state.shaft.bottomAt);
+      if (state.shaft) depths.add(state.shaft.bottomAtFeet);
     }
     for (const d of depths) {
       expect(d).toBeGreaterThanOrEqual(SHAFT_DEPTH.lo);

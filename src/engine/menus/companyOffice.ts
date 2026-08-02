@@ -131,8 +131,8 @@ export function companyView(state: GameState): ScreenView {
       menu.push(
         item(MENU_LETTERS[menu.length], `${prefix}Sink ${lease.name} to the next level`, { type: 'setLeasePlan', lease: i, plan: 'sink' }, leaseIsWet(lease) && !lease.pump ? 'install a pumping plant before working below the water' : `${formatMoney(COMPANY_SINK_COST)} in materials each developing crew-week`, lease.plan === 'sink' || (leaseIsWet(lease) && !lease.pump)),
         item(MENU_LETTERS[menu.length + 1], `${prefix}Drive along the present level`, { type: 'setLeasePlan', lease: i, plan: 'drive' }, leaseIsWet(lease) && !lease.pump ? 'install a pumping plant before working below the water' : `${formatMoney(COMPANY_DRIVE_COST)} and one developing crew-week; a cheaper chance at a fresh face`, lease.level === 0 || lease.plan === 'drive' || (leaseIsWet(lease) && !lease.pump)),
-        item(MENU_LETTERS[menu.length + 2], `${prefix}Install a pumping plant — ${formatMoney(COMPANY_PUMP_PLANT)}`, { type: 'installPlant', lease: i, plant: 'pump' }, 'needed for wet or deep ground; paid from the treasury', lease.pump || c.treasury < COMPANY_PUMP_PLANT),
-        item(MENU_LETTERS[menu.length + 3], `${prefix}Set standing timber-work — ${formatMoney(COMPANY_TIMBER_PLANT)}`, { type: 'installPlant', lease: i, plant: 'timber' }, 'halves the chance of a cave-in; paid from the treasury', lease.timbered || c.treasury < COMPANY_TIMBER_PLANT),
+        item(MENU_LETTERS[menu.length + 2], `${prefix}Install a pumping plant — ${formatMoney(COMPANY_PUMP_PLANT)}`, { type: 'installPlant', lease: i, plant: 'pump' }, 'needed for wet or deep ground; paid from the treasury', lease.pump || c.treasuryPence < COMPANY_PUMP_PLANT),
+        item(MENU_LETTERS[menu.length + 3], `${prefix}Set standing timber-work — ${formatMoney(COMPANY_TIMBER_PLANT)}`, { type: 'installPlant', lease: i, plant: 'timber' }, 'halves the chance of a cave-in; paid from the treasury', lease.timbered || c.treasuryPence < COMPANY_TIMBER_PLANT),
         item(MENU_LETTERS[menu.length + 4], `${prefix}Abandon ${lease.name}`, { type: 'abandonLease', lease: i }, 'forfeit every level and item of plant in this mine'),
       );
     });
@@ -147,13 +147,13 @@ export function companyView(state: GameState): ScreenView {
       subtitle: c.name,
       body: [
         `The mine is driven ${c.driving}. ${c.battery ? 'The company owns its stamping battery.' : 'A public battery takes fifteen per cent of every crushing.'}`,
-        `Treasury: ${formatMoney(c.treasury)}.`,
+        `Treasury: ${formatMoney(c.treasuryPence)}.`,
       ],
       menu: [
         item('1', 'Drive cautiously', { type: 'setDriving', rate: 'cautious' }, 'less stone, half the cave-in risk and slower wear', c.driving === 'cautious'),
         item('2', 'Drive at the ordinary rate', { type: 'setDriving', rate: 'ordinary' }, 'the manager’s usual balance of output and risk', c.driving === 'ordinary'),
         item('3', 'Drive her hard', { type: 'setDriving', rate: 'hard' }, 'more stone now, twice the cave-in risk and faster exhaustion', c.driving === 'hard'),
-        item('B', `Raise a stamping battery — ${formatMoney(COMPANY_BATTERY_COST)}`, { type: 'buyBattery' }, `${formatMoney(COMPANY_BATTERY_COST)} capital and £3 a week upkeep; crushing fees end`, c.battery || c.treasury < COMPANY_BATTERY_COST),
+        item('B', `Raise a stamping battery — ${formatMoney(COMPANY_BATTERY_COST)}`, { type: 'buyBattery' }, `${formatMoney(COMPANY_BATTERY_COST)} capital and £3 a week upkeep; crushing fees end`, c.battery || c.treasuryPence < COMPANY_BATTERY_COST),
         back('company'),
       ],
     };
@@ -165,10 +165,10 @@ export function companyView(state: GameState): ScreenView {
     return {
       screen: 'company-dividend',
       title: 'DECLARE A DIVIDEND',
-      subtitle: `${c.name} · treasury ${formatMoney(c.treasury)}`,
+      subtitle: `${c.name} · treasury ${formatMoney(c.treasuryPence)}`,
       body: ['A dividend is paid on every issued share. Your part comes to hand; the public’s leaves the company.'],
       menu: [
-        ...dividends.map(([key, per]) => item(key, `${formatMoney(per)} the share`, { type: 'declareDividend', perShare: per }, `${formatMoney(per * issued)} from treasury; ${formatMoney(per * c.sharesOwned)} to you`, per * issued > c.treasury)),
+        ...dividends.map(([key, per]) => item(key, `${formatMoney(per)} the share`, { type: 'declareDividend', perShare: per }, `${formatMoney(per * issued)} from treasury; ${formatMoney(per * c.sharesOwned)} to you`, per * issued > c.treasuryPence)),
         back('company'),
       ],
     };
@@ -178,8 +178,8 @@ export function companyView(state: GameState): ScreenView {
   // may do about them. Stacked one above the other they cannot both be read,
   // so the books stand in a pane of their own and the actions get the height.
   const rows: AsideRow[] = [
-    { label: 'Treasury', value: formatMoney(c.treasury), tone: c.treasury <= 0 ? 'bad' : undefined },
-    { label: 'Price of the day', value: `${formatMoney(c.sharePrice)} the share` },
+    { label: 'Treasury', value: formatMoney(c.treasuryPence), tone: c.treasuryPence <= 0 ? 'bad' : undefined },
+    { label: 'Price of the day', value: `${formatMoney(c.sharePricePence)} the share` },
     { label: 'Your holding', value: formatMoney(worth) },
     { label: 'Wages', value: `${formatMoney(COMPANY_CREW_WAGES)} the week, each crew` },
     { label: 'Port relations', value: `${Math.round(c.relations ?? 0)}/100` },
@@ -206,7 +206,7 @@ export function companyView(state: GameState): ScreenView {
   }
 
   const body: string[] = [`Founded on day ${c.foundedOn}.`];
-  const trail = c.weekProfit.slice(-6);
+  const trail = c.weekProfitPence.slice(-6);
   if (trail.length) {
     // A run of sums set as a sentence wraps in the middle of a figure and can
     // be neither read nor compared. Ruled off in aligned columns, oldest
@@ -219,9 +219,9 @@ export function companyView(state: GameState): ScreenView {
       body.push('  ' + cells.slice(i, i + 3).map((t) => t.padStart(w)).join('   '));
     }
   }
-  if (c.lastWeekGold > 0) {
+  if (c.lastWeekGoldCentiOz > 0) {
     body.push('');
-    body.push(`The crews washed ${formatGold(c.lastWeekGold)} last week.`);
+    body.push(`The crews washed ${formatGold(c.lastWeekGoldCentiOz)} last week.`);
   }
 
   const issued = c.sharesOwned + c.sharesPublic;
@@ -244,20 +244,20 @@ export function companyView(state: GameState): ScreenView {
         : 'men are taken on at the workings, not by letter',
       state.location !== 'deep-mountains' ||
         c.crews.length >= COMPANY_MAX_CREWS ||
-        c.treasury < COMPANY_CREW_WAGES,
+        c.treasuryPence < COMPANY_CREW_WAGES,
     ),
   );
   menu.push(item('F', 'Pay off a crew', { type: 'fireCrew' }, undefined, c.crews.length === 0));
   menu.push(item('D', 'Declare a dividend', { type: 'goto', screen: 'company-dividend' }, 'choose the amount per issued share', issued <= 0));
   menu.push(
-    item('S', `Sell one share at ${formatMoney(c.sharePrice)}`, { type: 'sellOwnShares', n: 1 }, 'if there is any appetite for it', c.sharesOwned <= 0),
+    item('S', `Sell one share at ${formatMoney(c.sharePricePence)}`, { type: 'sellOwnShares', n: 1 }, 'if there is any appetite for it', c.sharesOwned <= 0),
   );
   menu.push(
     item('V', 'Sell five shares', { type: 'sellOwnShares', n: 5 }, 'fewer than five retained and you are out of it altogether', c.sharesOwned <= 0),
   );
   menu.push(
-    item('K', `Buy back a share at ${formatMoney(c.sharePrice)}`, { type: 'buyBackShares', n: 1 }, undefined,
-      c.sharesPublic + c.sharesUnsold <= 0 || state.moneyPence < c.sharePrice),
+    item('K', `Buy back a share at ${formatMoney(c.sharePricePence)}`, { type: 'buyBackShares', n: 1 }, undefined,
+      c.sharesPublic + c.sharesUnsold <= 0 || state.moneyPence < c.sharePricePence),
   );
   menu.push(
     item('X', 'Sell out of the company entirely', { type: 'sellOut' }, `${formatMoney(worth)} for the scrip and your share of treasury, and your name off the door`),

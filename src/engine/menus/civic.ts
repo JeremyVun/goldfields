@@ -50,7 +50,7 @@ export function estateEntry(state: GameState, key: string): MenuItem | null {
           ? 'Your property in the district'
           : 'What a man of property may buy here',
     { type: 'goto', screen: 'estate' },
-    e.jpSince !== null
+    e.jpSinceDay !== null
       ? 'deeds, public works, and the business of the Bench'
       : held > 0
         ? 'deeds, the store\'s prices, and the paper'
@@ -123,7 +123,7 @@ export function civicCouncilItems(state: GameState): MenuItem[] {
         done || money < def.cost),
     );
   }
-  if (state.estate.jpSince === null) {
+  if (state.estate.jpSinceDay === null) {
     const unmet = commissionRequirements(state).filter((r) => !r.met);
     // Not offered at all until the aftermath, when the Local Courts are formed.
     if (inAftermath(state)) {
@@ -174,9 +174,9 @@ export function estateView(state: GameState): ScreenView {
     body.push('PUBLIC WORKS FUNDED AT THE CHAMBERS');
     for (const w of e.works) body.push(`  ${WORK_NAMES[w.id]}${w.camp ? `, to ${CAMP_DEFS[w.camp].name}` : ''}`);
   }
-  if (e.jpSince !== null) {
+  if (e.jpSinceDay !== null) {
     body.push('');
-    body.push(`Gazetted a Justice of the Peace on day ${e.jpSince}. The court sits at Slateford on day ${e.nextCourtDay}.`);
+    body.push(`Gazetted a Justice of the Peace on day ${e.jpSinceDay}. The court sits at Slateford on day ${e.nextCourtDay}.`);
   }
 
   const menu: MenuItem[] = [];

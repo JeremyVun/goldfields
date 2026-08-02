@@ -153,9 +153,9 @@ describe('exchange rates', () => {
     const { state, rng } = fresh();
     for (let i = 0; i < 5000; i++) {
       walkRate(state, rng);
-      expect(state.bankRate).toBeGreaterThanOrEqual(BANK_RATE_FLOOR);
-      expect(state.bankRate).toBeLessThanOrEqual(BANK_RATE_CEILING);
-      expect(Number.isInteger(state.bankRate)).toBe(true);
+      expect(state.bankRatePencePerOz).toBeGreaterThanOrEqual(BANK_RATE_FLOOR);
+      expect(state.bankRatePencePerOz).toBeLessThanOrEqual(BANK_RATE_CEILING);
+      expect(Number.isInteger(state.bankRatePencePerOz)).toBe(true);
     }
   });
 
@@ -186,7 +186,7 @@ describe('selling gold', () => {
     const { state, rng, log } = fresh();
     state.location = 'fields-town';
     state.goldCentiOz = 200;
-    const rate = state.bankRate;
+    const rate = state.bankRatePencePerOz;
     const got = sellGold(state, rng, log, 'bank', true);
     expect(state.goldCentiOz).toBe(0);
     expect(got).toBe(2 * rate);
@@ -198,7 +198,7 @@ describe('selling gold', () => {
     bankState.location = 'fields-town';
     bankState.goldCentiOz = 1000;
     const rngA = makeRng(20);
-    expect(sellGold(bankState, rngA, new Log(rngA), 'bank', false)).toBe(10 * bankState.bankRate);
+    expect(sellGold(bankState, rngA, new Log(rngA), 'bank', false)).toBe(10 * bankState.bankRatePencePerOz);
 
     const campState = createInitialState(21);
     campState.location = 'damp-camp';
@@ -206,7 +206,7 @@ describe('selling gold', () => {
     const rngB = makeRng(21);
     const campTake = sellGold(campState, rngB, new Log(rngB), 'camp', false);
     expect(campTake).toBeGreaterThan(0);
-    expect(campTake).toBeLessThan(10 * bankState.bankRate);
+    expect(campTake).toBeLessThan(10 * bankState.bankRatePencePerOz);
     expect(campState.goldCentiOz).toBe(0);
   });
 

@@ -82,8 +82,8 @@ describe('claim quality', () => {
 
   it('drives the yield of the ground it was rolled for', () => {
     const { state, rng } = atCamp('damp-camp', 33);
-    const mean = (quality: number) => {
-      state.claims['damp-camp'] = { quality, workedDays: 0, peggedOn: 1, proven: false };
+    const mean = (richnessPct: number) => {
+      state.claims['damp-camp'] = { richnessPct, workedDays: 0, peggedOn: 1, proven: false };
       let total = 0;
       for (let i = 0; i < 6000; i++) total += rollYield(state, rng, 'pan');
       return total / 6000;
@@ -111,12 +111,12 @@ describe('depletion', () => {
   it('counts a day for every method but fossicking', () => {
     for (const method of ['pan', 'cradle'] as const) {
       const { state, rng, log } = atCamp('damp-camp', 5);
-      state.claims['damp-camp'] = { quality: 100, workedDays: 0, peggedOn: 1, proven: false };
+      state.claims['damp-camp'] = { richnessPct: 100, workedDays: 0, peggedOn: 1, proven: false };
       mineOneDay(state, rng, log, method);
       expect(state.claims['damp-camp']?.workedDays).toBe(1);
     }
     const { state, rng, log } = atCamp('damp-camp', 5);
-    state.claims['damp-camp'] = { quality: 100, workedDays: 0, peggedOn: 1, proven: false };
+    state.claims['damp-camp'] = { richnessPct: 100, workedDays: 0, peggedOn: 1, proven: false };
     mineOneDay(state, rng, log, 'fossick');
     expect(state.claims['damp-camp']?.workedDays).toBe(0);
   });
@@ -129,7 +129,7 @@ describe('depletion', () => {
     state.licenceUntilDay = 10000;
     state.items.pan = 1;
     state.claims['damp-camp'] = {
-      quality: 100,
+      richnessPct: 100,
       workedDays: DEPLETION_FLOOR_DAYS - 2,
       peggedOn: 1,
       proven: false,
@@ -164,7 +164,7 @@ describe('the common ground', () => {
       return total / 6000;
     };
     const common = mean();
-    state.claims['damp-camp'] = { quality: 100, workedDays: 0, peggedOn: 1, proven: false };
+    state.claims['damp-camp'] = { richnessPct: 100, workedDays: 0, peggedOn: 1, proven: false };
     expect(common).toBeLessThan(mean() * 0.7);
 
     // Working it leaves no mark on it at all.
@@ -248,13 +248,13 @@ describe('camp freshness', () => {
 describe('prospecting', () => {
   const BANDS = ['prospect.duffer', 'prospect.poor', 'prospect.fair', 'prospect.promising', 'prospect.rich'];
 
-  function bandsFor(washDays: number, quality: number): Record<string, number> {
+  function bandsFor(washDays: number, richnessPct: number): Record<string, number> {
     const counts: Record<string, number> = {};
     for (const b of BANDS) counts[b] = 0;
     for (let seed = 0; seed < 400; seed++) {
       const { state, rng, log } = atCamp('damp-camp', seed * 13 + 1);
       state.skill.wash = washDays;
-      state.claims['damp-camp'] = { quality, workedDays: 0, peggedOn: 1, proven: false };
+      state.claims['damp-camp'] = { richnessPct, workedDays: 0, peggedOn: 1, proven: false };
       prospectDay(state, rng, log);
       for (const e of log.events) if (counts[e.id] !== undefined) counts[e.id] += 1;
     }
@@ -329,7 +329,7 @@ describe('new chum, digger, old hand', () => {
 
   it('counts wash days for the dish and shaft days for the hole, and no others', () => {
     const { state, rng, log } = atCamp('damp-camp', 12);
-    state.claims['damp-camp'] = { quality: 100, workedDays: 0, peggedOn: 1, proven: false };
+    state.claims['damp-camp'] = { richnessPct: 100, workedDays: 0, peggedOn: 1, proven: false };
     mineOneDay(state, rng, log, 'pan');
     mineOneDay(state, rng, log, 'cradle');
     mineOneDay(state, rng, log, 'fossick');
@@ -337,7 +337,7 @@ describe('new chum, digger, old hand', () => {
     expect(state.skill.shaft).toBe(0);
 
     const deep = atCamp('deep-mountains', 13);
-    deep.state.claims['deep-mountains'] = { quality: 100, workedDays: 0, peggedOn: 1, proven: false };
+    deep.state.claims['deep-mountains'] = { richnessPct: 100, workedDays: 0, peggedOn: 1, proven: false };
     mineOneDay(deep.state, deep.rng, deep.log, 'shaft');
     expect(deep.state.skill.shaft).toBe(1);
     expect(deep.state.skill.wash).toBe(0);
@@ -346,7 +346,7 @@ describe('new chum, digger, old hand', () => {
   it('marks the day a man stops being a new chum', () => {
     const { state, rng, log } = atCamp('damp-camp', 14);
     state.skill.wash = 28;
-    state.claims['damp-camp'] = { quality: 100, workedDays: 0, peggedOn: 1, proven: false };
+    state.claims['damp-camp'] = { richnessPct: 100, workedDays: 0, peggedOn: 1, proven: false };
     mineOneDay(state, rng, log, 'pan');
     expect(log.events.some((e) => e.id === 'skill.wash.digger')).toBe(false);
     mineOneDay(state, rng, log, 'pan');
@@ -358,7 +358,7 @@ describe('new chum, digger, old hand', () => {
     const mean = (washDays: number) => {
       const { state, rng } = atCamp('damp-camp', 15);
       state.skill.wash = washDays;
-      state.claims['damp-camp'] = { quality: 100, workedDays: 0, peggedOn: 1, proven: false };
+      state.claims['damp-camp'] = { richnessPct: 100, workedDays: 0, peggedOn: 1, proven: false };
       let total = 0;
       for (let i = 0; i < 20000; i++) total += rollYield(state, rng, 'pan');
       return total / 20000;
@@ -373,7 +373,7 @@ describe('new chum, digger, old hand', () => {
       for (let seed = 0; seed < 100; seed++) {
         const { state, rng, log } = atCamp('deep-mountains', seed * 11 + 4);
         state.skill.shaft = shaftDays;
-        state.claims['deep-mountains'] = { quality: 100, workedDays: 0, peggedOn: 1, proven: false };
+        state.claims['deep-mountains'] = { richnessPct: 100, workedDays: 0, peggedOn: 1, proven: false };
         state.items.timber = 40;
         for (let d = 0; d < 40; d++) {
           days += 1;
@@ -391,7 +391,7 @@ describe('new chum, digger, old hand', () => {
     let proven = false;
     for (let seed = 0; seed < 60 && !proven; seed++) {
       const { state, rng, log } = atCamp('deep-mountains', seed * 7 + 2);
-      state.claims['deep-mountains'] = { quality: 100, workedDays: 0, peggedOn: 1, proven: false };
+      state.claims['deep-mountains'] = { richnessPct: 100, workedDays: 0, peggedOn: 1, proven: false };
       state.items.timber = 40;
       for (let d = 0; d < 30; d++) {
         mineOneDay(state, rng, log, 'shaft');
@@ -476,7 +476,7 @@ describe('a partner', () => {
   it('takes half the gold and no wage at all', () => {
     const { state, rng, log } = atCamp('damp-camp', 56);
     state.standing = 100;
-    state.claims['damp-camp'] = { quality: 200, workedDays: 0, peggedOn: 1, proven: false };
+    state.claims['damp-camp'] = { richnessPct: 200, workedDays: 0, peggedOn: 1, proven: false };
     takePartner(state, log);
     const purse = state.moneyPence;
     let taken = 0;
@@ -494,7 +494,7 @@ describe('a partner', () => {
   it('works the cradle at full strength, as a hired mate does', () => {
     const mean = (setup: (s: GameState) => void) => {
       const { state, rng } = atCamp('damp-camp', 57);
-      state.claims['damp-camp'] = { quality: 100, workedDays: 0, peggedOn: 1, proven: false };
+      state.claims['damp-camp'] = { richnessPct: 100, workedDays: 0, peggedOn: 1, proven: false };
       setup(state);
       let total = 0;
       for (let i = 0; i < 8000; i++) total += rollYield(state, rng, 'cradle');
@@ -533,7 +533,7 @@ describe('taking up a game saved before the ledger of quality was kept', () => {
     expect(back).not.toBeNull();
     const claim = back?.claims['damp-camp'];
     expect(claim).not.toBeNull();
-    expect(claim?.quality).toBe(100);
+    expect(claim?.richnessPct).toBe(100);
     expect(claim?.workedDays).toBe(0);
     expect(claim?.proven).toBe(false);
     expect(back?.claims['snakey-gully']).toBeNull();

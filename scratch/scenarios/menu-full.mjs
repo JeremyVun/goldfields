@@ -42,21 +42,21 @@ export async function setup(d) {
   s.horse = 'hack';
   s.salvage = 3;
 
-  s.claims['damp-camp'] = { quality: 130, workedDays: 12, peggedOn: 180, proven: true, registered: true };
-  s.claims['dry-camp'] = { quality: 90, workedDays: 3, peggedOn: 200, proven: false };
+  s.claims['damp-camp'] = { richnessPct: 130, workedDays: 12, peggedOn: 180, proven: true, registered: true };
+  s.claims['dry-camp'] = { richnessPct: 90, workedDays: 3, peggedOn: 200, proven: false };
   s.shaft = {
     camp: 'damp-camp',
     depthFeet: 62,
-    bottomAt: 70,
+    bottomAtFeet: 70,
     bottomed: true,
     payable: true,
     richDaysLeft: 8,
     timbered: true,
     pumped: true,
   };
-  s.hideout = { stashPence: 96_000, stashGold: 1_200, discovered: false, madeOn: 190 };
+  s.hideout = { stashPence: 96_000, stashCentiOz: 1_200, discovered: false, madeOn: 190 };
   s.gang = [
-    { name: 'Black Douglas', joined: 195, loyalty: 0.7 },
-    { name: 'Harry the Bricklayer', joined: 202, loyalty: 0.4 },
+    { name: 'Black Douglas', joined: 195, loyaltyFrac: 0.7 },
+    { name: 'Harry the Bricklayer', joined: 202, loyaltyFrac: 0.4 },
   ];
 }

@@ -182,7 +182,7 @@ describe('the monster meeting', () => {
     state.provisionDays = 60;
     state.licenceUntilDay = 10000;
     state.items.pan = 1;
-    state.claims['damp-camp'] = { quality: 120, workedDays: 0, peggedOn: 1, proven: false };
+    state.claims['damp-camp'] = { richnessPct: 120, workedDays: 0, peggedOn: 1, proven: false };
     const out = step(state, { type: 'mine', method: 'pan', days: 7 }, makeRng(17));
     expect(out.state.screen).toBe('encounter');
     expect(out.state.pending?.kind).toBe('meeting');
@@ -270,12 +270,12 @@ describe('the stockade', () => {
     state.location = 'deep-mountains';
     state.standing = 60;
     state.moneyPence = pounds(200);
-    state.claims['deep-mountains'] = { quality: 150, workedDays: 0, peggedOn: 1, proven: true };
+    state.claims['deep-mountains'] = { richnessPct: 150, workedDays: 0, peggedOn: 1, proven: true };
     const log = new Log(makeRng(9));
     floatCompany(state, makeRng(9), log, 12);
-    const before = state.company!.sharePrice;
+    const before = state.company!.sharePricePence;
     resolveStockade(state, scripted([false, false, false]), log, 'join');
-    expect(state.company!.sharePrice).toBe(Math.round(before * 0.8));
+    expect(state.company!.sharePricePence).toBe(Math.round(before * 0.8));
   });
 
   it('leaves the man who keeps clear exactly as he was', () => {
@@ -307,13 +307,13 @@ describe('the stockade', () => {
     state.location = 'deep-mountains';
     state.standing = 60;
     state.moneyPence = pounds(200);
-    state.claims['deep-mountains'] = { quality: 150, workedDays: 0, peggedOn: 1, proven: true };
+    state.claims['deep-mountains'] = { richnessPct: 150, workedDays: 0, peggedOn: 1, proven: true };
     const log = new Log(makeRng(21));
     floatCompany(state, makeRng(21), log, 8);
-    const treasury = state.company!.treasury;
+    const treasury = state.company!.treasuryPence;
     const money = state.moneyPence;
     resolveStockade(state, makeRng(21), log, 'sellSupplies');
-    expect(state.company!.treasury).toBeGreaterThan(treasury);
+    expect(state.company!.treasuryPence).toBeGreaterThan(treasury);
     expect(state.moneyPence).toBe(money);
   });
 
@@ -478,15 +478,15 @@ describe('the epilogue', () => {
       soldOut: null,
       company: {
         name: 'The Golden Hope Quartz Mining Co.',
-        treasury: pounds(50),
+        treasuryPence: pounds(50),
         sharesOwned: 12,
         sharesPublic: 6,
         sharesUnsold: 2,
-        sharePrice: pounds(14),
+        sharePricePence: pounds(14),
         crews: [],
         leases: [],
-        weekProfit: [],
-        lastWeekGold: 0,
+        weekProfitPence: [],
+        lastWeekGoldCentiOz: 0,
         foundedOn: 200,
         lastDividendDay: 0,
         battery: false,
@@ -517,7 +517,7 @@ describe('the epilogue', () => {
     state.location = 'deep-mountains';
     state.standing = 60;
     state.moneyPence = pounds(200);
-    state.claims['deep-mountains'] = { quality: 150, workedDays: 0, peggedOn: 1, proven: true };
+    state.claims['deep-mountains'] = { richnessPct: 150, workedDays: 0, peggedOn: 1, proven: true };
     const log = new Log(makeRng(37));
     floatCompany(state, makeRng(37), log, 16);
     state.screen = 'end';

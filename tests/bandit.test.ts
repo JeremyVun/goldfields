@@ -110,8 +110,8 @@ describe('notoriety — the dark mirror of standing (§23.2)', () => {
     expect(canRecruit(state).ok).toBe(true);
 
     state.gang = [
-      { name: 'a', joined: 1, loyalty: 0.5 },
-      { name: 'b', joined: 1, loyalty: 0.5 },
+      { name: 'a', joined: 1, loyaltyFrac: 0.5 },
+      { name: 'b', joined: 1, loyaltyFrac: 0.5 },
     ];
     state.notoriety = NOTORIETY_BIGJOB_GATE - 1;
     expect(canBigJob(state).ok).toBe(false);
@@ -199,7 +199,7 @@ describe('heat — the push, never the loop (§23.3)', () => {
 
   it('drives the search of Split Rock Camp, and bushcraft blunts it', () => {
     const state = fresh();
-    state.hideout = { stashPence: 0, stashGold: 0, discovered: false, madeOn: 1 };
+    state.hideout = { stashPence: 0, stashCentiOz: 0, discovered: false, madeOn: 1 };
     state.heat.camps = 100;
     const chum = hideoutSearchChance(state);
     state.skill.bush = 100;
@@ -348,7 +348,7 @@ describe('the hideout and the stash (§23.4)', () => {
 
   it('buries and lifts money and gold, and never goes below nothing', () => {
     const { state, log } = bandit();
-    state.hideout = { stashPence: 0, stashGold: 0, discovered: false, madeOn: 1 };
+    state.hideout = { stashPence: 0, stashCentiOz: 0, discovered: false, madeOn: 1 };
     state.moneyPence = pounds(10);
     state.goldCentiOz = 400;
     stash(state, log, 'money', -1);
@@ -366,7 +366,7 @@ describe('the hideout and the stash (§23.4)', () => {
   it('counts in what a man is worth', () => {
     const state = fresh();
     const before = netWorth(state);
-    state.hideout = { stashPence: pounds(50), stashGold: 200, discovered: false, madeOn: 1 };
+    state.hideout = { stashPence: pounds(50), stashCentiOz: 200, discovered: false, madeOn: 1 };
     expect(netWorth(state)).toBeGreaterThan(before + pounds(50));
   });
 });
@@ -395,7 +395,7 @@ describe('intelligence and the fence (§23.4)', () => {
     for (let day = 1; day <= 60; day++) {
       const state = fresh();
       state.day = day;
-      const f = fenceRate(state) / state.bankRate;
+      const f = fenceRate(state) / state.bankRatePencePerOz;
       expect(f).toBeGreaterThanOrEqual(FENCE_RATE.lo - 0.01);
       expect(f).toBeLessThanOrEqual(FENCE_RATE.hi + 0.01);
     }
@@ -452,7 +452,7 @@ describe('the assizes (§24)', () => {
     makeOutlaw(state, log);
     state.bloodShed = true;
     state.moneyPence = pounds(40);
-    state.hideout = { stashPence: pounds(90), stashGold: 0, discovered: false, madeOn: 1 };
+    state.hideout = { stashPence: pounds(90), stashCentiOz: 0, discovered: false, madeOn: 1 };
     assizes(state, log);
     expect(state.gameOver).toBe('dead');
     expect(state.causeOfDeath).toMatch(/hanged/);
@@ -467,7 +467,7 @@ describe('the assizes (§24)', () => {
     state.moneyPence = pounds(40);
     state.bankPence = pounds(20);
     state.goldCentiOz = 300;
-    state.hideout = { stashPence: pounds(90), stashGold: 0, discovered: false, madeOn: 1 };
+    state.hideout = { stashPence: pounds(90), stashCentiOz: 0, discovered: false, madeOn: 1 };
     assizes(state, log);
     expect(state.gameOver).toBe('finished');
     expect(state.outlawEnd).toBe('hulks');
@@ -480,7 +480,7 @@ describe('the assizes (§24)', () => {
 
   it('offers the gaol break once, to a man the field has no quarrel with', () => {
     const { state } = bandit();
-    state.gang = [{ name: 'a', joined: 1, loyalty: 0.6 }];
+    state.gang = [{ name: 'a', joined: 1, loyaltyFrac: 0.6 }];
     expect(canBreakGaol(state)).toBe(true);
     state.diggersRobbed = 2;
     expect(canBreakGaol(state)).toBe(false);
@@ -494,7 +494,7 @@ describe('the assizes (§24)', () => {
     for (let seed = 0; seed < 300; seed++) {
       const { state, rng, log } = bandit(seed);
       makeOutlaw(state, log);
-      state.hideout = { stashPence: 0, stashGold: 0, discovered: false, madeOn: 1 };
+      state.hideout = { stashPence: 0, stashCentiOz: 0, discovered: false, madeOn: 1 };
       state.pending = { kind: 'assizes' };
       if (breakGaol(state, rng, log)) {
         out += 1;
@@ -529,7 +529,7 @@ describe('the chosen endings (§24)', () => {
       state.location = 'suze-port';
       state.moneyPence = PASSAGE_FARE + pounds(30);
       state.bankPence = pounds(50);
-      state.hideout = { stashPence: pounds(10), stashGold: 0, discovered: false, madeOn: 1 };
+      state.hideout = { stashPence: pounds(10), stashCentiOz: 0, discovered: false, madeOn: 1 };
       buyPassage(state, rng, log);
       if (state.outlawEnd === 'california') {
         sailed += 1;
@@ -568,7 +568,7 @@ describe('the chosen endings (§24)', () => {
     state.stockadeRole = 'joined';
     expect(offerPardon(state)).toBe(true);
 
-    state.hideout = { stashPence: pounds(120), stashGold: 0, discovered: false, madeOn: 1 };
+    state.hideout = { stashPence: pounds(120), stashCentiOz: 0, discovered: false, madeOn: 1 };
     state.pending = { kind: 'pardon' };
     takePardon(state, log, true);
     expect(state.outlawed).toBe(false);
@@ -624,10 +624,10 @@ describe('save migration to v3 (§25)', () => {
 
   it('brings a hideout, a gang and a stash back off disk intact', () => {
     const state = fresh(78);
-    state.hideout = { stashPence: pounds(30), stashGold: 250, discovered: false, madeOn: 40 };
+    state.hideout = { stashPence: pounds(30), stashCentiOz: 250, discovered: false, madeOn: 40 };
     state.gang = [
-      { name: 'Long Tom Curran', joined: 50, loyalty: 0.7 },
-      { name: 'Scotty Byrne', joined: 60, loyalty: 0.3 },
+      { name: 'Long Tom Curran', joined: 50, loyaltyFrac: 0.7 },
+      { name: 'Scotty Byrne', joined: 60, loyaltyFrac: 0.3 },
     ];
     state.notoriety = 63;
     state.outlawed = true;
@@ -644,14 +644,14 @@ describe('save migration to v3 (§25)', () => {
     const back = deserialise(
       JSON.stringify({
         ...JSON.parse(serialise(fresh(79))),
-        hideout: { stashPence: -500, stashGold: -3 },
-        gang: [null, 7, { loyalty: 12 }],
+        hideout: { stashPence: -500, stashCentiOz: -3 },
+        gang: [null, 7, { loyaltyFrac: 12 }],
       }),
     ) as GameState;
     expect(back.hideout?.stashPence).toBe(0);
-    expect(back.hideout?.stashGold).toBe(0);
+    expect(back.hideout?.stashCentiOz).toBe(0);
     expect(back.gang.length).toBe(1);
-    expect(back.gang[0].loyalty).toBeLessThanOrEqual(1);
+    expect(back.gang[0].loyaltyFrac).toBeLessThanOrEqual(1);
   });
 });
 
@@ -672,8 +672,8 @@ describe('invariants of the dark ladder (§25)', () => {
       const { state, rng, log } = bandit(seed);
       state.notoriety = 100;
       state.gang = [
-        { name: 'a', joined: 1, loyalty: 0.5 },
-        { name: 'b', joined: 1, loyalty: 0.5 },
+        { name: 'a', joined: 1, loyaltyFrac: 0.5 },
+        { name: 'b', joined: 1, loyaltyFrac: 0.5 },
       ];
       state.intel = { kind: 'escort', learnedOn: 1, untilDay: 30, strength: 6 };
       const before = state.moneyPence;

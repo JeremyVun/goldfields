@@ -63,7 +63,7 @@ head('0. KEYBINDING COLLISIONS');
 {
   const skins: [string, (s: GameState) => void][] = [
     ['new chum', () => {}],
-    ['notable', (s) => { s.estate.shamrock = true; s.estate.gazetteShare = true; s.estate.store = { camp: 'damp-camp', policy: 'fair' }; s.estate.jpSince = 200; s.standing = 80; }],
+    ['notable', (s) => { s.estate.shamrock = true; s.estate.gazetteShare = true; s.estate.store = { camp: 'damp-camp', policy: 'fair' }; s.estate.jpSinceDay = 200; s.standing = 80; }],
     ['outlaw', (s) => { s.notoriety = 55; s.legal = 'wanted criminal'; s.outlawed = true; s.estate.shanty = 'snakey-gully'; s.goldCentiOz = 400; }],
     ['outlaw-landlord', (s) => { s.notoriety = 45; s.legal = 'wanted criminal'; s.estate.shanty = 'damp-camp'; s.estate.shamrock = true; }],
   ];
@@ -144,8 +144,8 @@ head('2. THE SHANTY: LOYALTY AND ONE WARNING (§28.3 x §30.2)');
   s.notoriety = 45;
   s.legal = 'wanted criminal';
   s.gang = [
-    { name: 'Long Tom', loyalty: 0.5, skill: 0.5, joinedOn: 10 },
-    { name: 'Micky the Fly', loyalty: 0.4, skill: 0.6, joinedOn: 12 },
+    { name: 'Long Tom', loyaltyFrac: 0.5, skill: 0.5, joinedOn: 10 },
+    { name: 'Micky the Fly', loyaltyFrac: 0.4, skill: 0.6, joinedOn: 12 },
   ] as GameState['gang'];
   s.screen = 'camp-grog';
   console.log('  --- the grog tent, before he owns it ---');
@@ -158,7 +158,7 @@ head('2. THE SHANTY: LOYALTY AND ONE WARNING (§28.3 x §30.2)');
   for (const m of getView(s).menu) console.log(`   | [${m.key}] ${m.label}${m.disabled ? ' (disabled)' : ''}${m.note ? ` — ${m.note}` : ''}`);
   const st0 = s.standing;
   s = press(s, 'Shout the room');
-  console.log(`  loyalty now: ${s.gang.map((g) => `${g.name} ${g.loyalty.toFixed(2)}`).join(', ')}`);
+  console.log(`  loyalty now: ${s.gang.map((g) => `${g.name} ${g.loyaltyFrac.toFixed(2)}`).join(', ')}`);
   console.log(`  standing ${st0} -> ${s.standing} (must not move); warnedUntil=${s.estate.warnedUntilDay} day=${s.day}`);
 
   // A week of days: the Sunday grant should keep the word standing.
@@ -204,7 +204,7 @@ head('4. THE BENCH (§28.1)');
   let s = fresh();
   s.day = 355;
   s.estate.shamrock = true;
-  s.estate.jpSince = 350;
+  s.estate.jpSinceDay = 350;
   s.estate.nextCourtDay = 355;
   s.screen = 'court';
   console.log('  --- the court ---');

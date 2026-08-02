@@ -429,7 +429,7 @@ describe('the notable of the fields (§28.1)', () => {
     expect(acceptCommission({ ...state, legal: 'petty criminal' }, log)).toBe(false);
     const money = state.moneyPence;
     expect(acceptCommission(state, log)).toBe(true);
-    expect(state.estate.jpSince).toBe(state.day);
+    expect(state.estate.jpSinceDay).toBe(state.day);
     expect(state.moneyPence).toBe(money - JP_FEE);
   });
 
@@ -472,7 +472,7 @@ describe('the notable of the fields (§28.1)', () => {
     state.bloodShed = false;
     state.legal = 'major criminal';
     assizes(state, log, false, rng);
-    expect(state.estate.jpSince).toBeNull();
+    expect(state.estate.jpSinceDay).toBeNull();
     expect(state.standing).toBeLessThan(standing);
   });
 });
@@ -507,7 +507,7 @@ describe('the dark mirror (§28.3)', () => {
     const strangerRate = fenceRate(state);
     const strangerIntel = intelCost(state);
     buyShanty(state, log, 'snakey-gully');
-    expect(fenceRate(state)).toBe(Math.round(state.bankRate * SHANTY_FENCE_RATE));
+    expect(fenceRate(state)).toBe(Math.round(state.bankRatePencePerOz * SHANTY_FENCE_RATE));
     expect(fenceRate(state)).toBeGreaterThan(strangerRate);
     expect(intelCost(state)).toBe(0);
     expect(strangerIntel).toBeGreaterThan(0);
@@ -616,7 +616,7 @@ describe('the civic ladder through the reducer', () => {
     expect(migrated?.estate.shamrock).toBe(false);
     expect(migrated?.estate.store).toBeNull();
     expect(migrated?.estate.works).toEqual([]);
-    expect(migrated?.estate.jpSince).toBeNull();
+    expect(migrated?.estate.jpSinceDay).toBeNull();
   });
 
   it('gives the landlord of the Crown & Cradle the rush two days before the Times has it', () => {

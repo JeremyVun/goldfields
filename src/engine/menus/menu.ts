@@ -154,7 +154,7 @@ export function menuView(state: GameState): ScreenView {
     );
   }
   if (state.company) {
-    row(kit, state.company.name, `${state.company.sharesOwned} of the twenty shares, at ${formatMoney(state.company.sharePrice)}`);
+    row(kit, state.company.name, `${state.company.sharesOwned} of the twenty shares, at ${formatMoney(state.company.sharePricePence)}`);
   }
   if (state.salvage > 0) row(kit, 'Salvage', `${state.salvage} scavenged chest${state.salvage === 1 ? '' : 's'} from the road`);
 
@@ -170,7 +170,7 @@ export function menuView(state: GameState): ScreenView {
       row(
         dark,
         'Split Rock Camp',
-        `${formatMoney(state.hideout.stashPence)} and ${formatGold(state.hideout.stashGold)} under the flat stone`,
+        `${formatMoney(state.hideout.stashPence)} and ${formatGold(state.hideout.stashCentiOz)} under the flat stone`,
       );
     }
     if (state.gang.length > 0) row(dark, 'Riding with you', state.gang.map((g) => g.name).join(', '));

@@ -12,6 +12,6 @@ delete old.estate; old.v = 3;
 const migrated = deserialise(JSON.stringify(old))!;
 console.log('v3 no estate:', JSON.stringify(migrated.estate));
 const half = JSON.parse(serialise(s));
-half.estate = { shamrock: true, works: [], jpSince: null }; half.v = 3;
+half.estate = { shamrock: true, works: [], jpSinceDay: null }; half.v = 3;
 const m2 = deserialise(JSON.stringify(half))!;
 console.log('v3 half estate:', JSON.stringify(m2.estate));

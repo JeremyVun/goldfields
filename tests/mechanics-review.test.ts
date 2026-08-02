@@ -228,7 +228,7 @@ describe('expeditions, claims and company business', () => {
     state.location = 'fields-town';
     state.screen = 'ftown-council';
     state.moneyPence = pounds(2);
-    state.claims['damp-camp'] = { quality: 100, workedDays: 0, peggedOn: 1, proven: false };
+    state.claims['damp-camp'] = { richnessPct: 100, workedDays: 0, peggedOn: 1, proven: false };
     state = step(state, { type: 'registerClaim', camp: 'damp-camp' }, makeRng(30)).state;
     expect(state.claims['damp-camp']?.registered).toBe(true);
 
@@ -249,9 +249,9 @@ describe('expeditions, claims and company business', () => {
     state.moneyPence = pounds(20);
     state.provisionDays = 10;
     state.company = {
-      name: 'The Test Company', treasury: pounds(20), sharesOwned: 8, sharesPublic: 0,
-      sharesUnsold: 12, sharePrice: pounds(10), crews: [], leases: [], weekProfit: [],
-      lastWeekGold: 0, foundedOn: 1, lastDividendDay: 0, relations: 0,
+      name: 'The Test Company', treasuryPence: pounds(20), sharesOwned: 8, sharesPublic: 0,
+      sharesUnsold: 12, sharePricePence: pounds(10), crews: [], leases: [], weekProfitPence: [],
+      lastWeekGoldCentiOz: 0, foundedOn: 1, lastDividendDay: 0, relations: 0,
       supplyContractUntilDay: 0, battery: false, driving: 'ordinary', lastWeek: null,
     };
     const company = getView({ ...state, screen: 'company' });
@@ -353,7 +353,7 @@ describe('town survival and lodging', () => {
 
     const old = { ...state } as Partial<typeof state>;
     delete old.slatefordLodging;
-    delete old.slatefordTentGroundPaidUntil;
+    delete old.slatefordTentGroundPaidUntilDay;
     const migrated = deserialise(JSON.stringify(old));
     expect(migrated?.slatefordLodging).toBe('rough');
     expect(migrated?.lodging).toBe('inn');

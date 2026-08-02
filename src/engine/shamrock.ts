@@ -479,7 +479,7 @@ function payStanding(state: GameState, log: Log, amount: number): void {
 function darkHouse(state: GameState, log: Log, spree: boolean): void {
   let bought = 0;
   for (const member of state.gang) {
-    member.loyalty = Math.min(1, member.loyalty + SHOUT_GANG_LOYALTY * (spree ? 2 : 1));
+    member.loyaltyFrac = Math.min(1, member.loyaltyFrac + SHOUT_GANG_LOYALTY * (spree ? 2 : 1));
     bought += 1;
   }
   state.estate.warnedUntilDay = state.day + SHANTY_WARNING_DAYS;

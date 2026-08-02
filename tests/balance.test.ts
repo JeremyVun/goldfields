@@ -280,7 +280,7 @@ describe('balance additions (§25) — the dark ladder', () => {
         expect(r.outlawEnd).toBeNull();
         expect(r.bailUps).toBe(0);
         expect(r.bigJobsDone).toBe(0);
-        expect(r.takings).toBe(0);
+        expect(r.takingsPence).toBe(0);
         expect(r.diggersRobbed).toBe(0);
         expect(r.hadHideout).toBe(false);
       }
@@ -404,7 +404,7 @@ function calledRushCohort(seed: number, freshness: number, call: boolean): Calle
   s.mateUntilDay = s.day + 400;
   s.freshness['damp-camp'] = 0.6;
   s.freshness['snakey-gully'] = freshness;
-  s.claims['damp-camp'] = { quality: 70, workedDays: 20, peggedOn: 60, proven: false };
+  s.claims['damp-camp'] = { richnessPct: 70, workedDays: 20, peggedOn: 60, proven: false };
   const log = new Log(rng);
   const before = s.standing;
   let gold = 0;

@@ -297,7 +297,7 @@ export function buyCottage(state: GameState, log: Log, size: 'small' | 'large'):
   const cost = size === 'small' ? COTTAGE_PRICE_SMALL : COTTAGE_PRICE_LARGE;
   if (state.location !== 'suze-port' || h.cottage || !['wed', 'settled'].includes(h.rung) || !drawFrom(state, cost)) return false;
   h.cottage = true;
-  h.cottagePaid = cost;
+  h.cottagePaidPence = cost;
   h.rung = 'settled';
   addJournal(state, `Bought a ${size} cottage in Port Gannet for ${formatMoney(cost)}.`, 'good');
   log.say('hearth.cottage', { amount: formatMoney(cost) }, 'good');

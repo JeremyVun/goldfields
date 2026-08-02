@@ -15,7 +15,7 @@ function pickIndex(day: number, salt: number, len: number): number {
 }
 
 function rateComment(state: GameState): string {
-  const r = state.bankRate;
+  const r = state.bankRatePencePerOz;
   if (r >= 920) return 'Gold stands high. The Bank of Australasia is paying near the standard price.';
   if (r >= 860) return 'Gold is firm this week.';
   if (r >= 800) return 'Gold is steady, with little movement reported.';
@@ -95,7 +95,7 @@ export function gazetteFor(state: GameState): string[] {
   lines.push(`THE SLATEFORD TIMES — ${formatDate(state.day)}`);
   lines.push('');
   lines.push(
-    `EXCHANGE. The Bank of Australasia at Slateford buys gold at ${formatMoney(state.bankRate)} the ounce. ${rateComment(state)} ${rateTrendPhrase(state)} Gold is bought at the bank, not over a camp store counter.`,
+    `EXCHANGE. The Bank of Australasia at Slateford buys gold at ${formatMoney(state.bankRatePencePerOz)} the ounce. ${rateComment(state)} ${rateTrendPhrase(state)} Gold is bought at the bank, not over a camp store counter.`,
   );
 
   if (state.rush && state.rush.since <= state.day && state.rush.untilDay >= state.day) {

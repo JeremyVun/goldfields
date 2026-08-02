@@ -53,10 +53,10 @@ function payLodging(state: GameState, log: Log): boolean {
     if (slateford) state.slatefordLodging = kind;
     else state.lodging = kind;
   };
-  const paidUntil = slateford ? state.slatefordTentGroundPaidUntil : state.tentGroundPaidUntil;
+  const paidUntil = slateford ? state.slatefordTentGroundPaidUntilDay : state.tentGroundPaidUntilDay;
   const setPaidUntil = (day: number): void => {
-    if (slateford) state.slatefordTentGroundPaidUntil = day;
-    else state.tentGroundPaidUntil = day;
+    if (slateford) state.slatefordTentGroundPaidUntilDay = day;
+    else state.tentGroundPaidUntilDay = day;
   };
   if (lodging === 'rough') return false;
 

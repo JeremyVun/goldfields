@@ -66,7 +66,7 @@ describe('systems audit', () => {
     }
     console.log(`bank short-weights: ${bankCheats}/200`);
     const s0 = fresh(9, { day: 100, location: 'damp-camp', screen: 'camp', goldCentiOz: oz(5) });
-    console.log('rates on day 100 — bank', formatMoney(s0.bankRate), 'Briggs store', formatMoney(storeRate(s0)),
+    console.log('rates on day 100 — bank', formatMoney(s0.bankRatePencePerOz), 'Briggs store', formatMoney(storeRate(s0)),
       'damp camp', formatMoney(rateAt(s0, 'damp-camp')), 'snakey', formatMoney(rateAt(s0, 'snakey-gully')),
       'deep', formatMoney(rateAt(s0, 'deep-mountains')), 'suze', formatMoney(rateAt(s0, 'suze-port')));
     console.log('sample sale at camp:', run(s0, { type: 'sellGold', where: 'camp', watch: true }, 3).text.join(' / '));

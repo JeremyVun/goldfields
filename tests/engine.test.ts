@@ -93,11 +93,11 @@ describe('the reducer', () => {
     state.screen = 'suze-lodgings';
     state.location = 'suze-port';
     state.lodging = 'tentground';
-    state.tentGroundPaidUntil = 17;
+    state.tentGroundPaidUntilDay = 17;
 
     const out = step(state, { type: 'setLodging', kind: 'tentground' }, makeRng(11));
 
-    expect(out.state.tentGroundPaidUntil).toBe(17);
+    expect(out.state.tentGroundPaidUntilDay).toBe(17);
   });
 
   it('never mutates the state it is given', () => {
@@ -303,14 +303,14 @@ describe('saving and loading', () => {
     state.day = 140;
     state.goldCentiOz = 317;
     state.items.pan = 1;
-    state.claims['snakey-gully'] = { quality: 140, workedDays: 9, peggedOn: 120, proven: true };
+    state.claims['snakey-gully'] = { richnessPct: 140, workedDays: 9, peggedOn: 120, proven: true };
     const id = saveGame(state, store);
     const back = loadGame(id, store);
     expect(back).not.toBeNull();
     expect(back?.day).toBe(140);
     expect(back?.goldCentiOz).toBe(317);
     expect(back?.items.pan).toBe(1);
-    expect(back?.claims['snakey-gully']?.quality).toBe(140);
+    expect(back?.claims['snakey-gully']?.richnessPct).toBe(140);
     expect(back?.claims['snakey-gully']?.proven).toBe(true);
   });
 
@@ -546,7 +546,7 @@ describe('screens and menus', () => {
         state.items.pick = state.items.ropeBucket = state.items.tent = 1;
         state.items.journal = 1;
         if (isCamp(loc)) {
-          state.claims[loc] = { quality: 100, workedDays: 3, peggedOn: 1, proven: false };
+          state.claims[loc] = { richnessPct: 100, workedDays: 3, peggedOn: 1, proven: false };
         }
         state.secret = { heard: true, genuine: true, chased: false, fromCamp: 'damp-camp', heardOn: 1 };
         const view = getView(state);

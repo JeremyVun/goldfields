@@ -259,7 +259,7 @@ export function salvageValue(state: GameState, rng: RNG): number {
 }
 
 export function goldWorth(state: GameState): number {
-  return goldValue(state.goldCentiOz, state.bankRate);
+  return goldValue(state.goldCentiOz, state.bankRatePencePerOz);
 }
 
 export function randomCamp(rng: RNG): CampId {

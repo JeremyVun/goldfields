@@ -266,7 +266,7 @@ export function gangView(state: GameState): ScreenView {
   } else {
     for (const g of state.gang) {
       const word =
-        g.loyalty >= 0.75 ? 'would hang beside you' : g.loyalty >= 0.45 ? 'steady enough' : 'watches the door too often';
+        g.loyaltyFrac >= 0.75 ? 'would hang beside you' : g.loyaltyFrac >= 0.45 ? 'steady enough' : 'watches the door too often';
       body.push(`  ${g.name} — joined day ${g.joined}, ${word}`);
     }
   }
@@ -290,7 +290,7 @@ export function hideoutView(state: GameState): ScreenView {
     '',
   ];
   if (h) {
-    body.push(`Under the flat stone: ${formatMoney(h.stashPence)} and ${formatGold(h.stashGold)}.`);
+    body.push(`Under the flat stone: ${formatMoney(h.stashPence)} and ${formatGold(h.stashCentiOz)}.`);
     body.push(`Worth of the stash at the bank's rate: ${formatMoney(stashWorth(state))}.`);
   }
   body.push(`The camps and the ranges are ${heatWord(heatOf(state, 'camps'))}.`);
@@ -322,7 +322,7 @@ export function stashView(state: GameState): ScreenView {
     'An oilcloth parcel in a tin, under a flat stone at the foot of the rock, with',
     'the ground stamped back down over it. It is the only bank that will have you.',
     '',
-    `Buried: ${formatMoney(h?.stashPence ?? 0)} and ${formatGold(h?.stashGold ?? 0)}.`,
+    `Buried: ${formatMoney(h?.stashPence ?? 0)} and ${formatGold(h?.stashCentiOz ?? 0)}.`,
     `About you: ${formatMoney(state.moneyPence)} and ${formatGold(state.goldCentiOz)}.`,
   ];
   const menu: MenuItem[] = [
@@ -331,7 +331,7 @@ export function stashView(state: GameState): ScreenView {
     item('3', 'Lift a pound out', { type: 'unstash', what: 'money', amount: pounds(1) }, undefined, (h?.stashPence ?? 0) < pounds(1)),
     item('4', 'Lift five pounds out', { type: 'unstash', what: 'money', amount: pounds(5) }, undefined, (h?.stashPence ?? 0) < pounds(5)),
     item('5', 'Lift the lot out', { type: 'unstash', what: 'money', amount: -1 }, undefined, (h?.stashPence ?? 0) <= 0),
-    item('6', 'Lift the gold out', { type: 'unstash', what: 'gold', amount: -1 }, undefined, (h?.stashGold ?? 0) <= 0),
+    item('6', 'Lift the gold out', { type: 'unstash', what: 'gold', amount: -1 }, undefined, (h?.stashCentiOz ?? 0) <= 0),
     back('hideout'),
   ];
   return { screen: 'stash', title: 'UNDER THE FLAT STONE', body, menu };

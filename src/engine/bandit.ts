@@ -369,7 +369,7 @@ function bank(state: GameState, log: Log, res: BailUpResult): void {
   const gold = res.gold;
   state.moneyPence += money;
   state.goldCentiOz += gold;
-  state.stats.takings += money + goldValue(gold, state.bankRate);
+  state.stats.takings += money + goldValue(gold, state.bankRatePencePerOz);
   if (money > 0 && gold > 0) {
     log.say('bandit.bailup.take.both', { money: formatMoney(money), gold: formatGold(gold) }, 'good');
   } else if (money > 0) {
@@ -471,7 +471,7 @@ export function makeHideout(state: GameState, log: Log): boolean {
     log.raw(`${g.note.charAt(0).toUpperCase()}${g.note.slice(1)}.`, 'bad');
     return false;
   }
-  state.hideout = { stashPence: 0, stashGold: 0, discovered: false, madeOn: state.day };
+  state.hideout = { stashPence: 0, stashCentiOz: 0, discovered: false, madeOn: state.day };
   log.say('bandit.hideout.make', undefined, 'good');
   addJournal(state, 'Made Split Rock Camp beyond the surveyed country.', 'good');
   return true;
@@ -500,7 +500,7 @@ export function stash(state: GameState, log: Log, what: 'money' | 'gold', amount
     return false;
   }
   state.goldCentiOz -= sum;
-  h.stashGold += sum;
+  h.stashCentiOz += sum;
   log.say('bandit.stash.in', { what: formatGold(sum) }, 'good');
   return true;
 }
@@ -522,12 +522,12 @@ export function unstash(state: GameState, log: Log, what: 'money' | 'gold', amou
     log.say('bandit.stash.out', { what: formatMoney(sum) }, 'neutral');
     return true;
   }
-  const sum = amount < 0 ? h.stashGold : Math.min(amount, h.stashGold);
+  const sum = amount < 0 ? h.stashCentiOz : Math.min(amount, h.stashCentiOz);
   if (sum <= 0) {
     log.raw('There is no gold under the stone.', 'neutral');
     return false;
   }
-  h.stashGold -= sum;
+  h.stashCentiOz -= sum;
   state.goldCentiOz += sum;
   log.say('bandit.stash.out', { what: formatGold(sum) }, 'neutral');
   return true;
@@ -558,9 +558,9 @@ export function hideoutWeek(state: GameState, rng: RNG, log: Log): void {
     return;
   }
   h.discovered = true;
-  const lost = h.stashPence + goldValue(h.stashGold, state.bankRate);
+  const lost = h.stashPence + goldValue(h.stashCentiOz, state.bankRatePencePerOz);
   h.stashPence = 0;
-  h.stashGold = 0;
+  h.stashCentiOz = 0;
   state.hideout = null;
   log.say('bandit.hideout.found', { amount: formatMoney(lost) }, 'bad');
   addJournal(state, `The traps found Split Rock Camp and took ${formatMoney(lost)} out of it.`, 'bad');
@@ -601,7 +601,7 @@ export function recruitGangMember(state: GameState, rng: RNG, log: Log): boolean
   state.gang.push({
     name,
     joined: state.day,
-    loyalty: rng.range(GANG_LOYALTY.lo, GANG_LOYALTY.hi),
+    loyaltyFrac: rng.range(GANG_LOYALTY.lo, GANG_LOYALTY.hi),
   });
   log.say('bandit.gang.join', { name }, 'good');
   addJournal(state, `${name} has thrown in with me.`, 'neutral');
@@ -626,7 +626,7 @@ export function gangWeek(state: GameState, rng: RNG, log: Log): void {
   if (reward <= 0) return;
   for (let i = state.gang.length - 1; i >= 0; i--) {
     const man = state.gang[i];
-    const p = (reward / GANG_INFORM_SCALE) * GANG_INFORM_RATE * (2 - man.loyalty);
+    const p = (reward / GANG_INFORM_SCALE) * GANG_INFORM_RATE * (2 - man.loyaltyFrac);
     if (!rng.chance(p)) continue;
     state.gang.splice(i, 1);
     state.ambush = true;
@@ -720,10 +720,10 @@ export function fenceRate(state: GameState): number {
   // A man fencing at his own shanty sets his own rate, and it is a good deal
   // better than the one a keeper gives a stranger (§28.3).
   if (state.estate.shanty && state.estate.shanty === state.location) {
-    return Math.round(state.bankRate * SHANTY_FENCE_RATE);
+    return Math.round(state.bankRatePencePerOz * SHANTY_FENCE_RATE);
   }
   const f = FENCE_RATE.lo + ((state.day * 37) % 100) / 100 * (FENCE_RATE.hi - FENCE_RATE.lo);
-  return Math.round(state.bankRate * f);
+  return Math.round(state.bankRatePencePerOz * f);
 }
 
 /** A wanted man's gold goes through the shanty keeper, and the scales are his. */
@@ -757,7 +757,7 @@ export function fenceGold(state: GameState, rng: RNG, log: Log): number {
 /** Share and share alike: every man who rode takes an equal cut (§23.4). */
 function splitAmong(state: GameState, log: Log, amount: number): number {
   const parts = state.gang.length + 1;
-  for (const g of state.gang) g.loyalty = Math.min(1, g.loyalty + GANG_LOYALTY_PER_JOB);
+  for (const g of state.gang) g.loyaltyFrac = Math.min(1, g.loyaltyFrac + GANG_LOYALTY_PER_JOB);
   if (state.gang.length > 0) log.say('bandit.gang.share', { men: state.gang.length }, 'neutral');
   return Math.floor(amount / parts);
 }
@@ -986,7 +986,7 @@ export function assizes(
   }
   // A magistrate convicted is a magistrate no longer (§28.1).
   forfeitCommission(state, log);
-  const confiscated = state.moneyPence + state.bankPence + goldValue(state.goldCentiOz, state.bankRate);
+  const confiscated = state.moneyPence + state.bankPence + goldValue(state.goldCentiOz, state.bankRatePencePerOz);
   state.moneyPence = 0;
   state.bankPence = 0;
   state.goldCentiOz = 0;
@@ -998,7 +998,7 @@ export function assizes(
     state.outlawEnd = 'hanged';
     if (state.hideout) {
       state.hideout.stashPence = 0;
-      state.hideout.stashGold = 0;
+      state.hideout.stashCentiOz = 0;
     }
     log.say('bandit.assizes.hanged', undefined, 'grave');
     addJournal(state, 'Hanged at the Slateford assizes, before a great crowd.', 'grave');
@@ -1093,7 +1093,7 @@ export function takePardon(state: GameState, log: Log, take: boolean): void {
   const restitution = stashWorth(state);
   if (state.hideout) {
     state.hideout.stashPence = 0;
-    state.hideout.stashGold = 0;
+    state.hideout.stashCentiOz = 0;
   }
   state.outlawed = false;
   state.outlawEnd = 'pardoned';

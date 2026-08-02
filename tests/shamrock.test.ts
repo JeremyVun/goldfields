@@ -430,16 +430,16 @@ describe('shouting the bar', () => {
     state.location = 'snakey-gully';
     state.estate.shanty = 'snakey-gully';
     state.gang = [
-      { name: 'Flash Jack', joined: 1, loyalty: 0.5 },
-      { name: 'Larry the Bull', joined: 1, loyalty: 0.9 },
+      { name: 'Flash Jack', joined: 1, loyaltyFrac: 0.5 },
+      { name: 'Larry the Bull', joined: 1, loyaltyFrac: 0.9 },
     ];
     const standing = state.standing;
     const rng = makeRng(12);
     shoutTheBar(state, rng, new Log(rng), false);
     expect(state.standing).toBe(standing);
     expect(state.estate.shoutedOn).toBe(0);
-    expect(state.gang[0].loyalty).toBeCloseTo(0.6, 5);
-    expect(state.gang[1].loyalty).toBeCloseTo(1, 5); // loyalty never passes one
+    expect(state.gang[0].loyaltyFrac).toBeCloseTo(0.6, 5);
+    expect(state.gang[1].loyaltyFrac).toBeCloseTo(1, 5); // loyalty never passes one
     expect(state.estate.warnedUntilDay).toBe(state.day + 7);
   });
 

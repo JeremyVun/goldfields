@@ -463,11 +463,11 @@ export function commissionRequirements(state: GameState): Requirement[] {
 }
 
 export function canTakeCommission(state: GameState): boolean {
-  return state.estate.jpSince === null && commissionRequirements(state).every((r) => r.met);
+  return state.estate.jpSinceDay === null && commissionRequirements(state).every((r) => r.met);
 }
 
 export function acceptCommission(state: GameState, log: Log): boolean {
-  if (state.estate.jpSince !== null) {
+  if (state.estate.jpSinceDay !== null) {
     log.raw('You are on the Bench already.', 'neutral');
     return false;
   }
@@ -477,7 +477,7 @@ export function acceptCommission(state: GameState, log: Log): boolean {
     return false;
   }
   drawFrom(state, JP_FEE);
-  state.estate.jpSince = state.day;
+  state.estate.jpSinceDay = state.day;
   state.estate.nextCourtDay = state.day;
   addStanding(state, 5);
   log.say('estate.jp.gazetted', { amount: formatMoney(JP_FEE) }, 'good');
@@ -487,8 +487,8 @@ export function acceptCommission(state: GameState, log: Log): boolean {
 
 /** A conviction for anything real, and the commission goes with it (§28.1). */
 export function forfeitCommission(state: GameState, log: Log): void {
-  if (state.estate.jpSince === null) return;
-  state.estate.jpSince = null;
+  if (state.estate.jpSinceDay === null) return;
+  state.estate.jpSinceDay = null;
   state.estate.nextCourtDay = 0;
   addStanding(state, -JP_FORFEIT_STANDING);
   log.say('estate.jp.forfeit', undefined, 'bad');
@@ -496,7 +496,7 @@ export function forfeitCommission(state: GameState, log: Log): void {
 }
 
 export function isJP(state: GameState): boolean {
-  return state.estate.jpSince !== null;
+  return state.estate.jpSinceDay !== null;
 }
 
 export function courtDue(state: GameState): boolean {

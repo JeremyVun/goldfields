@@ -64,7 +64,7 @@ export interface RunResult {
   outlawEnd: OutlawEnd | null;
   bailUps: number;
   bigJobsDone: number;
-  takings: number;
+  takingsPence: number;
   diggersRobbed: number;
   hadHideout: boolean;
   stash: number;
@@ -221,7 +221,7 @@ export function bestCamp(state: GameState, method: 'pan' | 'cradle' | 'shaft'): 
 function poorerThanTheField(state: GameState, camp: CampId): boolean {
   const claim = state.claims[camp];
   if (!claim || claim.workedDays < 7) return false;
-  const worth = claim.quality * depletionFactor(claim.workedDays);
+  const worth = claim.richnessPct * depletionFactor(claim.workedDays);
   return worth < 90 * freshnessOf(state, camp);
 }
 
@@ -290,7 +290,7 @@ function companyBusiness(state: GameState): Action | null {
     if (canFloat(state) && purse(state) >= outlay) return { type: 'floatCompany', shares: 12 };
     return null;
   }
-  if (c.crews.length < COMPANY_MAX_CREWS && c.treasury >= COMPANY_CREW_WAGES * 3) {
+  if (c.crews.length < COMPANY_MAX_CREWS && c.treasuryPence >= COMPANY_CREW_WAGES * 3) {
     return { type: 'hireCrew' };
   }
   // Two at the reef and one out over the ranges looking for the next lease.
@@ -301,7 +301,7 @@ function companyBusiness(state: GameState): Action | null {
   // A treasury is no use to a shareholder until it is declared out of the door.
   const issued = c.sharesOwned + c.sharesPublic;
   const float = COMPANY_CREW_WAGES * c.crews.length * 4;
-  if (issued > 0 && c.treasury >= float + pounds(1) * issued) {
+  if (issued > 0 && c.treasuryPence >= float + pounds(1) * issued) {
     return { type: 'declareDividend', perShare: pounds(1) };
   }
   return null;
@@ -357,7 +357,7 @@ function civicAtTown(state: GameState): Action | null {
  * expected to do something about.
  */
 function benchAwaits(state: GameState): boolean {
-  if (state.estate.jpSince !== null) return false;
+  if (state.estate.jpSinceDay !== null) return false;
   return commissionRequirements(state).every((r, i) => r.met || i === 0);
 }
 
@@ -984,7 +984,7 @@ export function playYear(bot: Bot, seed: number): RunResult {
     outlawEnd: state.outlawEnd,
     bailUps: state.stats.bailUps,
     bigJobsDone: state.bigJobsDone,
-    takings: state.stats.takings,
+    takingsPence: state.stats.takings,
     diggersRobbed: state.diggersRobbed,
     hadHideout: !!state.hideout,
     stash: state.hideout ? state.hideout.stashPence : 0,
@@ -995,7 +995,7 @@ export function playYear(bot: Bot, seed: number): RunResult {
       (state.estate.shanty ? 1 : 0),
     works: state.estate.works.length,
     storeDay,
-    jp: state.estate.jpSince !== null,
+    jp: state.estate.jpSinceDay !== null,
     events,
   };
 }

@@ -204,7 +204,7 @@ export function resolveStockade(
     closeStockade(state, 'sold supplies');
     const profit = rng.int(STOCKADE_SELL_PROFIT.lo, STOCKADE_SELL_PROFIT.hi);
     if (state.company) {
-      state.company.treasury += profit;
+      state.company.treasuryPence += profit;
     } else {
       state.moneyPence += profit;
       state.provisionDays = Math.max(0, state.provisionDays - 14);
@@ -294,7 +294,7 @@ export function epilogueFor(state: GameState): string[] {
   // Precedence when more than one ladder was climbed (§28.2): the company
   // sold out of outranks the bench, and the bench outranks a company still
   // held. A notable's paragraph is about the town, not the pile.
-  const notable = state.estate.jpSince !== null;
+  const notable = state.estate.jpSinceDay !== null;
   if (state.soldOut) {
     out.push(
       sayFixed('epilogue.company.soldout', salt + 2, {

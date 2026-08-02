@@ -71,7 +71,7 @@ export function handlePatrolChoice(state: GameState, rng: RNG, log: Log, action:
       if (raid && state.hideout) {
         const lost = state.hideout.stashPence;
         state.hideout.stashPence = 0;
-        state.hideout.stashGold = 0;
+        state.hideout.stashCentiOz = 0;
         state.hideout = null;
         state.location = 'deep-mountains';
         log.say('bandit.hideout.abandoned', { amount: formatMoney(lost) }, 'bad');

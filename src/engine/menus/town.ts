@@ -46,7 +46,7 @@ export function ftownView(state: GameState): ScreenView {
       'the rest supply the diggers, and do better out of it.',
     ],
     menu: [
-      item('1', 'The Bank of Australasia', { type: 'goto', screen: 'ftown-bank' }, `gold at ${formatMoney(state.bankRate)} the ounce`),
+      item('1', 'The Bank of Australasia', { type: 'goto', screen: 'ftown-bank' }, `gold at ${formatMoney(state.bankRatePencePerOz)} the ounce`),
       item('2', "Bell's Outfitters", { type: 'goto', screen: 'ftown-store' }, 'everything from a pick to a needle, at diggings prices'),
       item('3', 'The Council Chambers', { type: 'goto', screen: 'ftown-council' }, isLicensed(state) ? licenceWord(state) : 'no licence'),
       item('4', 'Seek work in the town', { type: 'goto', screen: 'ftown-work' }),
@@ -86,7 +86,7 @@ export function ftownLodgingsView(state: GameState): ScreenView {
 
 export function ftownBankView(state: GameState): ScreenView {
   const atPort = state.location === 'suze-port';
-  const rate = atPort ? rateAt(state, 'suze-port') : state.bankRate;
+  const rate = atPort ? rateAt(state, 'suze-port') : state.bankRatePencePerOz;
   return {
     screen: 'ftown-bank',
     title: atPort ? 'THE BANK, MAIN STREET, PORT GANNET' : 'THE BANK OF AUSTRALASIA',

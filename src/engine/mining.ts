@@ -146,7 +146,7 @@ export function pegClaim(state: GameState, rng: RNG, log: Log, camp: CampId): bo
     return false;
   }
   state.claims[camp] = {
-    quality: rollQuality(state, rng, camp),
+    richnessPct: rollQuality(state, rng, camp),
     workedDays: 0,
     peggedOn: state.day,
     proven: false,
@@ -251,7 +251,7 @@ export function rollYield(state: GameState, rng: RNG, method: MiningMethod): num
   if (method !== 'fossick') {
     const claim = state.claims[id];
     if (claim) {
-      base *= (claim.quality / 100) * depletionFactor(claim.workedDays);
+      base *= (claim.richnessPct / 100) * depletionFactor(claim.workedDays);
     } else {
       base *= COMMON_GROUND_FACTOR * freshnessOf(state, id);
       if (rushOn(state, id)) base *= COMMON_GROUND_RUSH;
@@ -415,7 +415,7 @@ export function mineOneDay(
       state.shaft = {
         camp,
         depthFeet: 0,
-        bottomAt: rng.int(SHAFT_DEPTH.lo, SHAFT_DEPTH.hi),
+        bottomAtFeet: rng.int(SHAFT_DEPTH.lo, SHAFT_DEPTH.hi),
         bottomed: false,
         payable: false,
         richDaysLeft: 0,
@@ -439,8 +439,8 @@ export function mineOneDay(
       if (state.health < 50) feet = Math.max(1, Math.round(feet * 0.7));
       shaft.depthFeet += feet;
       const gone = wearClaim(state, camp, 'shaft');
-      if (shaft.depthFeet >= shaft.bottomAt) {
-        shaft.depthFeet = shaft.bottomAt;
+      if (shaft.depthFeet >= shaft.bottomAtFeet) {
+        shaft.depthFeet = shaft.bottomAtFeet;
         shaft.bottomed = true;
         const payChance =
           camp === 'deep-mountains' ? SHAFT_PAYABLE_CHANCE_DEEP : SHAFT_PAYABLE_CHANCE;
@@ -450,11 +450,11 @@ export function mineOneDay(
           // Ground with payable wash under it is ground a company can be floated on.
           const claim = state.claims[camp];
           if (claim) claim.proven = true;
-          log.say('mine.shaft.bottom.payable', { depth: shaft.bottomAt }, 'good');
-          addJournal(state, `Bottomed at ${shaft.bottomAt} feet on payable wash.`, 'good');
+          log.say('mine.shaft.bottom.payable', { depth: shaft.bottomAtFeet }, 'good');
+          addJournal(state, `Bottomed at ${shaft.bottomAtFeet} feet on payable wash.`, 'good');
         } else {
-          log.say('mine.shaft.bottom.duffer', { depth: shaft.bottomAt }, 'bad');
-          addJournal(state, `Bottomed at ${shaft.bottomAt} feet on a duffer.`, 'bad');
+          log.say('mine.shaft.bottom.duffer', { depth: shaft.bottomAtFeet }, 'bad');
+          addJournal(state, `Bottomed at ${shaft.bottomAtFeet} feet on a duffer.`, 'bad');
           state.shaft = null;
         }
       } else {
@@ -549,7 +549,7 @@ export function prospectDay(state: GameState, rng: RNG, log: Log): MineDayResult
   const claim = state.claims[camp];
   if (claim) {
     const err = SKILL_PROSPECT_ERROR[washRank(state)];
-    const estimate = claim.quality * rng.range(1 - err, 1 + err);
+    const estimate = claim.richnessPct * rng.range(1 - err, 1 + err);
     const key =
       estimate < 60
         ? 'prospect.duffer'

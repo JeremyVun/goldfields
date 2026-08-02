@@ -70,13 +70,13 @@ function migrateClaims(raw: unknown, day: number): Record<CampId, Claim | null> 
   for (const camp of CAMPS) {
     const v = from[camp];
     if (v === true) out[camp] = {
-      quality: 100, workedDays: 0, peggedOn: day, proven: false,
+      richnessPct: 100, workedDays: 0, peggedOn: day, proven: false,
       registered: false, lastAttendedDay: day, guardedUntilDay: 0, jumpedOn: null,
     };
     else if (v && typeof v === 'object') {
       const c = v as Partial<Claim>;
       out[camp] = {
-        quality: c.quality ?? 100,
+        richnessPct: c.richnessPct ?? 100,
         workedDays: c.workedDays ?? 0,
         peggedOn: c.peggedOn ?? day,
         proven: c.proven ?? false,
@@ -109,18 +109,18 @@ const MIGRATED_MINE_NAMES = ['the North Star', 'the Perseverance', 'the Welcome'
  */
 function migrateLease(raw: unknown, index: number): Lease {
   const l = (raw ?? {}) as Partial<Lease> & { quality?: number; workedDays?: number };
-  if (typeof l.reef === 'number' || typeof l.name === 'string') {
+  if (typeof l.reefPct === 'number' || typeof l.name === 'string') {
     return {
       name: l.name ?? MIGRATED_MINE_NAMES[index % MIGRATED_MINE_NAMES.length],
-      reef: l.reef ?? 100,
+      reefPct: l.reefPct ?? 100,
       level: l.level ?? 1,
-      face: Math.max(0, l.face ?? 0),
-      yieldNow: l.yieldNow ?? l.reef ?? 100,
+      faceCrewWeeks: Math.max(0, l.faceCrewWeeks ?? 0),
+      yieldNowPct: l.yieldNowPct ?? l.reefPct ?? 100,
       wet: l.wet ?? false,
       pump: l.pump ?? false,
       timbered: l.timbered ?? false,
       flooded: l.flooded ?? false,
-      progress: Math.max(0, l.progress ?? 0),
+      progressCrewWeeks: Math.max(0, l.progressCrewWeeks ?? 0),
       plan: l.plan === 'sink' || l.plan === 'drive' ? l.plan : null,
     };
   }
@@ -128,15 +128,15 @@ function migrateLease(raw: unknown, index: number): Lease {
   const worked = l.workedDays ?? 0;
   return {
     name: MIGRATED_MINE_NAMES[index % MIGRATED_MINE_NAMES.length],
-    reef: quality,
+    reefPct: quality,
     level: 1,
-    face: Math.max(0, 5 - Math.floor(worked / 12)),
-    yieldNow: quality,
+    faceCrewWeeks: Math.max(0, 5 - Math.floor(worked / 12)),
+    yieldNowPct: quality,
     wet: false,
     pump: false,
     timbered: false,
     flooded: false,
-    progress: 0,
+    progressCrewWeeks: 0,
     plan: null,
   };
 }
@@ -148,18 +148,18 @@ function migrateCompany(raw: unknown): Company | null {
   if (typeof c.name !== 'string') return null;
   return {
     name: c.name,
-    treasury: Math.max(0, c.treasury ?? 0),
+    treasuryPence: Math.max(0, c.treasuryPence ?? 0),
     sharesOwned: c.sharesOwned ?? 0,
     sharesPublic: c.sharesPublic ?? 0,
     sharesUnsold: c.sharesUnsold ?? 0,
-    sharePrice: c.sharePrice ?? COMPANY_SHARE_PRICE,
+    sharePricePence: c.sharePricePence ?? COMPANY_SHARE_PRICE,
     crews: (c.crews ?? []).map((k) => ({
       task: k.task === 'prospect' || k.task === 'develop' ? k.task : 'mine',
       lease: typeof k.lease === 'number' ? k.lease : undefined,
     })),
     leases: (c.leases ?? []).map((l, i) => migrateLease(l, i)),
-    weekProfit: c.weekProfit ?? [],
-    lastWeekGold: c.lastWeekGold ?? 0,
+    weekProfitPence: c.weekProfitPence ?? [],
+    lastWeekGoldCentiOz: c.lastWeekGoldCentiOz ?? 0,
     foundedOn: c.foundedOn ?? 1,
     lastDividendDay: c.lastDividendDay ?? 0,
     relations: c.relations ?? 0,
@@ -176,7 +176,7 @@ function migrateHideout(raw: unknown): Hideout | null {
   const h = raw as Partial<Hideout>;
   return {
     stashPence: Math.max(0, h.stashPence ?? 0),
-    stashGold: Math.max(0, h.stashGold ?? 0),
+    stashCentiOz: Math.max(0, h.stashCentiOz ?? 0),
     discovered: h.discovered ?? false,
     madeOn: h.madeOn ?? 1,
   };
@@ -190,7 +190,7 @@ function migrateGang(raw: unknown, day: number): GangMember[] {
     .map((m) => ({
       name: typeof m.name === 'string' ? m.name : 'a man with no name to give',
       joined: m.joined ?? day,
-      loyalty: Math.max(0, Math.min(1, m.loyalty ?? 0.5)),
+      loyaltyFrac: Math.max(0, Math.min(1, m.loyaltyFrac ?? 0.5)),
     }));
 }
 
@@ -242,7 +242,7 @@ function migrateHearth(raw: unknown): Hearth {
     letters: Array.isArray(h.letters) ? h.letters.filter((l) => l && typeof l === 'object') : [],
     homeStashPence: Math.max(0, h.homeStashPence ?? 0),
     homeStashCentiOz: Math.max(0, h.homeStashCentiOz ?? 0),
-    cottagePaid: Math.max(0, h.cottagePaid ?? 0),
+    cottagePaidPence: Math.max(0, h.cottagePaidPence ?? 0),
   };
 }
 
@@ -290,30 +290,30 @@ function validRevivedState(state: GameState): boolean {
   if (!LEGAL_LADDER.includes(state.legal) || !LODGINGS.has(state.lodging) || !LODGINGS.has(state.slatefordLodging)) return false;
   if (!HORSES.has(state.horse) || !STOCKADE_ROLES.has(state.stockadeRole)) return false;
   if (state.gameId !== null && !/^\d{4}$/.test(state.gameId)) return false;
-  if (![state.day, state.moneyPence, state.bankPence, state.goldCentiOz, state.health, state.bankRate].every(finiteInt)) return false;
+  if (![state.day, state.moneyPence, state.bankPence, state.goldCentiOz, state.health, state.bankRatePencePerOz].every(finiteInt)) return false;
   if (state.day < 1 || state.moneyPence < 0 || state.bankPence < 0 || state.goldCentiOz < 0) return false;
-  if (state.health < 0 || state.health > 100 || state.bankRate <= 0) return false;
+  if (state.health < 0 || state.health > 100 || state.bankRatePencePerOz <= 0) return false;
   if (state.illness && (!ILLNESSES.has(state.illness.id) || !finiteInt(state.illness.severity) || !finiteInt(state.illness.since))) return false;
   if (!Object.values(state.items).every((n) => finiteInt(n) && n >= 0 && n <= 10_000)) return false;
   for (const camp of CAMPS) {
     const claim = state.claims[camp];
     if (claim && (
-      ![claim.quality, claim.workedDays, claim.peggedOn].every(finiteInt) ||
-      claim.quality < 0 || claim.workedDays < 0 || claim.peggedOn < 0
+      ![claim.richnessPct, claim.workedDays, claim.peggedOn].every(finiteInt) ||
+      claim.richnessPct < 0 || claim.workedDays < 0 || claim.peggedOn < 0
     )) return false;
     if (typeof state.freshness[camp] !== 'number' || !Number.isFinite(state.freshness[camp]) || state.freshness[camp] < 0) return false;
   }
   if (state.company) {
     const c = state.company;
     if (c.name.length > 200 || c.crews.length > 4 || c.leases.length > 2) return false;
-    if (![c.treasury, c.sharesOwned, c.sharesPublic, c.sharesUnsold, c.sharePrice].every((n) => finiteInt(n) && n >= 0)) return false;
+    if (![c.treasuryPence, c.sharesOwned, c.sharesPublic, c.sharesUnsold, c.sharePricePence].every((n) => finiteInt(n) && n >= 0)) return false;
     if (c.sharesOwned + c.sharesPublic + c.sharesUnsold !== 20) return false;
     if (!['cautious', 'ordinary', 'hard'].includes(c.driving)) return false;
     if (c.crews.some((crew) => crew.lease !== undefined && (!finiteInt(crew.lease) || crew.lease < 0 || crew.lease >= c.leases.length))) return false;
     if (c.leases.some((lease) =>
       lease.name.length > 200 ||
-      ![lease.reef, lease.level, lease.yieldNow, lease.progress].every(finiteInt) ||
-      !Number.isFinite(lease.face) || lease.level < 0 || lease.face < 0 ||
+      ![lease.reefPct, lease.level, lease.yieldNowPct, lease.progressCrewWeeks].every(finiteInt) ||
+      !Number.isFinite(lease.faceCrewWeeks) || lease.level < 0 || lease.faceCrewWeeks < 0 ||
       (lease.plan !== null && lease.plan !== 'sink' && lease.plan !== 'drive')
     )) return false;
   }
@@ -371,11 +371,11 @@ export function deserialise(text: string): GameState | null {
       standing: raw.standing ?? 0,
       partner: raw.partner ?? false,
       slatefordLodging: raw.slatefordLodging ?? 'rough',
-      slatefordTentGroundPaidUntil: raw.slatefordTentGroundPaidUntil ?? 0,
+      slatefordTentGroundPaidUntilDay: raw.slatefordTentGroundPaidUntilDay ?? 0,
       horseInspection: { ...base.horseInspection, ...(raw.horseInspection ?? {}) },
       // A save written before either ledger was kept starts both afresh, at
       // whatever the rate and the man are worth today.
-      rateTrail: numberList(raw.rateTrail, raw.bankRate ?? base.bankRate),
+      rateTrail: numberList(raw.rateTrail, raw.bankRatePencePerOz ?? base.bankRatePencePerOz),
       worthHistory: numberList(raw.worthHistory, undefined),
       rush,
       // A save written before the company or the agitation was kept in the
