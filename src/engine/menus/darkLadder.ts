@@ -226,9 +226,7 @@ export function banditView(state: GameState): ScreenView {
 export function roadsView(state: GameState): ScreenView {
   const gate = canBailUp(state);
   const body: string[] = [
-    'Two roads run inland from the coast, and everything that leaves the diggings',
-    'with gold on it comes down one or the other. A man with a horse, a pistol and',
-    'the patience for it may lie above either and see what the day brings.',
+    'Two roads run inland from the coast, and everything that leaves the diggings with gold on it comes down one or the other. A man with a horse, a pistol and the patience for it may lie above either and see what the day brings.',
     '',
     ...heatLines(state).slice(0, 2),
   ];
@@ -257,8 +255,7 @@ export function roadsView(state: GameState): ScreenView {
 
 export function gangView(state: GameState): ScreenView {
   const body: string[] = [
-    'No wages are paid and none are asked. Every man takes an equal share of what',
-    'the jobs bring, and every man knows to a penny what is on the captain’s head.',
+    'No wages are paid and none are asked. Every man takes an equal share of what the jobs bring, and every man knows to a penny what is on the captain’s head.',
     '',
   ];
   if (state.gang.length === 0) {
@@ -284,9 +281,7 @@ export function gangView(state: GameState): ScreenView {
 export function hideoutView(state: GameState): ScreenView {
   const h = state.hideout;
   const body: string[] = [
-    'A saddle in the ranges with a spring in it, one way in, and four miles of',
-    'country visible from the rock above the fire. Nobody comes here who has not',
-    'been brought. The sleep is free and it is the only safe sleep you get.',
+    'A saddle in the ranges with a spring in it, one way in, and four miles of country visible from the rock above the fire. Nobody comes here who has not been brought. The sleep is free and it is the only safe sleep you get.',
     '',
   ];
   if (h) {
@@ -319,8 +314,7 @@ export function hideoutView(state: GameState): ScreenView {
 export function stashView(state: GameState): ScreenView {
   const h = state.hideout;
   const body: string[] = [
-    'An oilcloth parcel in a tin, under a flat stone at the foot of the rock, with',
-    'the ground stamped back down over it. It is the only bank that will have you.',
+    'An oilcloth parcel in a tin, under a flat stone at the foot of the rock, with the ground stamped back down over it. It is the only bank that will have you.',
     '',
     `Buried: ${formatMoney(h?.stashPence ?? 0)} and ${formatGold(h?.stashCentiOz ?? 0)}.`,
     `About you: ${formatMoney(state.moneyPence)} and ${formatGold(state.goldCentiOz)}.`,

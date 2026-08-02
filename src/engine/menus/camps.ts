@@ -164,8 +164,7 @@ export function campMineView(state: GameState): ScreenView {
     title: 'HOW WILL YOU WORK?',
     subtitle: `A spell of ${state.spellDays} day${state.spellDays === 1 ? '' : 's'} · ${titleCase(seasonPhrase(state.day))}`,
     body: [
-      'Cradling is the easiest and surest way of finding gold, but never in such',
-      'large quantities as are possible with shaft mining.',
+      'Cradling is the easiest and surest way of finding gold, but never in such large quantities as are possible with shaft mining.',
     ],
     menu,
   };
@@ -176,8 +175,7 @@ export function campStoreView(state: GameState): ScreenView {
     screen: 'camp-store',
     title: "THE STOREKEEPER'S TENT",
     body: [
-      'The tent carries food and equipment at the freight-heavy prices of the fields.',
-      'He buys gold below the bank rate. Watch his weights, or trust him at your cost.',
+      'The tent carries food and equipment at the freight-heavy prices of the fields. He buys gold below the bank rate. Watch his weights, or trust him at your cost.',
     ],
     menu: storeMenu(state, 'camp'),
     aside: storeAside(state),
@@ -191,9 +189,7 @@ export function campGrogView(state: GameState): ScreenView {
     screen: 'camp-grog',
     title: shanty ? 'YOUR OWN SLY-GROG SHANTY' : 'THE GROG TENT',
     body: [
-      'The grog shops offer some relief to tired, lonely diggers. Some become fighting',
-      'drunk, but most just relax. Grog shops are illegal, and most are protected by',
-      'the police — for a fee.',
+      'The grog shops offer some relief to tired, lonely diggers. Some become fighting drunk, but most just relax. Grog shops are illegal, and most are protected by the police — for a fee.',
       '',
       receptionLine(state),
       ...(shanty
@@ -201,8 +197,7 @@ export function campGrogView(state: GameState): ScreenView {
         : state.notoriety >= SHANTY_NOTORIETY && !state.estate.shanty
           ? [
               '',
-              'The keeper has been asking after you by name, and lets it be known he',
-              'would sell the place tomorrow to a man the traps already want.',
+              'The keeper has been asking after you by name, and lets it be known he would sell the place tomorrow to a man the traps already want.',
             ]
           : []),
     ],
@@ -225,10 +220,7 @@ export function secretExpeditionView(state: GameState): ScreenView {
     title: 'THE SECRET WORKING',
     subtitle: `${formatDate(state.day)} · ${state.waterDays} days of water`,
     body: [
-      'There is no camp here: no store, troopers, claims or company office. Only the',
-      'abandoned holes and the story of The Southern Cross—a nugget said to be so large',
-      'that two men could scarcely lift it from the earth.',
-      'It is open desert, with no water within forty miles.',
+      'There is no camp here: no store, troopers, claims or company office. Only the abandoned holes and the story of The Southern Cross—a nugget said to be so large that two men could scarcely lift it from the earth. It is open desert, with no water within forty miles.',
       '',
       clues[Math.min(4, trail)],
       ...(e?.nuggetFound && !e.nuggetRecovered

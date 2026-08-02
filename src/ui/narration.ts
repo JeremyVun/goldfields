@@ -1,6 +1,18 @@
 import type { NarrationEvent } from '../engine/types';
 
 /**
+ * Break one event's text where its author left a blank line. The event remains
+ * a single unit for paging; it is only set as several paragraphs.
+ */
+export function paragraphsOf(text: string): string[] {
+  const paragraphs = text
+    .split(/\n\s*\n/)
+    .map((para) => para.trim())
+    .filter((para) => para.length > 0);
+  return paragraphs.length ? paragraphs : [text];
+}
+
+/**
  * Group a step's narration events into pages of at most `maxPerPage`
  * paragraphs. A `grave` event (a death, faithfully) or a `title` event (an
  * occasion worth dwelling on, such as a save number) always gets a page to

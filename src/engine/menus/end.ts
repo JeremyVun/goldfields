@@ -52,18 +52,15 @@ export function obituaryView(state: GameState): ScreenView {
     body: [
       deathNotice(state),
       '',
-      `A new chum of ${state.day} days on the diggings, who won ${formatGold(state.stats.goldWon)} of gold in all,`,
-      `and left ${formatMoney(state.moneyPence + state.bankPence)} and ${formatGold(state.goldCentiOz)} behind.`,
+      `A new chum of ${state.day} days on the diggings, who won ${formatGold(state.stats.goldWon)} of gold in all, and left ${formatMoney(state.moneyPence + state.bankPence)} and ${formatGold(state.goldCentiOz)} behind.`,
       '',
       ...buriedRumourLines(state),
       ...(state.outlawed || state.notoriety >= 15
         ? [
-            'Few men on these diggings are killed by bushrangers. The bushranger',
-            'himself is another matter, and does not commonly die of old age.',
+            'Few men on these diggings are killed by bushrangers. The bushranger himself is another matter, and does not commonly die of old age.',
           ]
         : [
-            'Disease kills more people than do accidents, and only rarely is anyone killed',
-            'by bushrangers. There would be many unmarked graves in the bush.',
+            'Disease kills more people than do accidents, and only rarely is anyone killed by bushrangers. There would be many unmarked graves in the bush.',
           ]),
       '',
       ...epilogueFor(state),
@@ -307,13 +304,9 @@ export function endView(state: GameState): ScreenView {
   body.push('');
   body.push(`Health: ${healthWord(state.health)}. Legal record: ${state.outlawed ? 'Proclaimed an outlaw' : titleCase(state.legal)}.`);
   body.push(
-    `You worked ${state.stats.daysWorked} days for wages and ${state.stats.daysDug} days at the diggings,`,
-  );
-  body.push(
-    `won ${formatGold(state.stats.goldWon)} of gold, sank ${state.stats.shaftsSunk} shaft${state.stats.shaftsSunk === 1 ? '' : 's'},`,
-  );
-  body.push(
-    `were robbed ${state.stats.timesRobbed} time${state.stats.timesRobbed === 1 ? '' : 's'} and arrested ${state.stats.timesArrested}.`,
+    `You worked ${state.stats.daysWorked} days for wages and ${state.stats.daysDug} days at the diggings, ` +
+      `won ${formatGold(state.stats.goldWon)} of gold, sank ${state.stats.shaftsSunk} shaft${state.stats.shaftsSunk === 1 ? '' : 's'}, ` +
+      `were robbed ${state.stats.timesRobbed} time${state.stats.timesRobbed === 1 ? '' : 's'} and arrested ${state.stats.timesArrested}.`,
   );
   body.push('');
   const notable = state.journal.filter((j) => j.tone === 'good' || j.tone === 'bad').slice(-8);

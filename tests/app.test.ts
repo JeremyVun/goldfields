@@ -3,6 +3,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { App } from '../src/ui/app';
 import { MenuController } from '../src/ui/menu';
+import { paragraphsOf } from '../src/ui/narration';
 
 const apps: App[] = [];
 const values = new Map<string, string>();
@@ -92,6 +93,35 @@ describe('browser application', () => {
     (app as unknown as { fitMenu(): void }).fitMenu();
 
     expect(menu.style.maxHeight).toBe('190px');
+  });
+});
+
+/**
+ * A narration event is one unit for paging, but its author may have set a
+ * blank line in the middle of it. Given one <p> for the whole event the
+ * browser collapses that break and prints a wall of text.
+ */
+describe('narration paragraphs', () => {
+  it('breaks a passage on its blank lines and trims the seams', () => {
+    expect(paragraphsOf('First.\n\nSecond.\n\nThird.')).toEqual(['First.', 'Second.', 'Third.']);
+    expect(paragraphsOf('First.  \n \n  Second.')).toEqual(['First.', 'Second.']);
+  });
+
+  it('leaves a single paragraph, blank line or none, exactly as it stands', () => {
+    expect(paragraphsOf('One line only.')).toEqual(['One line only.']);
+    expect(paragraphsOf('A line\nwrapped by hand.')).toEqual(['A line\nwrapped by hand.']);
+    expect(paragraphsOf(' ')).toEqual([' ']);
+  });
+
+  it('sets the arrival passage as several paragraphs on the glass', () => {
+    const { root } = mount();
+    (root.querySelector('.gf-menu-item') as HTMLButtonElement).click();
+    const paras = [...root.querySelectorAll<HTMLElement>('.gf-body .gf-para')];
+    expect(paras.length).toBeGreaterThan(1);
+    for (const para of paras) {
+      expect(para.textContent).not.toMatch(/\n/);
+      expect(para.className).toContain('gf-tone-');
+    }
   });
 });
 

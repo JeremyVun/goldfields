@@ -14,6 +14,7 @@ import type { JournalSection } from '../content/journal';
 import { Session } from './dispatch';
 import { el, clear } from './dom';
 import { MenuController, type UIMenuItem } from './menu';
+import { paragraphsOf } from './narration';
 import { forTouch, isTouch, onInputModeChange } from './phrasing';
 import { cycleTheme, currentTheme, loadTheme } from './theme';
 
@@ -628,7 +629,9 @@ export class App {
       const isSave = page.length === 1 && /saved under the number/i.test(ev.text);
       const classes = ['gf-para', `gf-tone-${ev.tone}`];
       if (isSave) classes.push('gf-para--save');
-      this.bodyEl.appendChild(el('p', { className: classes.join(' '), text: ev.text }));
+      for (const para of paragraphsOf(ev.text)) {
+        this.bodyEl.appendChild(el('p', { className: classes.join(' '), text: para }));
+      }
     }
     this.bodyEl.onclick = () => this.advanceNarration();
 

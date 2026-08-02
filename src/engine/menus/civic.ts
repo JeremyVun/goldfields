@@ -156,17 +156,12 @@ export function estateView(state: GameState): ScreenView {
   const inTown = state.location === 'fields-town';
   const camp = isCamp(state.location) ? (state.location as CampId) : null;
   const body: string[] = [
-    'Half the men on this field dig, and the other half supply the men who dig,',
-    'and it is not the diggers who are buying land at Port Gannet. What follows is',
-    'bought with clean money, and pays in something other than gold.',
+    'Half the men on this field dig, and the other half supply the men who dig, and it is not the diggers who are buying land at Port Gannet. What follows is bought with clean money, and pays in something other than gold.',
     '',
   ];
   if (!state.hearth.cottage) {
     body.push(
-      'No agent in this district will sell a single man a dwelling-house. The',
-      'one house to be had is the cottage at Port Gannet, bought by a married',
-      'man, and the acquaintance that leads to it begins at the subscription',
-      'balls in Slateford.',
+      'No agent in this district will sell a single man a dwelling-house. The one house to be had is the cottage at Port Gannet, bought by a married man, and the acquaintance that leads to it begins at the subscription balls in Slateford.',
       '',
     );
   }
@@ -258,9 +253,7 @@ export function estateView(state: GameState): ScreenView {
 /** The Times office: a flatbed press, and the ear of the whole field. */
 export function pressView(state: GameState): ScreenView {
   const body: string[] = [
-    'Mr. Vale sets the type himself when the boy is drunk, which is on Fridays.',
-    'The paper goes out on Saturday to every camp on the field, and what it says',
-    'is believed by more men than have ever met a proprietor of it.',
+    'Mr. Vale sets the type himself when the boy is drunk, which is on Fridays. The paper goes out on Saturday to every camp on the field, and what it says is believed by more men than have ever met a proprietor of it.',
     '',
     storyDue(state)
       ? `The press is idle. One story in ${STORY_COOLDOWN_DAYS} days is all the paper it has.`
@@ -290,9 +283,7 @@ export function pressView(state: GameState): ScreenView {
 export function courtView(state: GameState): ScreenView {
   const docket = courtDocket(state);
   const body: string[] = [
-    'A table, a Bible, a constable at the door and the whole of the diggings at',
-    'the back of the hall, because a court on a goldfield is the best free',
-    'entertainment in the district.',
+    'A table, a Bible, a constable at the door and the whole of the diggings at the back of the hall, because a court on a goldfield is the best free entertainment in the district.',
     '',
     'BEFORE THE BENCH TODAY',
   ];

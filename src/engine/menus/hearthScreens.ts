@@ -121,14 +121,11 @@ export function ballView(state: GameState): ScreenView {
     : 'Your name is known well enough to be received.';
   const body = on
     ? [
-        'The Assembly Room is hung with flags and gum leaves. Storekeepers, nurses,',
-        'clerks and diggers have put off the dust for one evening, though not their opinions.',
+        'The Assembly Room is hung with flags and gum leaves. Storekeepers, nurses, clerks and diggers have put off the dust for one evening, though not their opinions.',
         received,
       ]
     : [
-        'The stewards have taken the Assembly Room at Slateford for the night',
-        `of ${formatDate(night)}. Tickets are ${formatMoney(BALL_TICKET)} at the door, and a man must be in`,
-        `the town on the night; no introduction is made under ${BALL_STANDING}/100 standing.`,
+        `The stewards have taken the Assembly Room at Slateford for the night of ${formatDate(night)}. Tickets are ${formatMoney(BALL_TICKET)} at the door, and a man must be in the town on the night; no introduction is made under ${BALL_STANDING}/100 standing.`,
         '',
         received,
       ];

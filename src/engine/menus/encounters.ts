@@ -16,8 +16,7 @@ export function encounterView(state: GameState): ScreenView {
       screen: 'encounter',
       title: 'STRANGERS ON YOUR CLAIM',
       body: [
-        'Two men have shifted your pegs and put down a shallow hole. One says the ground',
-        'was deserted; the other keeps a hand near his belt. They know who you are—or do not.',
+        'Two men have shifted your pegs and put down a shallow hole. One says the ground was deserted; the other keeps a hand near his belt. They know who you are—or do not.',
         '',
         claim?.registered
           ? 'Your claim is in the Council ledger, with its date and boundaries.'
@@ -42,11 +41,7 @@ export function encounterView(state: GameState): ScreenView {
       screen: 'encounter',
       title: 'A MONSTER MEETING',
       body: [
-        'They are lighting torches on the flat below the camp, and men are coming in',
-        'from every gully with their hats off and their pipes out. There will be',
-        'speeches against the fee, against the Commissioner, and against the hunts;',
-        'a hundred men will put their names to a petition and a good many more will',
-        'shout for something a deal stronger than a petition.',
+        'They are lighting torches on the flat below the camp, and men are coming in from every gully with their hats off and their pipes out. There will be speeches against the fee, against the Commissioner, and against the hunts; a hundred men will put their names to a petition and a good many more will shout for something a deal stronger than a petition.',
         '',
         `The field is ${agitationWord(state.agitation)} on the licence question tonight.`,
       ],
@@ -65,11 +60,7 @@ export function encounterView(state: GameState): ScreenView {
       screen: 'encounter',
       title: `THE STOCKADE AT ${CAMP_DEFS[STOCKADE_CAMP].name.toUpperCase()}`,
       body: [
-        'The diggers have thrown up a stockade of slabs and overturned drays on the',
-        'flat, and hoisted a flag of their own over it — the Cross of the south, in',
-        'white on blue. Inside, men are drilling with pikes made that afternoon and',
-        'swearing by the Southern Cross to stand by each other. The soldiers are',
-        'camped a mile off and everybody knows what the morning brings.',
+        'The diggers have thrown up a stockade of slabs and overturned drays on the flat, and hoisted a flag of their own over it — the Cross of the south, in white on blue. Inside, men are drilling with pikes made that afternoon and swearing by the Southern Cross to stand by each other. The soldiers are camped a mile off and everybody knows what the morning brings.',
         '',
         'It will not hold. Everybody knows that too.',
       ],
@@ -91,9 +82,7 @@ export function encounterView(state: GameState): ScreenView {
       screen: 'encounter',
       title: 'A TROOPER HAS YOU',
       body: [
-        'A rough-looking sergeant has you by the collar and wants to see a licence',
-        'you have not got. A lot of the police are good men following orders, and a',
-        'lot are as corrupt as five-day-old fish.',
+        'A rough-looking sergeant has you by the collar and wants to see a licence you have not got. A lot of the police are good men following orders, and a lot are as corrupt as five-day-old fish.',
       ],
       menu: [
         item('1', 'Offer him a five pound note', { type: 'bribe' }, 'a fiver is a good-sized bribe for most troopers', state.moneyPence < 1200),
@@ -106,8 +95,7 @@ export function encounterView(state: GameState): ScreenView {
     screen: 'encounter',
     title: 'BAILED UP',
     body: [
-      'Two men step out of the scrub with their faces covered. So many villains are',
-      'drawn here that you should be armed.',
+      'Two men step out of the scrub with their faces covered. So many villains are drawn here that you should be armed.',
     ],
     menu: [
       item('1', state.items.gun > 0 ? 'Show them your loaded piece' : 'Fight them', { type: 'resist' }, state.items.gun > 0 ? 'they usually think better of it' : 'unarmed, and against two'),
@@ -117,35 +105,21 @@ export function encounterView(state: GameState): ScreenView {
 }
 
 /** How each sort of traveller takes it, once the word is said. */
-const VICTIM_STAND: Record<string, string[]> = {
-  newchum: [
-    'The lad has his hands up before the word is out of your mouth, and higher',
-    'than they need to be. He has read about this in a book on the ship.',
-  ],
-  digger: [
-    'It is a digger with his year under his shirt. A digger’s pile is a year of',
-    'wet feet and bad water, and the field does not forgive the man who takes one.',
-  ],
-  squatter: [
-    'The horses are pulled up hard and the gentleman on the box is the colour of',
-    'his own wool. He is calculating what the box under the seat is worth to him.',
-  ],
-  chinese: [
-    'They set the poles down in the dust together, without a word between them,',
-    'and wait. They have done this before and they know how long it takes.',
-  ],
-  parson: [
-    'He does not put his hands up. He looks at the pistol, and then past it at you,',
-    'and asks whether you would not rather have his dinner and his blessing.',
-  ],
-  buyer: [
-    'The driver reaches for something under the seat and thinks better of it. The',
-    'box is there under the tarpaulin, and every man on this road knows what is in it.',
-  ],
-  trooper: [
-    'The carbine is across his saddle and his hand is on it, and he is looking at',
-    'you the way a man looks at a thing he will describe under oath.',
-  ],
+const VICTIM_STAND: Record<string, string> = {
+  newchum:
+    'The lad has his hands up before the word is out of your mouth, and higher than they need to be. He has read about this in a book on the ship.',
+  digger:
+    'It is a digger with his year under his shirt. A digger’s pile is a year of wet feet and bad water, and the field does not forgive the man who takes one.',
+  squatter:
+    'The horses are pulled up hard and the gentleman on the box is the colour of his own wool. He is calculating what the box under the seat is worth to him.',
+  chinese:
+    'They set the poles down in the dust together, without a word between them, and wait. They have done this before and they know how long it takes.',
+  parson:
+    'He does not put his hands up. He looks at the pistol, and then past it at you, and asks whether you would not rather have his dinner and his blessing.',
+  buyer:
+    'The driver reaches for something under the seat and thinks better of it. The box is there under the tarpaulin, and every man on this road knows what is in it.',
+  trooper:
+    'The carbine is across his saddle and his hand is on it, and he is looking at you the way a man looks at a thing he will describe under oath.',
 };
 
 /** The traveller stands in the road with his hands where you can see them. */
@@ -157,27 +131,22 @@ function bailUpView(state: GameState): ScreenView {
   // A party on the road is "them"; everybody else on the table is one man.
   const them = id === 'chinese';
   const him = them ? 'them' : 'him';
-  const stand = VICTIM_STAND[id] ?? [
-    'He has stopped. He is weighing you, the pistol, the distance to the timber,',
-    'and how much he minds losing what he is carrying.',
-  ];
+  const stand =
+    VICTIM_STAND[id] ??
+    'He has stopped. He is weighing you, the pistol, the distance to the timber, and how much he minds losing what he is carrying.';
   return {
     screen: 'encounter',
     title: 'STAND AND DELIVER',
     body: [
-      'You step out of the timber with the pistol up and the word said, and the whole',
-      'business now turns on the next half minute and on nothing else.',
+      'You step out of the timber with the pistol up and the word said, and the whole business now turns on the next half minute and on nothing else.',
       '',
-      ...stand,
+      stand,
       ...(knows
         ? [
             '',
             them
-              ? 'They have heard the name before, and none of them has the least intention'
-              : 'He has heard the name before, and it is plain in his face that he has no',
-            them
-              ? 'of being the party that argued with it.'
-              : 'intention whatever of being the man who argued with it.',
+              ? 'They have heard the name before, and none of them has the least intention of being the party that argued with it.'
+              : 'He has heard the name before, and it is plain in his face that he has no intention whatever of being the man who argued with it.',
           ]
         : []),
     ],
@@ -202,14 +171,10 @@ function patrolView(state: GameState): ScreenView {
     title: raid ? 'THE CAMP IS FOUND' : 'TROOPERS',
     body: raid
       ? [
-          'They are coming up the only way in, on foot and spread out, and there is a',
-          'sergeant behind them with a warrant and a great deal of patience. The stash is',
-          'under the stone at your feet and there is no time to lift it.',
+          'They are coming up the only way in, on foot and spread out, and there is a sergeant behind them with a warrant and a great deal of patience. The stash is under the stone at your feet and there is no time to lift it.',
         ]
       : [
-          'Mounted police, and they have seen you. There is a carbine across the nearest',
-          'saddle and a description of you in the sergeant’s pocket that he has read so',
-          'often he could recite it.',
+          'Mounted police, and they have seen you. There is a carbine across the nearest saddle and a description of you in the sergeant’s pocket that he has read so often he could recite it.',
         ],
     menu: [
       item('1', 'Ride for the gullies', { type: 'flee' }, state.horse === 'none' ? 'afoot, which is how men are taken' : 'what a horse and a knowledge of the country are for'),
@@ -226,9 +191,7 @@ function assizesView(state: GameState): ScreenView {
     screen: 'encounter',
     title: 'THE SLATEFORD LOCK-UP',
     body: [
-      'A slab hut with a chain running through it and a trooper on the door. The',
-      'monthly magistrate is not mentioned; you are for the assizes, and a judge is',
-      'coming up from the capital for the purpose.',
+      'A slab hut with a chain running through it and a trooper on the door. The monthly magistrate is not mentioned; you are for the assizes, and a judge is coming up from the capital for the purpose.',
       '',
       state.bloodShed
         ? 'There is blood on this account. Everybody in the hut knows what the assizes do about blood, and nobody says it.'
@@ -257,13 +220,9 @@ function pardonView(state: GameState): ScreenView {
     screen: 'encounter',
     title: 'THE AMNESTY',
     body: [
-      'The men taken at the stockade have been tried and acquitted to a man, and the',
-      'Government, having lost the licence, has no appetite left for hanging anybody.',
-      'A magistrate who saw you behind the slabs sends word: the amnesty is a wide one,',
-      'and he is willing to read it widely.',
+      'The men taken at the stockade have been tried and acquitted to a man, and the Government, having lost the licence, has no appetite left for hanging anybody. A magistrate who saw you behind the slabs sends word: the amnesty is a wide one, and he is willing to read it widely.',
       '',
-      `It will cost the whole of the stash — ${formatMoney(stashWorth(state))} — paid into the court as restitution,`,
-      'and the proclamation against you is withdrawn. The name stays; the price on it goes.',
+      `It will cost the whole of the stash — ${formatMoney(stashWorth(state))} — paid into the court as restitution, and the proclamation against you is withdrawn. The name stays; the price on it goes.`,
     ],
     menu: [
       item('1', 'Take the pardon', { type: 'takePardon', take: true }, 'everything under the stone, for the right to be nobody again'),
@@ -279,11 +238,7 @@ function shantyRaidView(state: GameState): ScreenView {
     screen: 'encounter',
     title: 'THE TRAPS BURN OUT THE SHANTY',
     body: [
-      'They came down on the place at four in the morning with axes and a lamp,',
-      'staved in every cask, took the scales away on a pack-horse and put a match',
-      'to the bark roof. There is nothing to be done and nobody to complain to:',
-      'the shanty was never on any paper in this colony, which was the whole of',
-      'its value until this morning.',
+      'They came down on the place at four in the morning with axes and a lamp, staved in every cask, took the scales away on a pack-horse and put a match to the bark roof. There is nothing to be done and nobody to complain to: the shanty was never on any paper in this colony, which was the whole of its value until this morning.',
       '',
       typeof camp === 'string'
         ? `Eighty pounds, gone at ${CAMP_DEFS[camp as CampId].name} in under an hour.`

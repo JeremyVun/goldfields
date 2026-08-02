@@ -89,9 +89,7 @@ export function companyView(state: GameState): ScreenView {
   if (!c) {
     const reqs = floatRequirements(state);
     const body: string[] = [
-      'The registrar keeps a ledger of companies, a box of blank scrip and a pot of',
-      'sealing wax. Twenty shares to a company, ten pounds the share: the promoter',
-      'takes what he will carry, and the public are invited to the rest.',
+      'The registrar keeps a ledger of companies, a box of blank scrip and a pot of sealing wax. Twenty shares to a company, ten pounds the share: the promoter takes what he will carry, and the public are invited to the rest.',
       '',
       `Registration fee: ${formatMoney(COMPANY_REGISTRATION_FEE)}. Before he will write you up he requires:`,
     ];
@@ -166,16 +164,12 @@ export function companyView(state: GameState): ScreenView {
       subtitle: c.name,
       body: c.crews.length
         ? [
-            'Every crew draws its wage, at work or not. A mining crew breaks stone',
-            'at a bottomed level; a developing crew sinks, drives or pumps out the',
-            'one mine it is put to, and wins nothing while it does.',
+            'Every crew draws its wage, at work or not. A mining crew breaks stone at a bottomed level; a developing crew sinks, drives or pumps out the one mine it is put to, and wins nothing while it does.',
             '',
-            'Development must be ordered first under Manage the mines: until sinking',
-            'or driving is set there, no crew can be put to develop.',
+            'Development must be ordered first under Manage the mines: until sinking or driving is set there, no crew can be put to develop.',
           ]
         : [
-            'There are no men on the books. Crews are taken on at the workings',
-            'in the Blackcap Ranges, and nowhere else.',
+            'There are no men on the books. Crews are taken on at the workings in the Blackcap Ranges, and nowhere else.',
           ],
       menu,
     };
@@ -186,9 +180,7 @@ export function companyView(state: GameState): ScreenView {
       c.crews.some((k) => k.task === 'develop' && (k.lease ?? 0) === leaseIndex);
     const body = c.leases.length
       ? [
-          'Ground is taken up by prospecting crews and worked level by level.',
-          'What is given here is the order only: a crew must be put to develop',
-          'the mine under Assign the crews before a foot of it is sunk or driven.',
+          'Ground is taken up by prospecting crews and worked level by level. What is given here is the order only: a crew must be put to develop the mine under Assign the crews before a foot of it is sunk or driven.',
           '',
           ...c.leases.flatMap((lease, i) => {
             const lines = [
@@ -292,9 +284,9 @@ export function companyView(state: GameState): ScreenView {
 
   const body: string[] = [`Founded on day ${c.foundedOn}.`];
   if (c.crews.length === 0) {
-    body.push('There are no men on the books. Crews are taken on at the', 'workings in the Blackcap Ranges.');
+    body.push('There are no men on the books. Crews are taken on at the workings in the Blackcap Ranges.');
   } else if (c.leases.length === 0) {
-    body.push('The company holds no ground. A prospecting crew must find', 'it before a shovel can be put in.');
+    body.push('The company holds no ground. A prospecting crew must find it before a shovel can be put in.');
   }
   const trail = c.weekProfitPence.slice(-6);
   if (trail.length) {

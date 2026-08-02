@@ -41,9 +41,7 @@ export function ftownView(state: GameState): ScreenView {
     title: 'SLATEFORD',
     subtitle: `${formatDate(state.day)} · ${titleCase(seasonPhrase(state.day))}`,
     body: [
-      'A street a mile long and wide enough to turn a bullock team, lined with tin',
-      'and rough-hewn wood, and beyond it nothing but tents. Only half the town digs;',
-      'the rest supply the diggers, and do better out of it.',
+      'A street a mile long and wide enough to turn a bullock team, lined with tin and rough-hewn wood, and beyond it nothing but tents. Only half the town digs; the rest supply the diggers, and do better out of it.',
     ],
     menu: [
       item('1', 'The Bank of Australasia', { type: 'goto', screen: 'ftown-bank' }, `gold at ${formatMoney(state.bankRatePencePerOz)} the ounce`),
@@ -71,15 +69,12 @@ export function ftownLodgingsView(state: GameState): ScreenView {
     screen: 'ftown-lodgings',
     title: 'LODGINGS IN SLATEFORD',
     body: [
-      'Beds and dry ground are dear wherever the rush has raised a street.',
-      'The inn and stable include a plain evening meal; tent ground does not.',
+      'Beds and dry ground are dear wherever the rush has raised a street. The inn and stable include a plain evening meal; tent ground does not.',
       ...(state.hearth.cottage
         ? []
         : [
             '',
-            'No dwelling-house is sold in Slateford at any price. A man who wants',
-            'a roof of his own takes the cottage at Port Gannet, and takes it as',
-            'a married man.',
+            'No dwelling-house is sold in Slateford at any price. A man who wants a roof of his own takes the cottage at Port Gannet, and takes it as a married man.',
           ]),
     ],
     menu: [
@@ -100,11 +95,8 @@ export function ftownBankView(state: GameState): ScreenView {
     title: atPort ? 'THE BANK, MAIN STREET, PORT GANNET' : 'THE BANK OF AUSTRALASIA',
     body: [
       atPort
-        ? 'One of the few brick buildings in the port, and busy with importers, agents'
-        : "A glass window on the street, a fireplace at one end, the manager's bed and",
-      atPort
-        ? 'and diggers turning their dust into notes before they take ship again.'
-        : 'the safe at the other, and a few remodelled gin cases for a desk.',
+        ? 'One of the few brick buildings in the port, and busy with importers, agents and diggers turning their dust into notes before they take ship again.'
+        : "A glass window on the street, a fireplace at one end, the manager's bed and the safe at the other, and a few remodelled gin cases for a desk.",
       '',
       `Gold today: ${formatMoney(rate)} the ounce${atPort ? ' (the Slateford bank pays better)' : ' — the best rate in the colony'}.`,
       rateTrendPhrase(state),
@@ -128,8 +120,7 @@ export function ftownStoreView(state: GameState): ScreenView {
     screen: 'ftown-store',
     title: "BELL'S OUTFITTERS, SLATEFORD",
     body: [
-      "Bell's Outfitters is a gold mine in itself. Demand is so great that the supply",
-      'cannot keep up, and the storekeepers can charge what they like.',
+      "Bell's Outfitters is a gold mine in itself. Demand is so great that the supply cannot keep up, and the storekeepers can charge what they like.",
       '',
       briggsDiscountLabel(state),
       ...(state.legal === 'honest' ? [] : [`Your ${state.legal} standing adds a visible risk premium to Bell's prices.`]),
@@ -156,8 +147,7 @@ export function storeSellView(state: GameState): ScreenView {
     screen: 'store-sell',
     title: 'SELLING BACK TO THE STORE',
     body: [
-      'The storekeeper values second-hand goods from the port wholesale list,',
-      'and offers one quarter of that price wherever you sell them.',
+      'The storekeeper values second-hand goods from the port wholesale list, and offers one quarter of that price wherever you sell them.',
     ],
     menu,
     aside: storeAside(state),
@@ -169,17 +159,13 @@ export function ftownCouncilView(state: GameState): ScreenView {
     screen: 'ftown-council',
     title: 'THE COUNCIL CHAMBERS',
     body: [
-      'Licences, claims and complaints. Attached are the police camp and the logs.',
-      'A travelling magistrate hears cases once a month; until then, prisoners wait',
-      'in chains.',
+      'Licences, claims and complaints. Attached are the police camp and the logs. A travelling magistrate hears cases once a month; until then, prisoners wait in chains.',
       '',
       `Your licence: ${licenceWord(state)}.`,
       ...(inAftermath(state)
         ? []
         : [
-            'Thirty shillings the month is one shilling a day, or eighteen pounds a year,',
-            "when a labourer's wage is five shillings a week and a shepherd receives a",
-            'miserable ten pounds a year.',
+            "Thirty shillings the month is one shilling a day, or eighteen pounds a year, when a labourer's wage is five shillings a week and a shepherd receives a miserable ten pounds a year.",
           ]),
     ],
     menu: [
@@ -234,8 +220,7 @@ export function ftownWorkView(state: GameState): ScreenView {
     screen: 'ftown-work',
     title: 'WORK IN SLATEFORD',
     body: [
-      'If you are wondering where to begin to make your fortune, consider trying',
-      'short-term work in Slateford. No licence is wanted for honest wages.',
+      'If you are wondering where to begin to make your fortune, consider trying short-term work in Slateford. No licence is wanted for honest wages.',
     ],
     menu,
   };
@@ -246,8 +231,7 @@ export function ftownHospitalView(state: GameState): ScreenView {
     screen: 'ftown-hospital',
     title: 'CANVAS HOUSE',
     body: [
-      'A collection of tents packed with stretchers on earthen floors. My advice to',
-      'diggers is not to get sick.',
+      'A collection of tents packed with stretchers on earthen floors. My advice to diggers is not to get sick.',
       '',
       `Health: ${healthWord(state.health)}${state.illness ? ` — ${ILLNESS_NAMES[state.illness.id]}` : ''}.`,
       hospitalFee(state) === 0
@@ -268,9 +252,7 @@ export function ftownHotelView(state: GameState): ScreenView {
     screen: 'ftown-hotel',
     title: 'THE CROWN & CRADLE',
     body: [
-      'Bell Street is lined on both sides with buildings, and they centre on the',
-      'Crown & Cradle. Half the town does not dig at all; a good deal of what it knows is',
-      'known here first.',
+      'Bell Street is lined on both sides with buildings, and they centre on the Crown & Cradle. Half the town does not dig at all; a good deal of what it knows is known here first.',
       '',
       receptionLine(state),
       '',
@@ -309,8 +291,7 @@ export function ftownGambleView(state: GameState): ScreenView {
     screen: 'ftown-gamble',
     title: 'THE YARD BEHIND THE CROWN & CRADLE',
     body: [
-      'Diggers come to town to exchange their gold, then spend up big — gambling and',
-      'carousing, often losing a small fortune overnight.',
+      'Diggers come to town to exchange their gold, then spend up big — gambling and carousing, often losing a small fortune overnight.',
       ...(parlourOpen(state)
         ? ['', 'The parlour door is open to you. They play for pounds in there.']
         : []),
@@ -325,9 +306,7 @@ export function ftownTwoUpView(state: GameState): ScreenView {
     screen: 'ftown-twoup',
     title: 'TWO-UP IN THE YARD',
     body: [
-      'The spinner sets two pennies on the kip. Heads wins your call; tails wins the other.',
-      'Odds are tossed again. There is no house hand to read—only the call and whether',
-      'you have the nerve to leave a winning stake down.',
+      'The spinner sets two pennies on the kip. Heads wins your call; tails wins the other. Odds are tossed again. There is no house hand to read—only the call and whether you have the nerve to leave a winning stake down.',
       '',
       g && g.pot > 0 ? `${formatMoney(g.pot)} is waiting on your side of the ring.` : `Your stake is ${formatMoney(g?.stake ?? 0)}. Make the call.`,
     ],

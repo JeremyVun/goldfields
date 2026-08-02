@@ -82,9 +82,7 @@ export function suzeView(state: GameState): ScreenView {
     title: 'PORT GANNET',
     subtitle: `${formatDate(state.day)} · ${titleCase(seasonPhrase(state.day))}`,
     body: [
-      'Dirty, unlit streets, garish signs, and horses hitched to wooden railings.',
-      'The place exists only for gold. There is plenty of work for those who stay,',
-      'and because workers are scarce the wages are good.',
+      'Dirty, unlit streets, garish signs, and horses hitched to wooden railings. The place exists only for gold. There is plenty of work for those who stay, and because workers are scarce the wages are good.',
     ],
     menu: [
       item('1', 'Seek work about the port', { type: 'goto', screen: 'suze-work' }),
@@ -124,8 +122,7 @@ export function suzeWorkView(state: GameState): ScreenView {
     screen: 'suze-work',
     title: 'WORK AT PORT GANNET',
     body: [
-      'Ships lie in the harbour short-handed, their crews gone to the diggings.',
-      'A man who will stay and work can always find a day\'s wage.',
+      'Ships lie in the harbour short-handed, their crews gone to the diggings. A man who will stay and work can always find a day\'s wage.',
     ],
     menu: [
       item('1', `${JOBS.wharf.name} — ${formatMoney(JOBS.wharf.lo)} to ${formatMoney(JOBS.wharf.hi)} a day`, { type: 'work', job: 'wharf', days: state.spellDays }, JOBS.wharf.blurb),
@@ -141,8 +138,7 @@ export function suzeStoreView(state: GameState): ScreenView {
     screen: 'suze-store',
     title: "BELL'S OUTFITTERS, PORT GANNET",
     body: [
-      'Prices keep rising, but equipment and supplies are much cheaper here than',
-      'at the goldfields. Buy before you go, and buy carefully.',
+      'Prices keep rising, but equipment and supplies are much cheaper here than at the goldfields. Buy before you go, and buy carefully.',
       '',
       briggsDiscountLabel(state),
       ...(state.legal === 'honest' ? [] : [`Bell adds a visible risk premium because your standing is ${state.legal}.`]),
@@ -157,16 +153,12 @@ export function suzeLodgingsView(state: GameState): ScreenView {
     screen: 'suze-lodgings',
     title: 'LODGINGS',
     body: [
-      'Lodgings are scarce. There were no beds at the inn for us, at least none',
-      'that we could afford.',
-      'The inn and stable include a plain evening meal; tent ground does not.',
+      'Lodgings are scarce. There were no beds at the inn for us, at least none that we could afford. The inn and stable include a plain evening meal; tent ground does not.',
       ...(state.hearth.cottage
         ? []
         : [
             '',
-            'Every bed in the port is let by the night. The one house a man may',
-            'own here is the cottage a married man buys, and that road begins at',
-            'a Slateford subscription ball.',
+            'Every bed in the port is let by the night. The one house a man may own here is the cottage a married man buys, and that road begins at a Slateford subscription ball.',
           ]),
     ],
     menu: [
@@ -185,9 +177,7 @@ export function suzeHorsesView(state: GameState): ScreenView {
     screen: 'suze-horses',
     title: 'THE HORSE DEALER',
     body: [
-      'Two horses stand at the rail. Their prices are chalked up; their virtues are not.',
-      'Horse knowledge comes from looking, work around the port, or paying someone',
-      'whose livelihood does not depend on selling either animal.',
+      'Two horses stand at the rail. Their prices are chalked up; their virtues are not. Horse knowledge comes from looking, work around the port, or paying someone whose livelihood does not depend on selling either animal.',
       '',
       horseReport(state, 'brumby'),
       horseReport(state, 'hack'),
@@ -209,9 +199,7 @@ export function suzeCrimeView(state: GameState): ScreenView {
     screen: 'suze-crime',
     title: 'AN OPPORTUNITY',
     body: [
-      'The streets are dark and unlit, and there are drunks enough in them.',
-      'Most people happily tolerate grog sellers and licence dodgers. Thieves',
-      'are another matter: harming your fellows is deeply despised.',
+      'The streets are dark and unlit, and there are drunks enough in them. Most people happily tolerate grog sellers and licence dodgers. Thieves are another matter: harming your fellows is deeply despised.',
     ],
     menu: [
       item('1', 'Lift goods from a store', { type: 'steal', target: 'store' }, 'the better prize, the greater risk'),
@@ -248,8 +236,7 @@ export function travelRouteView(): ScreenView {
     screen: 'travel-route',
     title: 'THE ROAD TO THE DIGGINGS',
     body: [
-      'The roads to the diggings are bad, summer or winter: raw dirt tracks',
-      'winding through the bush, following the paths forced by the first diggers.',
+      'The roads to the diggings are bad, summer or winter: raw dirt tracks winding through the bush, following the paths forced by the first diggers.',
     ],
     menu: [
       item('1', `${ROUTES.trickeys.name} — ${ROUTES.trickeys.walkDays} days afoot`, { type: 'chooseRoute', route: 'trickeys' }, ROUTES.trickeys.blurb),
@@ -268,9 +255,7 @@ export function travelModeView(state: GameState): ScreenView {
     screen: 'travel-mode',
     title: `HOW WILL YOU TRAVEL ${route === 'trickeys' ? "MERCER'S TRACK" : 'THE RAZORBACK ROAD'}?`,
     body: [
-      'Prepare carefully. Some travellers are stark, staring, gold mad and head off',
-      'with nothing. If they do not die on the way, they arrive with no tools,',
-      'money or shelter. Others take far too much.',
+      'Prepare carefully. Some travellers are stark, staring, gold mad and head off with nothing. If they do not die on the way, they arrive with no tools, money or shelter. Others take far too much.',
       '',
       ...walk.problems.map((p) => `— ${p}`),
     ],
