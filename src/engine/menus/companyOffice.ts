@@ -329,6 +329,15 @@ export function companyView(state: GameState): ScreenView {
         c.treasuryPence < COMPANY_CREW_WAGES,
     ),
   );
+  menu.push(
+    item(
+      'A',
+      `Advance ${formatMoney(pounds(10))} to the treasury`,
+      { type: 'advanceTreasury', amountPence: pounds(10) },
+      'your own money, given to the company outright',
+      purse(state) < pounds(10),
+    ),
+  );
   menu.push(item('F', 'Pay off a crew', { type: 'fireCrew' }, undefined, c.crews.length === 0));
   menu.push(item('D', 'Declare a dividend', { type: 'goto', screen: 'company-dividend' }, 'choose the amount per issued share', issued <= 0));
   menu.push(

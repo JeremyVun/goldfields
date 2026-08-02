@@ -285,6 +285,23 @@ export function hireCrew(state: GameState, log: Log): boolean {
   return true;
 }
 
+/**
+ * A director may advance his own money to a treasury that cannot meet a week's
+ * wages — the way out of the dead end where the ground is good, the promoter
+ * is flush, and the company cannot take on a man.
+ */
+export function advanceTreasury(state: GameState, log: Log, amountPence: number): boolean {
+  const c = state.company;
+  if (!c || !Number.isInteger(amountPence) || amountPence <= 0) return false;
+  if (!debitFunds(state, amountPence)) {
+    log.raw('You have not the money to advance.', 'bad');
+    return false;
+  }
+  c.treasuryPence += amountPence;
+  log.raw(`You advance ${formatMoney(amountPence)} of your own money to the treasury of ${c.name}.`, 'good');
+  return true;
+}
+
 export function fireCrew(state: GameState, log: Log): boolean {
   const c = state.company;
   if (!c || c.crews.length === 0) {

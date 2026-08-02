@@ -7,6 +7,7 @@ import {
 } from '../bandit';
 import {
   abandonLease,
+  advanceTreasury,
   buyBackShares,
   buyBattery,
   declareDividend,
@@ -399,6 +400,10 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
 
     case 'hireCrew':
       hireCrew(s, log);
+      return;
+
+    case 'advanceTreasury':
+      advanceTreasury(s, log, action.amountPence);
       return;
 
     case 'fireCrew':

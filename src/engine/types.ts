@@ -885,6 +885,7 @@ export type Action =
   | { type: 'rentPuddler'; days: number }
   | { type: 'floatCompany'; shares: number }
   | { type: 'hireCrew' }
+  | { type: 'advanceTreasury'; amountPence: number }
   | { type: 'fireCrew' }
   | { type: 'setCrewTask'; index: number; task: 'mine' | 'develop' | 'prospect'; lease?: number }
   | { type: 'setLeasePlan'; lease: number; plan: LeasePlan }
