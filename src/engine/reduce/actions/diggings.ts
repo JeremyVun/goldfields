@@ -1,15 +1,40 @@
 import { PUDDLER_RENT } from '../../constants';
-import { checkMethod, licenceDiesMidSpell } from '../../mining';
+import { abandonClaim, checkMethod, licenceDiesMidSpell, pegClaim } from '../../mining';
 import { formatMoney } from '../../money';
 import { Log } from '../../narrate';
 import type { RNG } from '../../rng';
 import { isCamp, isLicensed } from '../../state';
-import type { Action, GameState } from '../../types';
+import type { Action, CampId, GameState } from '../../types';
 import { runTask } from '../tasks';
 
 // ---------------------------------------------------------------------------
-// The diggings: a spell at the face, and the puddling machine.
+// The diggings: pegging ground, a spell at the face, and the puddling machine.
 // ---------------------------------------------------------------------------
+
+export function pegClaimAction(s: GameState, rng: RNG, log: Log): void {
+  if (!isCamp(s.location)) {
+    log.raw('You must be on the ground to peg it.', 'bad');
+    return;
+  }
+  pegClaim(s, rng, log, s.location as CampId);
+}
+
+export function abandonClaimAction(s: GameState, log: Log): void {
+  if (!isCamp(s.location)) {
+    log.raw('You have no ground here to give up.', 'neutral');
+    return;
+  }
+  abandonClaim(s, log, s.location as CampId);
+}
+
+export function abandonShaft(s: GameState, log: Log): void {
+  if (!s.shaft) {
+    log.raw('You have no shaft.', 'neutral');
+    return;
+  }
+  s.shaft = null;
+  log.raw('You leave the hole to fill with water and rubbish, as ten thousand others have been left.', 'neutral');
+}
 
 export function mine(s: GameState, rng: RNG, log: Log, action: Extract<Action, { type: 'mine' }>): void {
   if (!isCamp(s.location)) {

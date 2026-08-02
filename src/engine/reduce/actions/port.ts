@@ -149,6 +149,14 @@ export function readGazette(s: GameState, rng: RNG, log: Log): void {
   s.screen = 'gazette';
 }
 
+export function readJournal(s: GameState, log: Log): void {
+  if (s.items.journal < 1) {
+    log.raw('You have no copy of the Journal.', 'bad');
+    return;
+  }
+  s.screen = 'journal';
+}
+
 export function steal(s: GameState, rng: RNG, log: Log, action: Extract<Action, { type: 'steal' }>): void {
   const def = action.target === 'store' ? STEAL_STORE : STEAL_DRUNK;
   if (rng.chance(def.caught)) {

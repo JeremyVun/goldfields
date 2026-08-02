@@ -14,6 +14,18 @@ import { checkGraveAfter } from '../tasks';
 // Slateford: the bank, the claim ledger, a dish of the ground, the quack.
 // ---------------------------------------------------------------------------
 
+export function complain(rng: RNG, log: Log): void {
+  log.raw(
+    rng.pick([
+      'The clerk writes your complaint in a fine round hand, blots it, and puts it in a drawer with a great many others.',
+      'A councillor hears you out. He owns the store, the hotel and the carting business, and agrees that something ought to be done.',
+      'You complain of the state of the roads. So, it appears, has every man in the colony.',
+      'You complain of the licence fee. The clerk observes that there will be rebellion soon, and goes back to his ledger.',
+    ]),
+    'neutral',
+  );
+}
+
 export function deposit(s: GameState, log: Log, action: Extract<Action, { type: 'deposit' }>): void {
   if (bankRefuses(s)) {
     log.say('bandit.bank.refused', undefined, 'bad');

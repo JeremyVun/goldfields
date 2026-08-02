@@ -1,11 +1,8 @@
-import { resolveMeeting, resolveStockade, type StockadeChoice } from '../agitation';
 import {
-  buyPassage,
   dismissGangMember,
   fenceGold,
   recruitGangMember,
   stash,
-  takePardon,
   unstash,
 } from '../bandit';
 import {
@@ -16,7 +13,6 @@ import {
   fireCrew,
   hireCrew,
   installPlant,
-  sellOut,
   sellOwnShares,
   setCrewTask,
   setDriving,
@@ -27,10 +23,8 @@ import {
   acceptCommission,
   buyGazetteShare,
   buyShamrock,
-  buyShanty,
   openStore,
   retainLawyer,
-  ruleOn,
   setStorePolicy,
   fundWork,
 } from '../estate';
@@ -60,30 +54,22 @@ import {
   fillWater,
   sellGold,
 } from '../market';
-import {
-  abandonClaim,
-  dissolvePartnership,
-  hireMate,
-  hirePumpman,
-  pegClaim,
-  takePartner,
-  timberShaft,
-} from '../mining';
+import { dissolvePartnership, hireMate, hirePumpman, takePartner, timberShaft } from '../mining';
 import { Log } from '../narrate';
 import type { RNG } from '../rng';
-import { clone, createInitialState, isCamp, recordWorth } from '../state';
-import type { Action, CampId, GameState, StepResult } from '../types';
+import { clone, createInitialState } from '../state';
+import type { Action, GameState, StepResult } from '../types';
+import { answerPendingEncounter } from './answer';
+import { screenForLocation, settle } from './screen';
+import { runTask } from './tasks';
 import { actionPayloadValid } from './validate';
-import { handleAssizesChoice, handleBailUpChoice, handleClaimJumper, handlePatrolChoice } from './darkEncounters';
-import { handleBushrangerChoice, handleTrooperChoice, resumePending } from './encounters';
-import { screenForLocation } from './screen';
-import { advanceKept, runTask } from './tasks';
 import { beginNextYear, cycleSpell, saveGame, startNewGame } from './actions/framing';
 import {
   buyMeal,
   fishForFood,
   inspectHorse,
   readGazette,
+  readJournal,
   sellSalvage,
   setLodging,
   steal,
@@ -98,7 +84,7 @@ import {
   travel,
   travelTo,
 } from './actions/travel';
-import { deposit, guardClaim, prospect, quack, registerClaim, withdraw } from './actions/town';
+import { complain, deposit, guardClaim, prospect, quack, registerClaim, withdraw } from './actions/town';
 import {
   cardsDecision,
   drink,
@@ -108,11 +94,17 @@ import {
   twoUpCall,
   twoUpCollect,
 } from './actions/gambling';
-import { mine, rentPuddler } from './actions/diggings';
-import { companyRelations, companySupplyContract, floatCompanyAction } from './actions/company';
-import { holdCourtAction, placeStoryAction } from './actions/civic';
+import { abandonClaimAction, abandonShaft, mine, pegClaimAction, rentPuddler } from './actions/diggings';
+import {
+  companyRelations,
+  companySupplyContract,
+  floatCompanyAction,
+  sellOutAction,
+} from './actions/company';
+import { buyShantyAction, holdCourtAction, placeStoryAction, ruleAction } from './actions/civic';
 import {
   bailUpOnTheRoad,
+  buyPassageAction,
   gatherIntelligenceAction,
   makeHideoutAction,
   robBankAction,
@@ -122,45 +114,6 @@ import {
 // ---------------------------------------------------------------------------
 // The reducer
 // ---------------------------------------------------------------------------
-
-function settle(state: GameState, log: Log): void {
-  if (state.gameOver) state.pending = null;
-  // The camp in the ranges is the one screen that can outlive the place it
-  // belongs to: a raid takes it away under the player's feet.
-  if (
-    (state.screen === 'hideout' || state.screen === 'stash') &&
-    (state.location !== 'hideout' || !state.hideout)
-  ) {
-    state.screen = screenForLocation(state.location === 'hideout' ? 'deep-mountains' : state.location);
-  }
-  // A question raised anywhere in the engine is put to the player, whatever he
-  // thought he was doing.
-  if (state.pending && !state.endOfYear && state.screen !== 'encounter') {
-    state.screen = 'encounter';
-  }
-  if (state.gameOver === 'dead') {
-    // The Times prints a man's death once, not every time he is spoken to.
-    if (state.screen !== 'obituary') {
-      state.screen = 'obituary';
-      log.say('end.obituary', undefined, 'grave');
-    }
-    return;
-  }
-  if (state.gameOver === 'finished') {
-    if (state.screen !== 'end') {
-      state.screen = 'end';
-      recordWorth(state);
-    }
-    return;
-  }
-  if (state.endOfYear && state.screen !== 'end') {
-    state.screen = 'end';
-    log.say('end.summary', undefined, 'title');
-    // The last reading of the year, taken after the dividends are in, so the
-    // chart ends where the tally does (§21).
-    recordWorth(state);
-  }
-}
 
 export function step(state: GameState, action: Action, rng: RNG): StepResult {
   const s = clone(state);
@@ -180,63 +133,7 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
     return;
   }
   // Encounters swallow everything until answered.
-  if (s.pending && s.screen === 'encounter') {
-    if (s.pending.kind === 'claimJumper') {
-      handleClaimJumper(s, rng, log, action);
-      return;
-    }
-    if (s.pending.kind === 'trooper') {
-      handleTrooperChoice(s, rng, log, action);
-      return;
-    }
-    if (s.pending.kind === 'bushrangers') {
-      handleBushrangerChoice(s, rng, log, action);
-      return;
-    }
-    if (s.pending.kind === 'patrol' || s.pending.kind === 'hideoutRaid') {
-      handlePatrolChoice(s, rng, log, action);
-      return;
-    }
-    if (s.pending.kind === 'bailup') {
-      handleBailUpChoice(s, rng, log, action);
-      return;
-    }
-    if (s.pending.kind === 'shantyRaid') {
-      // Nothing to answer: the place is ash, and there is nobody to complain
-      // to about it (§28.3).
-      s.pending = null;
-      s.screen = screenForLocation(s.location);
-      resumePending(s, rng, log);
-      return;
-    }
-    if (s.pending.kind === 'assizes') {
-      handleAssizesChoice(s, rng, log, action);
-      return;
-    }
-    if (s.pending.kind === 'pardon') {
-      takePardon(s, log, action.type === 'takePardon' && action.take);
-      resumePending(s, rng, log);
-      return;
-    }
-    if (s.pending.kind === 'meeting') {
-      resolveMeeting(s, rng, log, action.type === 'attendMeeting' && action.attend, (days) => advanceKept(s, rng, log, days));
-      resumePending(s, rng, log);
-      return;
-    }
-    if (s.pending.kind === 'stockade') {
-      const choice: StockadeChoice =
-        action.type === 'joinStockade'
-          ? 'join'
-          : action.type === 'sellSupplies'
-            ? 'sellSupplies'
-            : 'keepClear';
-      resolveStockade(s, rng, log, choice, (days) => advanceKept(s, rng, log, days));
-      // A refused sale leaves the question standing.
-      if (s.pending) return;
-      resumePending(s, rng, log);
-      return;
-    }
-  }
+  if (answerPendingEncounter(s, rng, log, action)) return;
 
   switch (action.type) {
     // --- framing -------------------------------------------------------
@@ -244,10 +141,9 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
       s.screen = 'title';
       return;
 
-    case 'newGame': {
+    case 'newGame':
       startNewGame(s, rng, log, action);
       return;
-    }
 
     case 'resumePrompt':
       s.screen = 'resume';
@@ -274,20 +170,18 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
       s.screen = action.screen;
       return;
 
-    case 'cycleSpell': {
+    case 'cycleSpell':
       cycleSpell(s, log);
       return;
-    }
 
     case 'quitToTitle':
       Object.assign(s, createInitialState(s.seed));
       s.screen = 'title';
       return;
 
-    case 'save': {
+    case 'save':
       saveGame(s, rng, log, action);
       return;
-    }
 
     case 'finish':
       s.gameOver = 'finished';
@@ -298,10 +192,9 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
       return;
 
     // --- Port Gannet -----------------------------------------------------
-    case 'work': {
+    case 'work':
       takeWork(s, rng, log, action);
       return;
-    }
 
     case 'buy':
       buyItem(s, log, action.item, action.qty ?? 1);
@@ -327,93 +220,75 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
       buyHorse(s, rng, log, action.kind);
       return;
 
-    case 'inspectHorse': {
+    case 'inspectHorse':
       inspectHorse(s, rng, log, action);
       return;
-    }
 
     case 'buyMeal':
       buyMeal(s, log);
       return;
 
-    case 'fishForFood': {
+    case 'fishForFood':
       fishForFood(s, rng, log);
       return;
-    }
 
-    case 'setLodging': {
+    case 'setLodging':
       setLodging(s, log, action);
       return;
-    }
 
-    case 'sellSalvage': {
+    case 'sellSalvage':
       sellSalvage(s, rng, log);
       return;
-    }
 
-    case 'readGazette': {
+    case 'readGazette':
       readGazette(s, rng, log);
       return;
-    }
 
     case 'readJournal':
-      if (s.items.journal < 1) {
-        log.raw('You have no copy of the Journal.', 'bad');
-        return;
-      }
-      s.screen = 'journal';
+      readJournal(s, log);
       return;
 
-    case 'steal': {
+    case 'steal':
       steal(s, rng, log, action);
       return;
-    }
 
     // --- travel --------------------------------------------------------
     case 'chooseRoute':
       chooseRoute(s, action);
       return;
 
-    case 'travel': {
+    case 'travel':
       travel(s, rng, log, action);
       return;
-    }
 
-    case 'coach': {
+    case 'coach':
       coach(s, rng, log);
       return;
-    }
 
-    case 'travelTo': {
+    case 'travelTo':
       travelTo(s, rng, log, action);
       return;
-    }
 
-    case 'followRumour': {
+    case 'followRumour':
       followRumour(s, rng, log);
       return;
-    }
 
-    case 'searchSecret': {
+    case 'searchSecret':
       searchSecret(s, rng, log, action);
       return;
-    }
 
-    case 'recoverNugget': {
+    case 'recoverNugget':
       recoverNugget(s, rng, log);
       return;
-    }
 
     // --- Slateford ---------------------------------------------------
-    case 'deposit': {
+    case 'deposit':
       deposit(s, log, action);
       return;
-    }
 
-    case 'withdraw': {
+    case 'withdraw':
       withdraw(s, log, action);
       return;
-    }
 
     case 'sellGold':
       sellGold(s, rng, log, action.where, action.watch);
@@ -423,99 +298,71 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
       buyLicence(s, log);
       return;
 
-    case 'registerClaim': {
+    case 'registerClaim':
       registerClaim(s, log, action);
       return;
-    }
 
-    case 'guardClaim': {
+    case 'guardClaim':
       guardClaim(s, log, action);
       return;
-    }
 
     case 'pegClaim':
-      if (!isCamp(s.location)) {
-        log.raw('You must be on the ground to peg it.', 'bad');
-        return;
-      }
-      pegClaim(s, rng, log, s.location as CampId);
+      pegClaimAction(s, rng, log);
       return;
 
     case 'abandonClaim':
-      if (!isCamp(s.location)) {
-        log.raw('You have no ground here to give up.', 'neutral');
-        return;
-      }
-      abandonClaim(s, log, s.location as CampId);
+      abandonClaimAction(s, log);
       return;
 
-    case 'prospect': {
+    case 'prospect':
       prospect(s, rng, log);
       return;
-    }
 
     case 'complain':
-      log.raw(
-        rng.pick([
-          'The clerk writes your complaint in a fine round hand, blots it, and puts it in a drawer with a great many others.',
-          'A councillor hears you out. He owns the store, the hotel and the carting business, and agrees that something ought to be done.',
-          'You complain of the state of the roads. So, it appears, has every man in the colony.',
-          'You complain of the licence fee. The clerk observes that there will be rebellion soon, and goes back to his ledger.',
-        ]),
-        'neutral',
-      );
+      complain(rng, log);
       return;
 
     case 'hospital':
       runTask(s, rng, log, { kind: 'hospital', days: action.days });
       return;
 
-    case 'quack': {
+    case 'quack':
       quack(s, rng, log);
       return;
-    }
 
     // The room reads him, and then serves him (§30.1, priced by §31.4).
-    case 'drink': {
+    case 'drink':
       drink(s, rng, log, action);
       return;
-    }
 
-    case 'shoutBar': {
+    case 'shoutBar':
       shoutBar(s, rng, log, action);
       return;
-    }
 
-    case 'startGamble': {
+    case 'startGamble':
       startGamble(s, rng, log, action);
       return;
-    }
 
-    case 'twoUpCall': {
+    case 'twoUpCall':
       twoUpCall(s, rng, log, action);
       return;
-    }
 
-    case 'twoUpCollect': {
+    case 'twoUpCollect':
       twoUpCollect(s, log);
       return;
-    }
 
-    case 'cardsDecision': {
+    case 'cardsDecision':
       cardsDecision(s, rng, log, action);
       return;
-    }
 
-    case 'gamble': {
+    case 'gamble':
       gamble(s, rng, log, action);
       return;
-    }
 
     // --- the diggings ---------------------------------------------------
-    case 'mine': {
+    case 'mine':
       mine(s, rng, log, action);
       return;
-    }
 
     case 'hireMate':
       hireMate(s, log, action.days);
@@ -529,22 +376,16 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
       dissolvePartnership(s, log);
       return;
 
-    case 'rentPuddler': {
+    case 'rentPuddler':
       rentPuddler(s, log, action);
       return;
-    }
 
     case 'timberShaft':
       if (timberShaft(s, log)) endDay(s, rng, log, { toil: true });
       return;
 
     case 'abandonShaft':
-      if (!s.shaft) {
-        log.raw('You have no shaft.', 'neutral');
-        return;
-      }
-      s.shaft = null;
-      log.raw('You leave the hole to fill with water and rubbish, as ten thousand others have been left.', 'neutral');
+      abandonShaft(s, log);
       return;
 
     case 'rest':
@@ -552,10 +393,9 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
       return;
 
     // --- your own company ------------------------------------------------
-    case 'floatCompany': {
+    case 'floatCompany':
       floatCompanyAction(s, rng, log, action);
       return;
-    }
 
     case 'hireCrew':
       hireCrew(s, log);
@@ -607,18 +447,12 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
       return;
 
     case 'sellOut':
-      if (!s.company) {
-        log.raw('You have no company to sell out of.', 'neutral');
-        return;
-      }
-      sellOut(s, log);
-      s.screen = screenForLocation(s.location);
+      sellOutAction(s, log);
       return;
 
-    case 'companyRelations': {
+    case 'companyRelations':
       companyRelations(s, rng, log);
       return;
-    }
 
     case 'companySupplyContract':
       companySupplyContract(s, rng, log);
@@ -641,10 +475,9 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
       buyGazetteShare(s, log);
       return;
 
-    case 'placeStory': {
+    case 'placeStory':
       placeStoryAction(s, rng, log, action);
       return;
-    }
 
     case 'fundWork':
       fundWork(s, log, action.work, action.camp);
@@ -709,26 +542,16 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
       acceptCommission(s, log);
       return;
 
-    case 'holdCourt': {
+    case 'holdCourt':
       holdCourtAction(s, rng, log);
       return;
-    }
 
     case 'rule':
-      if (s.screen !== 'court') {
-        log.raw('The court is not sitting.', 'neutral');
-        return;
-      }
-      ruleOn(s, log, action.ruling);
-      s.screen = screenForLocation(s.location);
+      ruleAction(s, log, action);
       return;
 
     case 'buyShanty':
-      if (!isCamp(s.location)) {
-        log.raw('Sly grog is sold at the diggings, not in a town with a licensed house in it.', 'bad');
-        return;
-      }
-      buyShanty(s, log, s.location as CampId);
+      buyShantyAction(s, log);
       return;
 
     case 'retainLawyer':
@@ -736,15 +559,13 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
       return;
 
     // --- the dark ladder (§23-§24) --------------------------------------
-    case 'bailUp': {
+    case 'bailUp':
       bailUpOnTheRoad(s, rng, log, action);
       return;
-    }
 
-    case 'makeHideout': {
+    case 'makeHideout':
       makeHideoutAction(s, rng, log);
       return;
-    }
 
     case 'stash':
       stash(s, log, action.what, action.amount);
@@ -762,28 +583,24 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
       dismissGangMember(s, log, action.index);
       return;
 
-    case 'gatherIntelligence': {
+    case 'gatherIntelligence':
       gatherIntelligenceAction(s, rng, log);
       return;
-    }
 
     case 'fenceGold':
       fenceGold(s, rng, log);
       return;
 
-    case 'robBank': {
+    case 'robBank':
       robBankAction(s, rng, log);
       return;
-    }
 
-    case 'robEscort': {
+    case 'robEscort':
       robEscortAction(s, rng, log);
       return;
-    }
 
     case 'buyPassage':
-      buyPassage(s, rng, log, (days) => advanceKept(s, rng, log, days));
-      if (s.pending) s.screen = 'encounter';
+      buyPassageAction(s, rng, log);
       return;
 
     // --- encounters when nothing is pending -----------------------------

@@ -1,5 +1,6 @@
 import { HIDEOUT_DAYS, ROB_ESCORT_DAYS } from '../../constants';
 import {
+  buyPassage,
   canBailUp,
   crimeVisible,
   gatherIntelligence,
@@ -15,7 +16,8 @@ import type { Action, GameState } from '../../types';
 import { advanceKept, checkGraveAfter } from '../tasks';
 
 // ---------------------------------------------------------------------------
-// The dark ladder (§23-§24): the road, the hideout and the robberies.
+// The dark ladder (§23-§24): the road, the hideout, the robberies and the
+// berth out of the colony.
 // ---------------------------------------------------------------------------
 
 export function bailUpOnTheRoad(s: GameState, rng: RNG, log: Log, action: Extract<Action, { type: 'bailUp' }>): void {
@@ -80,5 +82,10 @@ export function robEscortAction(s: GameState, rng: RNG, log: Log): void {
     if (s.gameOver || s.endOfYear) return;
   }
   checkGraveAfter(s, rng, log);
+  if (s.pending) s.screen = 'encounter';
+}
+
+export function buyPassageAction(s: GameState, rng: RNG, log: Log): void {
+  buyPassage(s, rng, log, (days) => advanceKept(s, rng, log, days));
   if (s.pending) s.screen = 'encounter';
 }

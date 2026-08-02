@@ -1,13 +1,23 @@
-import { floatCompany } from '../../company';
+import { floatCompany, sellOut } from '../../company';
 import { endDay } from '../../daily';
 import { pounds, shillings } from '../../money';
 import { Log } from '../../narrate';
 import type { RNG } from '../../rng';
 import type { Action, GameState } from '../../types';
+import { screenForLocation } from '../screen';
 
 // ---------------------------------------------------------------------------
-// Your own company: floating it, and the port's good opinion.
+// Your own company: floating it, selling out, and the port's good opinion.
 // ---------------------------------------------------------------------------
+
+export function sellOutAction(s: GameState, log: Log): void {
+  if (!s.company) {
+    log.raw('You have no company to sell out of.', 'neutral');
+    return;
+  }
+  sellOut(s, log);
+  s.screen = screenForLocation(s.location);
+}
 
 export function floatCompanyAction(s: GameState, rng: RNG, log: Log, action: Extract<Action, { type: 'floatCompany' }>): void {
   if (s.location !== 'deep-mountains' && s.location !== 'fields-town') {
