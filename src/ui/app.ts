@@ -1,6 +1,5 @@
 import { makeRng, randomSeed, type RNG } from '../engine/rng';
 import { createInitialState, statusLine } from '../engine/state';
-import { step } from '../engine/reduce';
 import { getView, menuView, mapView, MENU_LETTERS } from '../engine/menus';
 import {
   allocateSaveId,
@@ -9,12 +8,12 @@ import {
   tryLoadGame,
   trySaveGame,
 } from '../engine/save';
-import type { Action, AsidePanel, GameState, NarrationEvent, ViewFigure, ViewPanel } from '../engine/types';
+import type { Action, AsidePanel, GameState, ViewFigure, ViewPanel } from '../engine/types';
 import type { JournalSection } from '../content/journal';
 
+import { Session } from './dispatch';
 import { el, clear } from './dom';
 import { MenuController, type UIMenuItem } from './menu';
-import { pageEvents } from './narration';
 import { forTouch, isTouch, onInputModeChange } from './phrasing';
 import { cycleTheme, currentTheme, loadTheme } from './theme';
 
@@ -66,11 +65,14 @@ export class App {
   private readonly overlayEl: HTMLElement;
 
   private readonly rng: RNG;
-  private state: GameState;
 
-  private pendingState: GameState | null = null;
-  private narrationPages: NarrationEvent[][] | null = null;
-  private narrationIndex = 0;
+  /**
+   * The world, and whatever tale is still being told over the top of it. The
+   * frame never holds a state of its own: it asks the session for the one it
+   * is to draw, and the session sees to it that a part-told tale is set down
+   * before anything is applied to the world.
+   */
+  private readonly session: Session;
 
   private activeMenu: MenuController | null = null;
   private overlayMenu: MenuController | null = null;
@@ -96,11 +98,16 @@ export class App {
    *  the same screen (after a purchase, say) does not throw them to the top. */
   private savedScroll: { screen: string; top: number } | null = null;
 
+  /** The state the frame is presently drawn from — the backdrop behind a tale. */
+  private get state(): GameState {
+    return this.session.shown;
+  }
+
   constructor(root: HTMLElement) {
     this.root = root;
     const seed = randomSeed();
     this.rng = makeRng(seed);
-    this.state = createInitialState(seed);
+    this.session = new Session(createInitialState(seed), (prev, next) => this.onSettled(prev, next));
 
     loadTheme();
     clear(this.root);
@@ -177,18 +184,14 @@ export class App {
     this.savedScroll = { screen: this.state.screen, top: this.bodyEl.scrollTop };
     if (opts?.fromOverlay) this.closeOverlay();
 
-    // The menu opens at any time, narration or no. If the player acts from it
-    // while a tale is still being told, the state that tale produced must be
-    // committed first — otherwise a whole spell of digging is thrown away and
-    // the action is applied to the state as it stood before it.
-    this.flushNarration();
-
     // A fresh game must get a fresh seed, or "begin again" would replay the
     // very same year, move for move.
     let normalised: Action =
       action.type === 'newGame' ? { type: 'newGame', seed: randomSeed() } : action;
     const store = defaultStore();
-    if (normalised.type === 'save' && !this.state.gameId) {
+    // The number a game already carries — from the freshest state there is,
+    // since a tale still on the glass may have been the one that gave it.
+    if (normalised.type === 'save' && !this.session.live.gameId) {
       const allocated = allocateSaveId(store);
       if (!allocated.ok) {
         this.showStorageFailure(allocated.error.message);
@@ -198,7 +201,7 @@ export class App {
     }
 
     try {
-      const result = step(this.state, normalised, this.rng);
+      const result = this.session.act(normalised, this.rng);
 
       if (normalised.type === 'save') {
         const saved = trySaveGame(result.state, store);
@@ -208,71 +211,49 @@ export class App {
         }
       }
 
-      if (result.events.length > 0) {
-        this.pendingState = result.state;
-        this.narrationPages = pageEvents(result.events);
-        this.narrationIndex = 0;
-        this.renderNarration();
-      } else {
-        this.applyState(result.state);
-        this.render();
-      }
+      this.session.show(result);
+      if (this.session.telling) this.renderNarration();
+      else this.render();
     } catch (err) {
       // Never let an exception blank the screen.
       console.error('goldrush: step failed', err);
-      this.pendingState = null;
-      this.narrationPages = [
-        [
-          {
-            id: 'mishap',
-            text: 'Something has gone amiss in the telling of it. No harm done — you carry on as before.',
-            tone: 'bad',
-          },
-        ],
-      ];
-      this.narrationIndex = 0;
+      this.session.remark([
+        {
+          id: 'mishap',
+          text: 'Something has gone amiss in the telling of it. No harm done — you carry on as before.',
+          tone: 'bad',
+        },
+      ]);
       this.renderNarration();
     }
   }
 
   private showStorageFailure(message: string): void {
-    this.pendingState = null;
-    this.narrationPages = [[{
+    this.session.remark([{
       id: 'storage-failure',
       text: `The game was not saved. ${message}`,
       tone: 'bad',
-    }]];
-    this.narrationIndex = 0;
+    }]);
     this.renderNarration();
   }
 
-  /** Commit any narration still being paged through, and drop the pages. */
-  private flushNarration(): void {
-    if (this.pendingState) {
-      this.applyState(this.pendingState);
-      this.pendingState = null;
-    }
-    this.narrationPages = null;
-    this.narrationIndex = 0;
-  }
-
-  private applyState(newState: GameState): void {
-    const wasResume = this.state.screen === 'resume';
-    const isResume = newState.screen === 'resume';
-    if (isResume && !wasResume) {
+  /**
+   * The frame's own bookkeeping, kept by the screen rather than by the engine,
+   * heard of whenever the state on show is replaced: the number field is
+   * emptied as the resume prompt opens, and the book is opened at its first
+   * page — and shut again — with the screen it belongs to.
+   */
+  private onSettled(prev: GameState, next: GameState): void {
+    if (next.screen === 'resume' && prev.screen !== 'resume') {
       this.inputBuffer = '';
       this.inputError = null;
     }
 
-    const wasJournal = this.state.screen === 'journal';
-    const isJournal = newState.screen === 'journal';
-    if (!isJournal) {
+    if (next.screen !== 'journal') {
       this.journalState = null;
-    } else if (!wasJournal) {
+    } else if (prev.screen !== 'journal') {
       this.journalState = { mode: 'list', sectionIndex: 0, pageIndex: 0 };
     }
-
-    this.state = newState;
   }
 
   // -------------------------------------------------------------------
@@ -326,7 +307,7 @@ export class App {
       return;
     }
 
-    if (this.narrationPages) {
+    if (this.session.telling) {
       if (e.key === ' ' || e.key === 'Enter') this.advanceNarration();
       return;
     }
@@ -447,7 +428,7 @@ export class App {
 
   /** The freshest state there is — including one still being narrated. */
   private get liveState(): GameState {
-    return this.pendingState ?? this.state;
+    return this.session.live;
   }
 
   /**
@@ -623,8 +604,8 @@ export class App {
   // -------------------------------------------------------------------
 
   private renderNarration(): void {
-    if (!this.narrationPages) return;
-    const page = this.narrationPages[this.narrationIndex];
+    const page = this.session.page;
+    if (!page) return;
 
     // Keep the screen the player was just on as a backdrop while the tale unfolds.
     const view = getView(this.state);
@@ -671,19 +652,11 @@ export class App {
   }
 
   private advanceNarration(): void {
-    if (!this.narrationPages) return;
-    this.narrationIndex += 1;
-    if (this.narrationIndex < this.narrationPages.length) {
-      this.renderNarration();
-      return;
-    }
-    this.narrationPages = null;
-    this.narrationIndex = 0;
-    if (this.pendingState) {
-      this.applyState(this.pendingState);
-      this.pendingState = null;
-    }
-    this.render();
+    if (!this.session.telling) return;
+    // The last page turned sets the tale's state down, and the frame is due an
+    // ordinary redraw of the world it leaves behind.
+    if (this.session.advance()) this.renderNarration();
+    else this.render();
   }
 
   // -------------------------------------------------------------------
