@@ -47,13 +47,12 @@ export function coach(s: GameState, rng: RNG, log: Log): void {
     'The driver is a Yankee with a long whip, longer pistols and a Bowie knife, and hair enough to frighten a bushranger. The team goes off with mud flying and diggers cursing.',
     'neutral',
   );
-  for (let i = 0; i < COACH_DAYS; i++) {
-    endDay(s, rng, log, { travelling: true });
-    if (s.gameOver || s.endOfYear) return;
-  }
-  s.location = 'suze-port';
-  s.screen = 'suze';
-  log.say('travel.arrive.suze', undefined, 'neutral');
+  s.journey = {
+    route: 'trickeys', mode: 'coach', daysLeft: COACH_DAYS, daysTravelled: 0,
+    from: s.location, to: 'suze-port', salvage: 0,
+  };
+  s.location = 'on-road';
+  runTask(s, rng, log, { kind: 'travel' });
 }
 
 export function travelTo(s: GameState, rng: RNG, log: Log, action: Extract<Action, { type: 'travelTo' }>): void {
@@ -157,7 +156,7 @@ export function searchSecret(s: GameState, rng: RNG, log: Log, action: Extract<A
   if (!s.gameOver) endDay(s, rng, log, { toil: true });
   if (e.daysSearched >= 14 && !e.nuggetFound) {
     e.exhausted = true;
-    log.raw('Ten days of signs and holes end in barren stone. The expedition is over; only the return remains.', 'bad');
+    log.raw('Fourteen days of searching end in barren stone. The expedition is over; only the return remains.', 'bad');
   }
 }
 
@@ -165,15 +164,16 @@ export function recoverNugget(s: GameState, rng: RNG, log: Log): void {
   const e = s.secretExpedition;
   const weight = e?.nuggetCentiOz ?? 0;
   if (s.location !== 'secret-mine' || !e?.nuggetFound || e.nuggetRecovered || weight <= 0) return;
-  const cost = pounds(10);
+  const cost = (e.recoveryDays ?? 0) > 0 ? 0 : pounds(10);
   if (s.moneyPence < cost) {
     log.raw('A dray, six men and their water cost ten pounds. Promises will not move the stone.', 'bad');
     return;
   }
   s.moneyPence -= cost;
-  for (let i = 0; i < 3; i++) {
+  while ((e.recoveryDays ?? 0) < 3) {
     endDay(s, rng, log, { toil: true });
-    if (s.gameOver || s.endOfYear) return;
+    e.recoveryDays = (e.recoveryDays ?? 0) + 1;
+    if (s.gameOver || s.endOfYear || s.pending) return;
   }
   e.nuggetRecovered = true;
   s.goldCentiOz += weight;

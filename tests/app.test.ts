@@ -4,6 +4,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { App } from '../src/ui/app';
 import { MenuController } from '../src/ui/menu';
 import { paragraphsOf } from '../src/ui/narration';
+import { defaultStore, trySaveGame } from '../src/engine/save';
+import { createInitialState } from '../src/engine/state';
 
 const apps: App[] = [];
 const values = new Map<string, string>();
@@ -76,7 +78,63 @@ describe('browser application', () => {
     Object.defineProperty(globalThis, 'localStorage', { configurable: true, get: () => { throw new Error('denied'); } });
     const { root } = mount();
     expect(root.querySelector('.gf-title')?.textContent).toBe('GOLDRUSH');
+    expect(root.textContent).toContain('Saved games unavailable');
+    const saved = trySaveGame(createInitialState(42), defaultStore());
+    expect(saved.ok).toBe(false);
+    if (!saved.ok) expect(saved.error.kind).toBe('unavailable');
     Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: storage });
+  });
+
+  it('requires an explicit finish choice and lets Escape keep the game', () => {
+    const { root } = mount();
+    const key = (value: string) => root.dispatchEvent(new KeyboardEvent('keydown', { key: value, bubbles: true }));
+    key('Escape');
+    key('B');
+    expect(root.querySelector('.gf-overlay-title')?.textContent).toBe('FINISH THE GAME?');
+    expect(root.querySelector('.gf-title')?.textContent).toBe('GOLDRUSH');
+    key('Escape');
+    expect(root.querySelector('.gf-overlay-layer')?.getAttribute('role')).toBeNull();
+    key('Escape');
+    key('B');
+    key('1');
+    expect(root.querySelector('.gf-title')?.textContent).toBe('THE RECKONING');
+  });
+
+  it('does not let browser shortcuts activate game choices', () => {
+    const { root } = mount();
+    root.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    const storedBefore = new Map(values);
+    root.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', ctrlKey: true, bubbles: true }));
+    expect(root.querySelector('.gf-overlay-layer')?.getAttribute('role')).toBe('dialog');
+    expect(values).toEqual(storedBefore);
+  });
+
+  it('keeps native Enter activation on a focused close button', () => {
+    const { root } = mount();
+    root.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    const close = root.querySelector('.gf-overlay-hint') as HTMLButtonElement;
+    const key = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+    close.dispatchEvent(key);
+    expect(key.defaultPrevented).toBe(false);
+    expect(root.querySelector('.gf-overlay-layer')?.getAttribute('role')).toBe('dialog');
+    close.click();
+    expect(root.querySelector('.gf-overlay-layer')?.getAttribute('role')).toBeNull();
+  });
+
+  it('does not begin another action because a key is held down', () => {
+    const { root } = mount();
+    root.dispatchEvent(new KeyboardEvent('keydown', { key: '1', repeat: true, bubbles: true }));
+    expect(root.querySelector('.gf-title')?.textContent).toBe('GOLDRUSH');
+    expect(root.querySelector('.gf-prompt')).toBeNull();
+  });
+
+  it('keeps narration visible when the input mode changes', () => {
+    const { app, root } = mount();
+    (root.querySelector('.gf-menu-item') as HTMLButtonElement).click();
+    const before = root.querySelector('.gf-body')?.textContent;
+    (app as unknown as { onInputMode(): void }).onInputMode();
+    expect(root.querySelector('.gf-body')?.textContent).toBe(before);
+    expect(root.querySelector('.gf-prompt')).not.toBeNull();
   });
 
   it('budgets a long menu from its pane when the ledger is stacked above it', () => {

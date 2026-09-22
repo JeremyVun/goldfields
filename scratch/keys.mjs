@@ -1,7 +1,7 @@
 /**
  * The same game played by key alone, at a desk. Nothing done for the phone may
  * cost the keyboard anything.
- *   node scratch/keys.mjs [port]
+ *   node scratch/keys.mjs [port or URL]
  *
  * Playwright is not a project dependency (the game itself has none): run
  * `npm i -D playwright --no-save` first, or `npx playwright install chromium`.
@@ -9,6 +9,7 @@
 import { chromium } from 'playwright';
 
 const PORT = process.argv[2] ?? '5175';
+const URL = /^https?:\/\//.test(PORT) ? PORT : `http://localhost:${PORT}/`;
 const browser = await chromium.launch();
 const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
 const page = await ctx.newPage();
@@ -16,8 +17,8 @@ const fails = [];
 const check = (ok, what) => { console.log(`${ok ? '  ok ' : '  NO '} ${what}`); if (!ok) fails.push(what); };
 page.on('pageerror', (e) => fails.push(`page error: ${e.message}`));
 
-await page.goto(`http://localhost:${PORT}/`, { waitUntil: 'networkidle' });
-await page.click('#screen');
+await page.goto(URL, { waitUntil: 'networkidle' });
+await page.locator('#screen').focus();
 const title = () => page.textContent('.gf-title');
 const press = async (k, n = 1) => { for (let i = 0; i < n; i++) { await page.keyboard.press(k); await page.waitForTimeout(50); } };
 

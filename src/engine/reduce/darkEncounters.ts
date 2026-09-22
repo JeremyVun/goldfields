@@ -88,7 +88,7 @@ export function handlePatrolChoice(state: GameState, rng: RNG, log: Log, action:
     toGaol(state, rng, log, (days) => advanceKept(state, rng, log, days));
   } else {
     log.say('bandit.surrender', undefined, 'bad');
-    toGaol(state, rng, log);
+    toGaol(state, rng, log, (days) => advanceKept(state, rng, log, days));
   }
 
   if (pendingKind(state) === 'assizes') {

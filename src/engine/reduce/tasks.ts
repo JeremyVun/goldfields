@@ -44,10 +44,12 @@ function interrupt(state: GameState, task: Task | null): void {
 
 function runWork(state: GameState, rng: RNG, log: Log, task: Task & { kind: 'work' }): void {
   const job = JOBS[task.job];
+  const workplace = state.location;
   let earned = 0;
   let daysDone = 0;
   let left = -1;
   for (let i = 0; i < task.days; i++) {
+    if (state.location !== workplace || state.gameOver || state.endOfYear) break;
     if (state.illness?.blinding && rng.chance(0.5)) {
       log.say('ill.blind', undefined, 'bad');
       endDay(state, rng, log, {});
@@ -226,7 +228,10 @@ function runMine(state: GameState, rng: RNG, log: Log, task: Task & { kind: 'min
 
 function runRest(state: GameState, rng: RNG, log: Log, days: number): void {
   let left = -1;
+  let rested = 0;
   for (let i = 0; i < days; i++) {
+    if (state.gameOver || state.endOfYear) break;
+    rested += 1;
     heal(state, rng.int(REST_RECOVERY.lo, REST_RECOVERY.hi));
     heal(state, hearthHealBonus(state));
     if (state.illness && rng.chance(0.16)) {
@@ -240,13 +245,19 @@ function runRest(state: GameState, rng: RNG, log: Log, days: number): void {
       break;
     }
   }
-  log.say('health.rest', { days }, 'neutral');
+  if (rested > 0) log.say('health.rest', { days: rested, unit: rested === 1 ? 'day' : 'days' }, 'neutral');
   if (left > 0) interrupt(state, { kind: 'rest', days: left });
   else interrupt(state, null);
 }
 
 function runTravel(state: GameState, rng: RNG, log: Log): void {
-  while (state.journey && !state.gameOver) {
+  while (state.journey && !state.gameOver && !state.endOfYear) {
+    // A journey completed on the last day is already paid for in time.
+    if (state.journey.daysLeft <= 0) {
+      arrive(state, log);
+      state.screen = screenForLocation(state.location);
+      return;
+    }
     const stop = travelOneDay(state, rng, log);
     if (stop === 'bushrangers' || stop === 'trooper') {
       state.resumeTask = { kind: 'travel' };
@@ -261,7 +272,11 @@ function runTravel(state: GameState, rng: RNG, log: Log): void {
       return;
     }
     checkGraveAfter(state, rng, log);
-    if (state.gameOver) return;
+    if (state.gameOver || state.endOfYear) return;
+    if (state.pending) {
+      interrupt(state, state.journey ? { kind: 'travel' } : null);
+      return;
+    }
   }
 }
 

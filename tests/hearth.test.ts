@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { COTTAGE_PRICE_SMALL, COURTSHIP_BURN_DAYS, WEDDING_COST } from '../src/engine/constants';
-import { consentRoll, hearthDay, sleepsAtHearth } from '../src/engine/hearth';
+import { consentRoll, hearthDay, reconcile, sleepsAtHearth } from '../src/engine/hearth';
 import { getView } from '../src/engine/menus';
 import { pounds, shillings } from '../src/engine/money';
 import { Log } from '../src/engine/narrate';
@@ -22,6 +22,32 @@ function acquaintance(seed = 1): GameState {
 }
 
 describe('Hearth & Kin', () => {
+  it.each(['banns', 'wedding'] as const)('offers another date after one missed %s appointment', (kind) => {
+    const s = acquaintance(15);
+    s.hearth.rung = 'betrothed';
+    s.hearth.nextEvent = { kind, openDay: 2, closeDay: 4, announced: true };
+    s.day = 5;
+    const rng = makeRng(15);
+    hearthDay(s, rng, new Log(rng));
+    expect(s.hearth.rung).toBe('betrothed');
+    expect(s.hearth.nextEvent?.kind).toBe(kind);
+    expect(s.hearth.nextEvent!.openDay).toBeGreaterThan(s.day);
+    s.day = s.hearth.nextEvent!.closeDay + 1;
+    hearthDay(s, rng, new Log(rng));
+    expect(s.hearth.rung).toBe('estranged');
+  });
+
+  it('resumes calls after reconciling an unfinished courtship', () => {
+    const s = acquaintance(15);
+    s.location = 'suze-port';
+    s.hearth.rung = 'estranged';
+    s.hearth.herDecision = false;
+    s.hearth.nextEvent = null;
+    expect(reconcile(s, new Log(makeRng(15)))).toBe(true);
+    expect(s.hearth.rung).toBe('courting');
+    expect(s.hearth.nextEvent).toMatchObject({ kind: 'call', openDay: expect.any(Number) });
+  });
+
   it('introduces a person at the ball and exposes actual courtship choices', () => {
     const s = acquaintance(11);
     expect(s.hearth.rung).toBe('acquainted');

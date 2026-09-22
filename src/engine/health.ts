@@ -12,7 +12,7 @@ import {
 import type { Log } from './narrate';
 import type { RNG } from './rng';
 import { addJournal, checkYearEnd, hasWork, isCamp, lodgingAt } from './state';
-import { season } from './time';
+import { DAYS_IN_YEAR, season } from './time';
 import type { GameState, IllnessId } from './types';
 
 export const ILLNESS_NAMES: Record<IllnessId, string> = {
@@ -255,7 +255,8 @@ export function checkGrave(
     return false;
   }
 
-  const days = rng.int(4, 10);
+  const days = Math.min(rng.int(4, 10), Math.max(0, DAYS_IN_YEAR * state.yearsPlayed - state.day + 1));
+  if (days === 0) return false;
   const goesHome = state.hearth.cottage &&
     (state.hearth.rung === 'wed' || state.hearth.rung === 'settled');
   if (goesHome) {
@@ -298,18 +299,20 @@ export function checkGrave(
  * for one day is turned out after one day, not kept (and charged) for seven.
  */
 export function hospitalStay(state: GameState, rng: RNG, log: Log, days: number): number {
+  const remaining = Math.max(0, DAYS_IN_YEAR * state.yearsPlayed - state.day + 1);
+  if (state.gameOver || state.endOfYear || remaining === 0) return 0;
   const perDay = hospitalFee(state);
   if (state.moneyPence < perDay) {
     log.raw('Canvas House is charity in name only. Without ten shillings for the day, they cannot take you in.', 'bad');
     return 0;
   }
   const affordable = perDay === 0 ? days : Math.floor(state.moneyPence / perDay);
-  const actualDays = Math.max(1, Math.min(days, affordable));
+  const actualDays = Math.max(1, Math.min(days, affordable, remaining));
   const paid = perDay * actualDays;
   state.moneyPence -= paid;
   if (perDay === 0) log.say('works.ward.free', { days: actualDays }, 'good');
   else log.say('health.hospital', { days: actualDays, fee: formatMoney(paid) }, 'neutral');
-  if (actualDays < days) {
+  if (affordable < Math.min(days, remaining)) {
     log.raw(
       `Your money runs to ${actualDays} day${actualDays === 1 ? '' : 's'} and no more, and out you go.`,
       'neutral',

@@ -39,7 +39,7 @@ function setInspectorText(elem: HTMLElement, note: string | null): void {
   elem.classList.toggle('is-empty', !note);
 }
 
-type Overlay = 'menu' | 'map' | null;
+type Overlay = 'menu' | 'map' | 'finish' | null;
 
 interface JournalState {
   mode: 'list' | 'read';
@@ -262,9 +262,19 @@ export class App {
   // -------------------------------------------------------------------
 
   private handleKeyDown(e: KeyboardEvent): void {
+    if (e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return;
+    if (e.repeat && !['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'PageUp', 'PageDown'].includes(e.key)) {
+      e.preventDefault();
+      return;
+    }
     // The number field looks after its own keys. If the frame took them too,
     // every digit typed into it would be set down twice.
     if (e.target instanceof HTMLInputElement) return;
+
+    // Legend and close buttons keep their native keyboard activation.
+    // Otherwise Enter would choose the highlighted game action behind them.
+    if (e.target instanceof HTMLButtonElement && !e.target.classList.contains('gf-menu-item') &&
+      (e.key === 'Enter' || e.key === ' ')) return;
 
     if (e.key === ' ') e.preventDefault(); // never let space scroll the page
 
@@ -273,7 +283,7 @@ export class App {
       this.closeOverlay();
       return;
     }
-    if (this.overlay === 'menu') {
+    if (this.overlay === 'menu' || this.overlay === 'finish') {
       if (e.key === '@' || e.key === '0' || e.key === 'Escape') {
         e.preventDefault();
         this.closeOverlay();
@@ -391,7 +401,7 @@ export class App {
   // Overlays: the menu and the map
   // -------------------------------------------------------------------
 
-  private openOverlay(kind: 'menu' | 'map'): void {
+  private openOverlay(kind: Exclude<Overlay, null>): void {
     this.overlay = kind;
     this.renderOverlay();
   }
@@ -418,10 +428,11 @@ export class App {
     this.overlayEl.style.display = '';
     this.overlayEl.setAttribute('role', 'dialog');
     this.overlayEl.setAttribute('aria-modal', 'true');
-    this.overlayEl.setAttribute('aria-label', this.overlay === 'menu' ? 'Game menu' : 'Map of the goldfields');
+    this.overlayEl.setAttribute('aria-label', this.overlay === 'map' ? 'Map of the goldfields' : this.overlay === 'finish' ? 'Finish the game?' : 'Game menu');
     this.frame.inert = true;
     this.statusEl.inert = true;
-    if (this.overlay === 'menu') this.renderMenuOverlay();
+    if (this.overlay === 'finish') this.renderFinishOverlay();
+    else if (this.overlay === 'menu') this.renderMenuOverlay();
     else this.renderMapOverlay();
     const focusTarget = this.overlayEl.querySelector('[tabindex="0"], button');
     if (focusTarget instanceof HTMLElement) focusTarget.focus({ preventScroll: true });
@@ -543,6 +554,7 @@ export class App {
       alert: m.alert,
       onSelect: () => {
         if (m.key === '0' && m.action.type === 'continue') this.closeOverlay();
+        else if (m.action.type === 'finish') this.openOverlay('finish');
         else this.dispatch(m.action, { fromOverlay: true });
       },
     }));
@@ -560,6 +572,23 @@ export class App {
     this.overlayEl.appendChild(panel);
   }
 
+  private renderFinishOverlay(): void {
+    const panel = el('div', { className: 'gf-overlay-panel gf-overlay-panel--menu' });
+    panel.appendChild(this.overlayHead('FINISH THE GAME?'));
+    panel.appendChild(el('p', {
+      className: 'gf-para',
+      text: 'This ends your current game and opens the final reckoning. Your last saved game will remain available.',
+    }));
+    const menu = el('nav', { className: 'gf-menu', attrs: { 'aria-label': 'Finish game' } });
+    this.overlayMenu = new MenuController([
+      { key: '0', label: 'Keep playing', onSelect: () => this.closeOverlay() },
+      { key: '1', label: 'Finish the game', onSelect: () => this.dispatch({ type: 'finish' }, { fromOverlay: true }) },
+    ]);
+    this.overlayMenu.render(menu);
+    panel.appendChild(menu);
+    this.overlayEl.appendChild(panel);
+  }
+
   /**
    * The map: one drawn sheet, scaled whole to whatever room the glass can
    * spare, with the digger's own notes set beneath it. Head, drawing, notes
@@ -570,11 +599,15 @@ export class App {
     panel.appendChild(this.overlayHead('A MAP OF THE GOLDFIELDS'));
 
     if (!this.mapBuilder) {
-      panel.appendChild(el('p', { className: 'gf-para', text: 'Unfolding the surveyor’s sheet…' }));
+      const loading = el('p', { className: 'gf-para', text: 'Unfolding the surveyor’s sheet…' });
+      panel.appendChild(loading);
+      panel.appendChild(this.closeControl('Close the map'));
       this.overlayEl.appendChild(panel);
       void import('./map').then(({ buildMap }) => {
         this.mapBuilder = buildMap;
         if (this.overlay === 'map') this.renderOverlay();
+      }).catch(() => {
+        loading.textContent = 'The map could not be loaded. Close it and try again when your connection returns.';
       });
       return;
     }
@@ -668,14 +701,16 @@ export class App {
 
   private render(): void {
     this.bodyEl.onclick = null;
-    if (this.state.screen === 'journal') {
+    if (this.session.telling) {
+      this.renderNarration();
+    } else if (this.state.screen === 'journal') {
       this.renderJournal();
     } else {
       this.renderNormalView();
     }
     this.statusLineEl.textContent = statusLine(this.state);
     this.renderOverlay();
-    this.root.focus({ preventScroll: true });
+    if (!this.overlay) this.root.focus({ preventScroll: true });
   }
 
   private renderNormalView(): void {
@@ -958,7 +993,13 @@ export class App {
     // the ledger is stacked above it and has already spent some of that room.
     const paneHeight = this.contentEl.clientHeight;
     const proseReserve = Math.max(90, Math.min(240, paneHeight * 0.42));
-    const reserve = Math.min(this.bodyEl.scrollHeight + 10, proseReserve);
+    const contentHeight = isTouch() ? [...this.bodyEl.children].reduce((height, child) => {
+      if (!(child instanceof HTMLElement)) return height;
+      const style = getComputedStyle(child);
+      return height + child.offsetHeight + (parseFloat(style.marginTop) || 0) + (parseFloat(style.marginBottom) || 0);
+    }, 0) : 0;
+    const reserve = Math.min((contentHeight || this.bodyEl.scrollHeight) + 10, proseReserve);
+    this.bodyEl.style.minHeight = isTouch() ? `${reserve}px` : '';
     const budget =
       paneHeight -
       this.inspectorEl.offsetHeight -
@@ -1000,12 +1041,25 @@ export class App {
       this.subtitleEl.textContent = 'Opening the book…';
       this.subtitleEl.style.display = '';
       clear(this.bodyEl);
-      this.bodyEl.appendChild(el('p', { className: 'gf-para', text: 'The pages are being cut.' }));
+      const loading = el('p', { className: 'gf-para', text: 'Opening the chapters.' });
+      this.bodyEl.appendChild(loading);
+      this.inputEl.style.display = 'none';
+      this.textInput = false;
+      this.renderAside(undefined);
+      this.setInspector(null);
       clear(this.menuEl);
-      this.activeMenu = null;
+      this.activeMenu = new MenuController([
+        { key: '0', label: 'Close the book', onSelect: () => this.dispatch({ type: 'continue' }) },
+      ]);
+      this.activeMenu.render(this.menuEl);
+      this.fitMenu();
+      this.renderLegend(this.screenLegend());
       void import('../content/journal').then(({ JOURNAL_SECTIONS }) => {
         this.journalSections = JOURNAL_SECTIONS;
         if (this.state.screen === 'journal') this.render();
+      }).catch(() => {
+        loading.textContent = 'The book could not be loaded. Close it and try again when your connection returns.';
+        if (this.state.screen === 'journal') this.subtitleEl.textContent = '';
       });
       return;
     }

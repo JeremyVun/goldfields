@@ -319,7 +319,7 @@ export function ftownTwoUpView(state: GameState): ScreenView {
       : [
           item('1', 'Call heads', { type: 'twoUpCall', side: 'heads' }),
           item('2', 'Call tails', { type: 'twoUpCall', side: 'tails' }),
-          back('ftown-gamble'),
+          item('0', 'Take back your stake', { type: 'goto', screen: 'ftown-gamble' }),
         ],
   };
 }
@@ -355,7 +355,8 @@ export function ftownDepartView(state: GameState): ScreenView {
     );
   }
   if (isCamp(state.location)) {
-    menu.push(item(String(n++), 'Back to Slateford', { type: 'travelTo', place: 'fields-town' }));
+    const days = localTravelDays(state, 'fields-town');
+    menu.push(item(String(n++), `Back to Slateford — ${days} day${days === 1 ? '' : 's'}`, { type: 'travelTo', place: 'fields-town' }, 'downhill to town'));
   }
   if (state.secret && !state.secret.chased) {
     menu.push(

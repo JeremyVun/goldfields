@@ -127,6 +127,18 @@ export function travelOneDay(state: GameState, rng: RNG, log: Log): TravelStop {
   const danger = r.danger;
   const s = season(state.day);
 
+  // The armed coach keeps bushrangers off. Its remaining days still belong
+  // in the journey, so crossing New Year cannot strand a paid passenger.
+  if (j.mode === 'coach') {
+    log.raw('The coach rolls on towards Port Gannet, with the driver watching the road.', 'neutral');
+    endDay(state, rng, log, { travelling: true });
+    if (state.gameOver) return 'dead';
+    j.daysTravelled += 1;
+    j.daysLeft -= 1;
+    if (state.endOfYear) return 'yearEnd';
+    return j.daysLeft <= 0 ? 'arrived' : null;
+  }
+
   const modeKey =
     j.mode === 'walk' ? 'travel.walk.day' : j.mode === 'wagon' ? 'travel.wagon.day' : 'travel.horse.day';
   log.say(modeKey, undefined, 'neutral');
@@ -177,6 +189,7 @@ export function travelOneDay(state: GameState, rng: RNG, log: Log): TravelStop {
     log.say('travel.hack.suffers', undefined, 'bad');
     if (rng.chance(0.25)) {
       state.horse = 'none';
+      j.mode = 'walk';
       log.raw('The tall chestnut is done for. You go on afoot, poorer by twenty-five pounds.', 'bad');
       j.daysLeft += 2;
     }
@@ -221,7 +234,7 @@ export function arrive(state: GameState, log: Log): void {
   state.journey = null;
   // Several days riding rather than humping a swag are a proper rest. Make
   // the benefit unambiguous even for a traveller who boarded exhausted.
-  if (j.mode === 'wagon') state.fatigue = 0;
+  if (j.mode === 'wagon' || j.mode === 'coach') state.fatigue = 0;
   if (j.to === 'fields-town') {
     log.say('travel.arrive.ftown', undefined, 'good');
     addJournal(state, 'Came down into Slateford at last.', 'good');
@@ -251,6 +264,7 @@ export function localTravelDays(state: GameState, to: LocationId): number {
     const days = near ? HIDEOUT_TRAVEL_DAYS : HIDEOUT_TRAVEL_DAYS + 1;
     return state.horse !== 'none' ? Math.max(1, Math.ceil(days / 2)) : days;
   }
+  // The return to town is downhill; even the Blackcap track takes one day.
   const base = isCamp(to) ? CAMP_DEFS[to as CampId].daysFromTown : 1;
   let days = base;
   if (isCamp(state.location) && isCamp(to)) {

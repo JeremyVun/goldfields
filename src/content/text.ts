@@ -175,10 +175,10 @@ export const TEXT: Record<string, string[]> = {
     'Someone has the decency to cart you to Canvas House when you go down; it costs you {fee}, insensible or not.',
   ],
   'health.rest': [
-    'You lie up and rest {days} days, doing nothing but mend.',
-    'There is no cure for it but time; you spend {days} days flat on your back.',
-    'You take to your blanket for {days} days, too weak for anything more than sleep.',
-    'Rest is the only medicine on offer. {days} days pass before you are fit to rise.',
+    'You lie up and rest for {days} {unit}.',
+    'You spend {days} {unit} resting under your blanket.',
+    'You take {days} {unit} away from work to rest.',
+    'You put aside your tools and rest for {days} {unit}.',
   ],
   'health.hospital': [
     'Canvas House takes you in: {days} days under canvas on an earthen floor, and {fee} the poorer for it.',

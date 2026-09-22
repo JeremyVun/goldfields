@@ -459,6 +459,8 @@ export interface SecretExpedition {
   nuggetCentiOz?: number;
   nuggetFound: boolean;
   nuggetRecovered?: boolean;
+  /** Paid recovery work already completed, retained across New Year. */
+  recoveryDays?: number;
   exhausted: boolean;
 }
 
@@ -577,7 +579,7 @@ export type Task =
 
 export interface Journey {
   route: Route;
-  mode: TravelMode;
+  mode: TravelMode | 'coach';
   /** Days still to travel. */
   daysLeft: number;
   daysTravelled: number;

@@ -40,6 +40,7 @@ export function saveGame(s: GameState, rng: RNG, log: Log, action: Extract<Actio
 export function beginNextYear(s: GameState, rng: RNG, log: Log): void {
   s.yearsPlayed += 1;
   s.endOfYear = false;
+  s.secretGenuineUsed = false;
   log.raw(
     `Another year on the diggings. It is ${DAYS_IN_YEAR} days more, and the gold does not care who you are.`,
     'title',

@@ -30,13 +30,14 @@ export function bailUpOnTheRoad(s: GameState, rng: RNG, log: Log, action: Extrac
     log.raw('You are on the road already, and going somewhere.', 'neutral');
     return;
   }
-  const from = s.location;
   lurk(s, rng, log, action.route);
   endDay(s, rng, log, { toil: true });
-  checkGraveAfter(s, rng, log);
+  if (checkGraveAfter(s, rng, log)) {
+    s.pending = null;
+    s.resumeTask = null;
+    return;
+  }
   if (s.gameOver || s.endOfYear) return;
-  // He rides back to whatever roof he keeps; the road is a day's work.
-  s.location = from;
   if (s.pending) s.screen = 'encounter';
 }
 

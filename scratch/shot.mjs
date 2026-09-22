@@ -89,7 +89,24 @@ function auditLayout() {
   // overlay's own are being looked at.
   const scope = document.querySelector('.gf-overlay-panel') ?? document;
   const rows = [...scope.querySelectorAll('.gf-menu-item, .gf-aside-row')];
-  const boxes = rows.map((r) => ({ t: r.textContent.trim().slice(0, 22), r: r.getBoundingClientRect() }));
+  const boxes = rows.map((row) => {
+    const bounds = row.getBoundingClientRect();
+    const r = { top: bounds.top, right: bounds.right, bottom: bounds.bottom, left: bounds.left };
+    // Offscreen rows in separate scroll panes do not visually overlap.
+    for (let parent = row.parentElement; parent; parent = parent.parentElement) {
+      const style = getComputedStyle(parent);
+      const clip = parent.getBoundingClientRect();
+      if (/(auto|scroll|hidden|clip)/.test(style.overflowY)) {
+        r.top = Math.max(r.top, clip.top);
+        r.bottom = Math.min(r.bottom, clip.bottom);
+      }
+      if (/(auto|scroll|hidden|clip)/.test(style.overflowX)) {
+        r.left = Math.max(r.left, clip.left);
+        r.right = Math.min(r.right, clip.right);
+      }
+    }
+    return { t: row.textContent.trim().slice(0, 22), r };
+  }).filter(({ r }) => r.bottom > r.top && r.right > r.left);
   const hits = [];
   for (let i = 0; i < boxes.length; i++) {
     for (let j = i + 1; j < boxes.length; j++) {
@@ -201,7 +218,7 @@ for (const vp of viewports) {
   page.on('console', (m) => m.type() === 'error' && console.log(`[${vp.name}] ${m.text()}`));
   page.on('pageerror', (e) => console.log(`[${vp.name}] pageerror: ${e.message}`));
   await page.goto(URL, { waitUntil: 'networkidle' });
-  await page.click('#screen');
+  await page.locator('#screen').focus();
   await page.keyboard.press('C'); // "Continue last game" — resumes onto the saved screen
   await page.waitForTimeout(150);
   await page.keyboard.press('Space'); // past the "game is resumed" narration

@@ -102,6 +102,8 @@ export function hearthDay(state: GameState, _rng: RNG, log: Log): void {
       log.say('hearth.estranged.missed', { name: h.intended?.name ?? 'She' }, 'bad');
     } else if (h.rung === 'courting') {
       schedule(state, 'call', state.day + CALL_GAP_DAYS);
+    } else if (h.rung === 'betrothed' && (missed === 'banns' || missed === 'wedding')) {
+      schedule(state, missed, state.day + CALL_GAP_DAYS);
     }
   }
 
@@ -396,6 +398,7 @@ export function reconcile(state: GameState, log: Log): boolean {
   h.eventsMissed = 0;
   h.missedRun = 0;
   h.rung = h.weddingDay > 0 ? (h.cottage ? 'settled' : 'wed') : 'courting';
+  if (h.rung === 'courting') schedule(state, 'call', state.day + CALL_GAP_DAYS);
   log.say('hearth.reconciled', { name: h.intended?.name ?? 'her' }, 'good');
   return true;
 }

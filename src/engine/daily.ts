@@ -160,7 +160,7 @@ function liveOutTheDay(state: GameState, rng: RNG, log: Log, ctx: DayCtx, s: Sea
   // --- water ----------------------------------------------------------
   const inMajorTown = state.location === 'suze-port' || state.location === 'fields-town';
   const suppliedByRace = isCamp(state.location) && hasWork(state, 'waterRace', state.location);
-  const needsWater = !inMajorTown && !suppliedByRace;
+  const needsWater = ctx.travelling || (!inMajorTown && !suppliedByRace);
   if (needsWater && !ctx.kept) {
     if (state.waterDays > 0) {
       state.waterDays -= 1;
@@ -257,7 +257,7 @@ function turnTheWorld(state: GameState, rng: RNG, log: Log, ctx: DayCtx, s: Seas
  * the upkeep says the day is still there to be turned.
  */
 export function endDay(state: GameState, rng: RNG, log: Log, ctx: DayCtx = {}): void {
-  if (state.gameOver) return;
+  if (state.gameOver || state.endOfYear) return;
   const s = season(state.day);
   if (liveOutTheDay(state, rng, log, ctx, s) !== 'turn') return;
   warnIfGrave(state, log);

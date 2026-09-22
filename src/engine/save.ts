@@ -45,14 +45,18 @@ export function memoryStore(): SaveStore {
   };
 }
 
-const pageMemoryStore = memoryStore();
+const unavailableStore: SaveStore = {
+  getItem: () => { throw new Error('Browser storage unavailable'); },
+  setItem: () => { throw new Error('Browser storage unavailable'); },
+  removeItem: () => { throw new Error('Browser storage unavailable'); },
+};
 
 export function defaultStore(): SaveStore {
   try {
     const g = globalThis as unknown as { localStorage?: SaveStore };
-    return g.localStorage ?? pageMemoryStore;
+    return g.localStorage ?? unavailableStore;
   } catch {
-    return pageMemoryStore;
+    return unavailableStore;
   }
 }
 
@@ -293,7 +297,17 @@ function validRevivedState(state: GameState): boolean {
   if (![state.day, state.moneyPence, state.bankPence, state.goldCentiOz, state.health, state.bankRatePencePerOz].every(finiteInt)) return false;
   if (state.day < 1 || state.moneyPence < 0 || state.bankPence < 0 || state.goldCentiOz < 0) return false;
   if (state.health < 0 || state.health > 100 || state.bankRatePencePerOz <= 0) return false;
-  if (state.illness && (!ILLNESSES.has(state.illness.id) || !finiteInt(state.illness.severity) || !finiteInt(state.illness.since))) return false;
+  if (state.illness && (!ILLNESSES.has(state.illness.id) || !finiteInt(state.illness.severity) || state.illness.severity < 1 || state.illness.severity > 3 || !finiteInt(state.illness.since))) return false;
+  if (!finiteInt(state.yearsPlayed) || state.yearsPlayed < 1) return false;
+  if (![state.provisionDays, state.waterDays, state.fatigue].every((n) => finiteInt(n) && n >= 0)) return false;
+  if (state.journey) {
+    const j = state.journey;
+    if (!['trickeys', 'pass'].includes(j.route) || !['walk', 'wagon', 'horse', 'coach'].includes(j.mode)) return false;
+    if (!LOCATIONS.has(j.from) || !LOCATIONS.has(j.to)) return false;
+    if (![j.daysLeft, j.daysTravelled, j.salvage].every((n) => finiteInt(n) && n >= 0)) return false;
+  }
+  const recoveryDays = state.secretExpedition?.recoveryDays;
+  if (recoveryDays !== undefined && (!finiteInt(recoveryDays) || recoveryDays < 0 || recoveryDays > 3)) return false;
   if (!Object.values(state.items).every((n) => finiteInt(n) && n >= 0 && n <= 10_000)) return false;
   for (const camp of CAMPS) {
     const claim = state.claims[camp];

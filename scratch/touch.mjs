@@ -1,7 +1,7 @@
 /**
  * Plays the game by finger alone — no key is pressed anywhere in this script.
  * Everything a player must be able to do on a phone has to be reachable here.
- *   node scratch/touch.mjs [port]
+ *   node scratch/touch.mjs [port or URL]
  *
  * Playwright is not a project dependency (the game itself has none): run
  * `npm i -D playwright --no-save` first, or `npx playwright install chromium`.
@@ -9,6 +9,7 @@
 import { chromium } from 'playwright';
 
 const PORT = process.argv[2] ?? '5175';
+const URL = /^https?:\/\//.test(PORT) ? PORT : `http://localhost:${PORT}/`;
 const browser = await chromium.launch();
 const ctx = await browser.newContext({
   viewport: { width: 393, height: 852 },
@@ -24,7 +25,7 @@ const check = (ok, what) => {
 };
 
 page.on('pageerror', (e) => fails.push(`page error: ${e.message}`));
-await page.goto(`http://localhost:${PORT}/`, { waitUntil: 'networkidle' });
+await page.goto(URL, { waitUntil: 'networkidle' });
 
 const title = () => page.textContent('.gf-title');
 const rowByText = (text) => page.locator('.gf-menu-item', { hasText: text }).first();

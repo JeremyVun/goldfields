@@ -133,6 +133,18 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
     log.raw('That quantity is not one the clerk can enter in the ledger.', 'bad');
     return;
   }
+  // Saving and finishing are global commands, never answers to an encounter.
+  if (action.type === 'save') {
+    saveGame(s, rng, log, action);
+    return;
+  }
+  if (action.type === 'finish') {
+    if (!s.gameOver) {
+      s.gameOver = 'finished';
+      s.resumeTask = null;
+    }
+    return;
+  }
   // Encounters swallow everything until answered.
   if (answerPendingEncounter(s, rng, log, action)) return;
 
@@ -163,6 +175,11 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
       return;
 
     case 'goto':
+      if (s.screen === 'ftown-twoup' && action.screen === 'ftown-gamble' && s.gambling?.game === 'twoup' && s.gambling.pot === 0) {
+        s.moneyPence += s.gambling.stake;
+        s.gambling = null;
+        log.raw('You take back your stake before the pennies are tossed.', 'neutral');
+      }
       // Choosing a route arms a journey for the travel-mode screen; backing out
       // of it must not leave that half-made journey lying about in the state.
       if (s.journey && s.location !== 'on-road' && action.screen !== 'travel-mode') {
@@ -178,14 +195,6 @@ function apply(s: GameState, action: Action, rng: RNG, log: Log): void {
     case 'quitToTitle':
       Object.assign(s, createInitialState(s.seed));
       s.screen = 'title';
-      return;
-
-    case 'save':
-      saveGame(s, rng, log, action);
-      return;
-
-    case 'finish':
-      s.gameOver = 'finished';
       return;
 
     case 'nextYear':

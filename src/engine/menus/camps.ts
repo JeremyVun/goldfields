@@ -208,6 +208,7 @@ export function campGrogView(state: GameState): ScreenView {
 export function secretExpeditionView(state: GameState): ScreenView {
   const e = state.secretExpedition;
   const trail = e?.trail ?? 0;
+  const recoveryStarted = (e?.recoveryDays ?? 0) > 0;
   const clues = [
     'The old fire-hole is found, but the country beyond it is a blank of stone and glare.',
     'A line of shallow dish-holes leads away from the abandoned working.',
@@ -233,9 +234,9 @@ export function secretExpeditionView(state: GameState): ScreenView {
     menu: [
       item('1', 'Search the old workings for the next sign', { type: 'searchSecret', approach: 'search' }, 'a hard day in the desert', !!e?.exhausted || !!e?.nuggetFound),
       item('2', 'Dig the black leader for The Southern Cross', { type: 'searchSecret', approach: 'dig' }, trail >= 4 ? 'the promised bed is found' : 'you have not followed the trail far enough', trail < 4 || !!e?.exhausted || !!e?.nuggetFound),
-      item('3', 'Winnow a little dry dirt by hand', { type: 'searchSecret', approach: 'winnow' }, 'a small side chance for ordinary gold, not the purpose of the expedition', !!e?.exhausted),
+      item('3', 'Winnow a little dry dirt by hand', { type: 'searchSecret', approach: 'winnow' }, 'a small side chance for ordinary gold, not the purpose of the expedition', !!e?.exhausted || !!e?.nuggetFound),
       ...(e?.nuggetFound && !e.nuggetRecovered
-        ? [item('R', 'Bring a dray and six men for The Southern Cross — £10', { type: 'recoverNugget' }, 'three days to rig, lift and pack it for the bank', state.moneyPence < pounds(10))]
+        ? [item('R', recoveryStarted ? 'Finish recovering The Southern Cross' : 'Bring a dray and six men for The Southern Cross — £10', { type: 'recoverNugget' }, recoveryStarted ? 'the men and dray are already paid for' : 'three days to rig, lift and pack it for the bank', !recoveryStarted && state.moneyPence < pounds(10))]
         : []),
       item('4', 'Rest for a day', { type: 'rest', days: 1 }, 'save your strength, but water and food still go'),
       item('5', 'Turn back towards Slateford', { type: 'travelTo', place: 'fields-town' }, `${localTravelDays(state, 'fields-town')} days away`),

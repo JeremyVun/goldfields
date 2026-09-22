@@ -23,7 +23,7 @@ import type { RNG } from '../../rng';
 import { addJournal, addNotoriety, heatZoneFor } from '../../state';
 import type { Action, GameState } from '../../types';
 import { screenForLocation } from '../screen';
-import { checkGraveAfter, runTask } from '../tasks';
+import { advanceKept, checkGraveAfter, runTask } from '../tasks';
 
 // ---------------------------------------------------------------------------
 // Port Gannet: wages, the cookshop, lodging, the Times, and theft.
@@ -145,7 +145,7 @@ export function readGazette(s: GameState, rng: RNG, log: Log): void {
   // A licence story read over a pannikin of tea is worth a day's grumbling.
   if (s.gazetteReadOn !== s.day && gazetteStokesTrouble(s)) agitationFromStory(s);
   s.gazetteReadOn = s.day;
-  maybeRumour(s, rng, log, 2.5);
+  if (firstReadingToday) maybeRumour(s, rng, log, 2.5);
   s.screen = 'gazette';
 }
 
@@ -164,8 +164,7 @@ export function steal(s: GameState, rng: RNG, log: Log, action: Extract<Action, 
     worsen(s, log, 1);
     if (action.target === 'store') s.briggsBlacklisted = true;
     addNotoriety(s, NOTORIETY_THEFT);
-    s.stats.timesArrested += 1;
-    toGaol(s, rng, log);
+    toGaol(s, rng, log, (days) => advanceKept(s, rng, log, days));
     if (s.pending) {
       s.screen = 'encounter';
       return;

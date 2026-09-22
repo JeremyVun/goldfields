@@ -1734,7 +1734,8 @@ body {
     display: flex;
     flex-wrap: wrap;
     gap: 2px 14px;
-    overflow: visible;
+    max-height: 25vh;
+    overflow-y: auto;
     padding: 6px 8px;
   }
   .gf-aside-title,
@@ -1823,10 +1824,26 @@ body {
   }
 }
 
-/* Room is too tight here to give a thumb its full 44px; 38 is the compromise,
-   and still nearly twice what the rows stood at before. */
-@media (max-height: 520px) and (pointer: coarse) {
-  :root {
-    --gf-tap: 38px;
+/* A landscape phone has width to spare, but cannot stack a ledger above
+   the counter without leaving room for only one choice. */
+@media (max-height: 520px) and (min-width: 650px) {
+  .gf-main.has-aside {
+    grid-template-columns: minmax(180px, 30%) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    gap: 12px;
+  }
+  .gf-aside {
+    display: block;
+    overflow-y: auto;
+    max-height: none;
+    font-size: 12px;
+  }
+  .gf-aside-row {
+    display: block;
+    padding: 4px 0;
+    border-bottom: 1px dotted var(--gf-frame-border);
+  }
+  .gf-aside-label {
+    margin-right: 6px;
   }
 }

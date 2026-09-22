@@ -1,7 +1,7 @@
 # Goldrush (Goldfields clone)
 
 Browser-based 1854 Australian gold-rush life sim. TypeScript + Vite, no runtime
-dependencies, no framework — plain DOM. Node 18+.
+dependencies, no framework — plain DOM. Node 22+.
 
 ## Commands
 

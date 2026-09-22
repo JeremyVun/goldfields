@@ -25,6 +25,20 @@ import { advanceKept } from './tasks';
 export function answerPendingEncounter(s: GameState, rng: RNG, log: Log, action: Action): boolean {
   const pending = s.pending;
   if (!pending || s.screen !== 'encounter') return false;
+  const choices: Partial<Record<typeof pending.kind, Action['type'][]>> = {
+    claimJumper: ['answerClaimJumper'],
+    trooper: ['bribe', 'resist', 'submit'],
+    bushrangers: ['resist', 'submit'],
+    patrol: ['resist', 'flee', 'bailUp', 'submit'],
+    hideoutRaid: ['resist', 'flee', 'bailUp', 'submit'],
+    bailup: ['bailUpTake', 'letPass'],
+    shantyRaid: ['continue'],
+    assizes: ['breakGaol', 'awaitAssizes'],
+    pardon: ['takePardon'],
+    meeting: ['attendMeeting'],
+    stockade: ['joinStockade', 'sellSupplies', 'keepClear'],
+  };
+  if (choices[pending.kind] && !choices[pending.kind]?.includes(action.type)) return true;
   if (pending.kind === 'claimJumper') {
     handleClaimJumper(s, rng, log, action);
     return true;
