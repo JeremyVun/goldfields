@@ -131,6 +131,14 @@ function auditLayout() {
   if (matchMedia('(pointer: coarse)').matches && tap.length && Math.min(...tap) < 43) {
     faults.push(`a row is only ${Math.round(Math.min(...tap))}px under a finger`);
   }
+  // Tall ledgers can leave correctly sized rows inside a zero-height menu.
+  // Checking the rows alone misses that every action has become unreachable.
+  if (matchMedia('(pointer: coarse)').matches && scope === document) {
+    const menu = document.querySelector('.gf-menu');
+    if (menu?.querySelector('.gf-menu-item') && menu.clientHeight < 44) {
+      faults.push(`only ${menu.clientHeight}px remains for the action menu`);
+    }
+  }
   return faults;
 }
 

@@ -81,6 +81,21 @@ await page.locator('.gf-overlay-close').tap();
 // Shopping: a store row, and back again.
 await rowByText("BELL'S OUTFITTERS").tap();
 check(/BELL/.test(await title()), 'a shop opens');
+const ledgerToggle = page.locator('.gf-aside-toggle');
+const inventory = page.locator('.gf-aside-row', { hasText: 'You carry' });
+check(await ledgerToggle.getAttribute('aria-expanded') === 'false' && !(await inventory.isVisible()),
+  'the ledger starts with a compact summary');
+check(await page.locator('.gf-aside-row', { hasText: 'Provisions' }).isVisible() &&
+  await page.locator('.gf-aside-row', { hasText: 'Water' }).isVisible(),
+  'short food and water stay visible in the summary');
+await ledgerToggle.tap();
+check(await ledgerToggle.getAttribute('aria-expanded') === 'true' && await inventory.isVisible(),
+  'the full ledger opens without leaving the shop');
+await inventory.scrollIntoViewIfNeeded();
+check(await ledgerToggle.isVisible(), 'the ledger control remains reachable while its contents scroll');
+await ledgerToggle.tap();
+check(await ledgerToggle.getAttribute('aria-expanded') === 'false' && !(await inventory.isVisible()),
+  'the ledger folds away again');
 // Every article on the shelves must be reachable, not laid off the edge of the
 // frame where a finger cannot follow it.
 const shelves = await page.evaluate(() => {

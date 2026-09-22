@@ -96,7 +96,7 @@ await press('0');
 
 // A game number, typed at the frame with nothing focused.
 await page.goto(URL, { waitUntil: 'networkidle' });
-await page.click('#screen');
+await page.locator('#screen').focus();
 await press('2');
 check(/press RETURN/.test(await page.textContent('.gf-body')), 'the number screen still names RETURN');
 await press('4'); await press('2');

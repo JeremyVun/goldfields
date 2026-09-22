@@ -1,7 +1,7 @@
 /*
  * Goldrush — retro 8-bit presentation.
  * Ink on paper by default; deep blue and black & white as alternates.
- * Chunky system-monospace type, no webfonts, no network, no CRT filters.
+ * Letterpress headings, monospaced accounts, and local system fonts only.
  */
 
 /* Default: ink on paper (The Slateford Times), with a printer's two colours. */
@@ -31,6 +31,7 @@ body[data-gf-theme='paper'] {
   --gf-chart-ink: #2b2418;
   --gf-chart-sea: rgba(46, 74, 84, 0.08);
   --gf-chart-hand: #7c1d0e;
+  --gf-heading-font: Georgia, 'Times New Roman', serif;
   --gf-font: 'Courier New', 'DejaVu Sans Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
 }
 
@@ -41,7 +42,8 @@ body[data-gf-theme='paper'] {
  * where a reader is furthest from the glass and holding it in one hand.
  */
 :root {
-  --gf-fs-title: clamp(20px, 2.9vw, 25px);
+  --gf-fs-cover: 56px;
+  --gf-fs-title: clamp(24px, 2.9vw, 30px);
   --gf-fs-subtitle: clamp(12px, 1.8vw, 14px);
   --gf-fs-prose: clamp(14px, 1.9vw, 16px);
   --gf-fs-loud: clamp(16px, 2.2vw, 19px);
@@ -56,7 +58,7 @@ body[data-gf-theme='paper'] {
      mouse: a pointer hits a 20px row perfectly well, and rows that tall would
      turn a store's twenty articles into a scroll for no gain. */
   --gf-tap: 0px;
-  --gf-row-pad-y: 3px;
+  --gf-row-pad-y: 5px;
   --gf-overlay-pad: clamp(12px, 2.5vw, 22px);
 
   --gf-safe-t: env(safe-area-inset-top, 0px);
@@ -66,6 +68,7 @@ body[data-gf-theme='paper'] {
 }
 
 body[data-gf-theme='blue'] {
+  --gf-heading-font: var(--gf-font);
   color-scheme: dark;
   --gf-bg: #14148a;
   --gf-bg-deep: #0c0c5c;
@@ -92,6 +95,8 @@ body[data-gf-theme='blue'] {
 
 /* Strict black & white: brightness carries the tone. */
 body[data-gf-theme='noir'] {
+  --gf-heading-font: var(--gf-font);
+  color-scheme: dark;
   --gf-bg: #0c0c0c;
   --gf-bg-deep: #000000;
   --gf-frame-border: #d8d8d8;
@@ -196,20 +201,20 @@ body {
   height: min(760px, 100%);
   max-height: 100%;
   background: var(--gf-bg);
-  border: 4px solid var(--gf-frame-border);
-  outline: 2px solid var(--gf-frame-border-light);
-  outline-offset: -8px;
-  border-radius: 4px;
+  border: 1px solid var(--gf-frame-border);
+  outline: 1px solid var(--gf-frame-border-light);
+  outline-offset: -6px;
+  border-radius: 0;
   color: var(--gf-body);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   position: relative;
-  box-shadow: 0 0 0 2px var(--gf-bg-deep), 0 20px 60px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 8px 32px var(--gf-shade);
 }
 
 #screen:focus {
-  outline: 2px solid var(--gf-frame-border-light);
+  outline: 1px solid var(--gf-frame-border-light);
 }
 
 /* ------------------------------------------------------------------ */
@@ -236,19 +241,14 @@ body {
 }
 
 .gf-main.has-aside {
-  grid-template-columns: minmax(220px, 320px) 1fr;
+  grid-template-columns: minmax(210px, 280px) minmax(0, 1fr);
 }
 
-/* Where a ledger takes a column, the prose beside it has some 350px less to
-   run in — and the screen copy is hard-wrapped for the full width of the
-   frame. Set it a notch smaller so those lines still land whole, rather than
-   spilling a word or two onto a ragged orphan line.
-   Only while the ledger really is a column: below 760px it becomes a strip
-   across the top, the prose has the full width back, and the small-screen
-   type scale must not be undercut. */
+/* The sidebar leaves a narrower reading measure; keep its prose just one
+   step below full-width narration. Stacked layouts restore the mobile scale. */
 @media (min-width: 761px) {
   .gf-main.has-aside {
-    --gf-fs-prose: clamp(13px, 1.5vw, 14px);
+    --gf-fs-prose: 15px;
   }
 }
 
@@ -265,13 +265,14 @@ body {
 
 .gf-title {
   margin: 0;
+  font-family: var(--gf-heading-font);
   font-size: var(--gf-fs-title);
   font-weight: 700;
-  letter-spacing: 0.08em;
-  line-height: 1.15;
+  letter-spacing: 0.045em;
+  line-height: 1.2;
   text-transform: uppercase;
   color: var(--gf-yellow);
-  text-shadow: 2px 2px 0 var(--gf-bg-deep);
+  text-wrap: balance;
 }
 
 .gf-subtitle {
@@ -279,31 +280,26 @@ body {
   font-size: var(--gf-fs-subtitle);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--gf-white);
-  font-weight: 700;
+  color: var(--gf-body-dim);
+  font-weight: 400;
+}
+
+.gf-title--cover {
+  font-size: var(--gf-fs-cover);
+  letter-spacing: 0.06em;
 }
 
 .gf-rule {
-  height: 8px;
-  margin: 10px 0 16px;
-  background-image: repeating-linear-gradient(
-    45deg,
-    var(--gf-frame-border-light) 0,
-    var(--gf-frame-border-light) 4px,
-    var(--gf-bg) 4px,
-    var(--gf-bg) 8px,
-    var(--gf-frame-border) 8px,
-    var(--gf-frame-border) 12px,
-    var(--gf-bg) 12px,
-    var(--gf-bg) 16px
-  );
-  border-top: 2px solid var(--gf-frame-border-light);
-  border-bottom: 2px solid var(--gf-frame-border-light);
+  height: 4px;
+  margin: 12px 0 18px;
+  border: 0;
+  border-top: 1px solid var(--gf-frame-border);
+  border-bottom: 1px solid var(--gf-frame-border-light);
   flex: 0 0 auto;
 }
 
 .gf-body {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   /* Camp character and warnings remain readable even beside a long action
      list. The prose scrolls inside this floor; the menu may not erase it. */
   min-height: 110px;
@@ -314,11 +310,11 @@ body {
 
 .gf-para {
   margin: 0 0 10px;
-  max-width: 76ch;
+  max-width: 72ch;
   font-size: var(--gf-fs-prose);
   line-height: 1.5;
-  letter-spacing: 0.01em;
-  font-weight: 700;
+  letter-spacing: 0;
+  font-weight: 400;
 }
 
 /* Screen copy is laid out by the engine, which indents and rules off in
@@ -570,8 +566,17 @@ body {
 }
 
 .gf-menu-item.is-disabled {
-  opacity: 0.42;
+  color: var(--gf-body-dim);
+  font-weight: 400;
   cursor: not-allowed;
+}
+
+.gf-menu-item.is-disabled .gf-menu-key {
+  color: inherit;
+}
+
+.gf-menu-item.is-highlight .gf-menu-note {
+  color: var(--gf-body);
 }
 
 .gf-menu-marker {
@@ -582,7 +587,7 @@ body {
 
 .gf-menu-key {
   color: var(--gf-yellow);
-  min-width: 2.4em;
+  min-width: 1.8em;
   flex: 0 0 auto;
 }
 
@@ -598,13 +603,13 @@ body {
   flex: 1 1 0;
   min-width: min(11em, 100%);
   color: inherit;
-  text-transform: uppercase;
+  text-transform: none;
 }
 
 .gf-menu-alert {
-  /* Held to the right whether it shares the label's line or has taken one of
-     its own, so warnings down a column line up with each other. */
-  margin-left: auto;
+  /* Give warnings their own line so they never split an article's price. */
+  flex-basis: 100%;
+  margin-left: calc(1em + 1.8em + 16px);
   color: var(--gf-bad);
   font-weight: 700;
   text-transform: none;
@@ -622,7 +627,7 @@ body {
 .gf-menu-note {
   display: none;
   flex-basis: 100%;
-  margin-left: calc(1em + 2.4em + 16px);
+  margin-left: calc(1em + 1.8em + 16px);
   color: var(--gf-body-dim);
   font-style: italic;
   font-weight: 400;
@@ -635,10 +640,10 @@ body {
    not it has anything to say, so the menu below never jumps. */
 .gf-inspector {
   flex: 0 0 auto;
-  margin: 0 0 6px;
-  padding: 4px 6px;
+  margin: 12px 0 8px;
+  padding: 4px 10px;
   height: calc(2.7em + 8px);
-  border-left: 3px solid var(--gf-frame-border);
+  border-left: 1px solid var(--gf-frame-border-light);
   color: var(--gf-body-dim);
   font-style: italic;
   font-size: var(--gf-fs-inspector);
@@ -660,10 +665,12 @@ body {
 .gf-aside {
   min-height: 0;
   overflow-y: auto;
-  padding: 10px 12px;
+  align-self: start;
+  max-height: 100%;
+  padding: 12px;
   margin-bottom: 10px;
   background: var(--gf-map-bg);
-  border: 2px solid var(--gf-frame-border);
+  border: 1px solid var(--gf-frame-border-light);
   font-size: var(--gf-fs-aside);
 }
 
@@ -685,7 +692,7 @@ body {
   align-items: baseline;
   gap: 2px 10px;
   padding: 3px 0;
-  border-bottom: 1px dotted var(--gf-frame-border);
+  border-bottom: 1px dotted var(--gf-frame-border-light);
 }
 
 .gf-aside-row:last-child {
@@ -708,8 +715,8 @@ body {
 
 .gf-aside-label {
   color: var(--gf-body-dim);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-size: 0.92em;
+  letter-spacing: 0;
 }
 
 .gf-aside-value {
@@ -749,12 +756,12 @@ body {
   gap: 6px 20px;
   padding: 8px clamp(14px, 3vw, 30px);
   background: var(--gf-bg-deep);
-  border-top: 2px solid var(--gf-frame-border);
+  border-top: 1px solid var(--gf-frame-border-light);
   color: var(--gf-white);
   font-size: var(--gf-fs-status);
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .gf-status-line {
@@ -845,7 +852,8 @@ body {
   /* Colour only: the shade that marks a panel with more below it is painted
      with background-image, and the shorthand would wipe it. */
   background-color: var(--gf-bg);
-  border: 4px solid var(--gf-yellow);
+  border: 1px solid var(--gf-frame-border);
+  box-shadow: 0 8px 32px var(--gf-shade);
   padding: var(--gf-overlay-pad);
   color: var(--gf-body);
 }
@@ -913,8 +921,8 @@ body {
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
-  min-width: var(--gf-tap);
-  min-height: var(--gf-tap);
+  min-width: max(32px, var(--gf-tap));
+  min-height: max(32px, var(--gf-tap));
   margin: -4px -6px -4px 0;
   border: 0;
   background: transparent;
@@ -934,9 +942,10 @@ body {
 
 .gf-overlay-title {
   margin: 0;
+  font-family: var(--gf-heading-font);
   font-size: var(--gf-fs-loud);
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--gf-yellow);
 }
@@ -1472,6 +1481,45 @@ body {
   }
 }
 
+/* Ledger disclosure is used only while the ledger sits above the choices. */
+.gf-aside-toggle {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: var(--gf-body);
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.gf-aside-toggle-hint {
+  flex: 0 0 auto;
+  font-size: var(--gf-fs-note);
+  font-weight: 400;
+  color: var(--gf-body-dim);
+}
+
+.gf-aside-value.gf-tone-bad {
+  color: var(--gf-bad);
+}
+.gf-aside-value.gf-tone-good {
+  color: var(--gf-good);
+}
+
+button:focus-visible,
+.gf-input-row:focus-within {
+  outline: 2px solid var(--gf-yellow);
+  outline-offset: -2px;
+}
+
 /* ------------------------------------------------------------------ */
 /* The bands: a finger, a narrow glass, a short one                    */
 /* ------------------------------------------------------------------ */
@@ -1495,12 +1543,26 @@ body {
  * where it can be read before the choosing rather than after.
  */
 @media (hover: none) {
-  /* Two lines of it at most: flavour is worth a row's height, not a screen's. */
+  /* Touch needs neither a keyboard shortcut nor a selection cursor. Giving
+     that space to the words lets the complete note fit before choosing. */
+  .gf-menu-marker,
+  .gf-menu-key {
+    display: none;
+  }
+  .gf-menu-item {
+    gap: 4px 8px;
+    padding: 10px 8px;
+    border-bottom: 1px solid var(--gf-frame-border-light);
+    border-radius: 0;
+  }
+  .gf-menu-alert {
+    margin-left: 0;
+  }
   .gf-menu-note {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    display: block;
+    margin-left: 0;
+    font-style: normal;
+    line-height: 1.4;
   }
   .gf-inspector {
     display: none;
@@ -1566,7 +1628,8 @@ body {
  */
 @media (max-width: 760px), (pointer: coarse) {
   :root {
-    --gf-fs-title: 22px;
+    --gf-fs-cover: 40px;
+    --gf-fs-title: 24px;
     --gf-fs-subtitle: 13px;
     --gf-fs-prose: 16px;
     --gf-fs-loud: 19px;
@@ -1712,17 +1775,8 @@ body {
 
 }
 
-/*
- * No room for a column beside the counter: the ledger becomes a strip of facts
- * above it, wrapped and stripped of its dotted rules.
- *
- * A tablet is caught by this too, though it is nowhere near as narrow. Under a
- * finger the rows carry their own flavour and stand 44px high, so a store's
- * twenty articles want every inch of the width they can get — while the ledger
- * is seven short facts that were leaving a third of the glass as an empty
- * ruled card. As a strip it costs two lines and gives the counter its second
- * column back.
- */
+/* Stacked ledgers open on demand. The summary keeps the first two figures
+   and every warning visible; the complete accounts scroll beneath the toggle. */
 @media (max-width: 760px), (pointer: coarse) and (max-width: 1100px) {
   .gf-main.has-aside {
     grid-template-columns: 1fr;
@@ -1731,27 +1785,45 @@ body {
     --gf-fs-prose: inherit;
   }
   .gf-aside {
+    padding: 0 10px 8px;
+    max-height: none;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .gf-aside-title {
+    display: none;
+  }
+  .gf-aside-toggle {
     display: flex;
-    flex-wrap: wrap;
-    gap: 2px 14px;
+  }
+  .gf-aside-rows {
     max-height: 25vh;
     overflow-y: auto;
-    padding: 6px 8px;
+    overscroll-behavior: contain;
   }
-  .gf-aside-title,
-  .gf-aside-heading {
+  .gf-aside:not(.is-expanded) .gf-aside-row:not(.is-summary),
+  .gf-aside:not(.is-expanded) .gf-aside-heading {
     display: none;
   }
   .gf-aside-row {
-    display: inline-flex;
-    align-items: baseline;
-    justify-content: flex-start;
-    gap: 6px;
-    border-bottom: 0;
-    padding: 0;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+    padding: 3px 0;
   }
-  .gf-aside-value {
-    text-align: left;
+  .gf-aside:not(.is-expanded) .gf-aside-row {
+    border: 0;
+  }
+}
+
+/* On a tablet the compact ledger uses the width it has, leaving more of
+   the page for actions. Section headings still span the complete ledger. */
+@media (pointer: coarse) and (min-width: 650px) and (max-width: 1100px) and (min-height: 521px) {
+  .gf-aside-rows {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 24px;
+  }
+  .gf-aside-heading {
+    grid-column: 1 / -1;
   }
 }
 
@@ -1761,19 +1833,21 @@ body {
   #crt {
     padding: var(--gf-safe-t) var(--gf-safe-r) var(--gf-safe-b) var(--gf-safe-l);
   }
-  #screen {
+  #screen,
+  #screen:focus {
     width: 100%;
     height: 100%;
-    border-width: 3px;
+    border-width: 0;
+    outline: none;
     border-radius: 0;
   }
   .gf-frame {
-    padding-left: 12px;
-    padding-right: 12px;
+    padding-left: 16px;
+    padding-right: 16px;
   }
   .gf-status {
-    padding-left: 12px;
-    padding-right: 12px;
+    padding-left: 16px;
+    padding-right: 16px;
   }
   /* A warning has room to wrap here rather than being held to one line. */
   .gf-menu-alert {
@@ -1789,6 +1863,7 @@ body {
  */
 @media (max-height: 520px) {
   :root {
+    --gf-fs-cover: 28px;
     --gf-fs-title: 18px;
     --gf-fs-subtitle: 12px;
     --gf-fs-prose: 14px;
@@ -1826,7 +1901,7 @@ body {
 
 /* A landscape phone has width to spare, but cannot stack a ledger above
    the counter without leaving room for only one choice. */
-@media (max-height: 520px) and (min-width: 650px) {
+@media (max-height: 520px) and (min-width: 500px) {
   .gf-main.has-aside {
     grid-template-columns: minmax(180px, 30%) minmax(0, 1fr);
     grid-template-rows: minmax(0, 1fr);
@@ -1838,12 +1913,42 @@ body {
     max-height: none;
     font-size: 12px;
   }
+  .gf-aside-toggle {
+    display: none;
+  }
+  .gf-aside-rows {
+    max-height: none;
+    overflow: visible;
+  }
+  .gf-aside:not(.is-expanded) .gf-aside-row:not(.is-summary),
+  .gf-aside:not(.is-expanded) .gf-aside-heading {
+    display: block;
+  }
   .gf-aside-row {
     display: block;
     padding: 4px 0;
-    border-bottom: 1px dotted var(--gf-frame-border);
+    border-bottom: 1px dotted var(--gf-frame-border-light);
   }
   .gf-aside-label {
     margin-right: 6px;
+  }
+}
+
+/* The smallest phones still keep a complete action above the status bar. */
+@media (max-width: 360px) {
+  :root {
+    --gf-fs-title: 22px;
+  }
+  .gf-rule {
+    margin: 8px 0 10px;
+  }
+}
+
+@media (max-height: 520px) and (min-width: 500px) {
+  .gf-status-line {
+    flex: 1 1 0;
+  }
+  .gf-legend {
+    flex-wrap: nowrap;
   }
 }

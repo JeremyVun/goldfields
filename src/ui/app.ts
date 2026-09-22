@@ -86,6 +86,8 @@ export class App {
   private textInput = false;
   private inputBuffer = '';
   private inputError: string | null = null;
+  private asideExpanded = false;
+  private asideScreen: string | null = null;
 
   private readonly onKeyDown = (e: KeyboardEvent): void => this.handleKeyDown(e);
   private readonly onViewportChange = (): void => this.fitMenu();
@@ -640,6 +642,7 @@ export class App {
   private renderNarration(): void {
     const page = this.session.page;
     if (!page) return;
+    this.titleEl.classList.remove('gf-title--cover');
 
     // Keep the screen the player was just on as a backdrop while the tale unfolds.
     const view = getView(this.state);
@@ -670,7 +673,7 @@ export class App {
 
     clear(this.menuEl);
     const prompt = el('div', {
-      className: 'gf-prompt gf-blink',
+      className: 'gf-prompt',
       text: this.say('— press the SPACE BAR for more —'),
     });
     prompt.addEventListener('click', () => this.advanceNarration());
@@ -716,6 +719,7 @@ export class App {
   private renderNormalView(): void {
     const view = getView(this.state);
     this.titleEl.textContent = view.title;
+    this.titleEl.classList.toggle('gf-title--cover', view.screen === 'title');
     if (view.subtitle) {
       this.subtitleEl.textContent = view.subtitle;
       this.subtitleEl.style.display = '';
@@ -817,16 +821,40 @@ export class App {
       return;
     }
     this.asideEl.style.display = '';
+    if (this.asideScreen !== this.state.screen) {
+      this.asideExpanded = false;
+      this.asideScreen = this.state.screen;
+    }
+    this.asideEl.classList.toggle('is-expanded', this.asideExpanded);
     this.asideEl.appendChild(el('h2', { className: 'gf-aside-title', text: aside.title }));
+    const hint = el('span', {
+      className: 'gf-aside-toggle-hint',
+      text: this.asideExpanded ? 'Less −' : 'Details +',
+    });
+    const toggle = el('button', {
+      className: 'gf-aside-toggle',
+      attrs: { type: 'button', 'aria-expanded': String(this.asideExpanded), 'aria-controls': 'gf-ledger-rows' },
+    }, [el('span', { text: aside.title }), hint]);
+    toggle.addEventListener('click', () => {
+      this.asideExpanded = !this.asideExpanded;
+      this.asideEl.classList.toggle('is-expanded', this.asideExpanded);
+      toggle.setAttribute('aria-expanded', String(this.asideExpanded));
+      hint.textContent = this.asideExpanded ? 'Less −' : 'Details +';
+      rowsEl.scrollTop = 0;
+      this.fitMenu();
+    });
+    const rowsEl = el('div', { className: 'gf-aside-rows', attrs: { id: 'gf-ledger-rows' } });
+    this.asideEl.append(toggle, rowsEl);
+    let rowIndex = 0;
     for (const row of aside.rows) {
       if (row.heading) {
-        this.asideEl.appendChild(el('div', { className: 'gf-aside-heading', text: row.label }));
+        rowsEl.appendChild(el('div', { className: 'gf-aside-heading', text: row.label }));
         continue;
       }
       const classes = ['gf-aside-value'];
       if (row.tone) classes.push(`gf-tone-${row.tone}`);
-      this.asideEl.appendChild(
-        el('div', { className: 'gf-aside-row' }, [
+      rowsEl.appendChild(
+        el('div', { className: `gf-aside-row${rowIndex++ < 2 || row.tone === 'bad' ? ' is-summary' : ''}` }, [
           el('span', { className: 'gf-aside-label', text: row.label }),
           el('span', { className: classes.join(' '), text: row.value }),
         ]),
@@ -985,14 +1013,16 @@ export class App {
    * rest. The menu never shrinks; the prose gives way and scrolls.
    */
   private fitMenu(): void {
-    // On a full-height screen, camp character gets roughly two-fifths of the
-    // working pane before a long action list is split into columns. On a short
-    // glass the reserve scales down, but never to the near-hidden strip that
-    // made the prose unreadable in the Blackcap Ranges.
+    // Desktop prose gets roughly two-fifths of the working pane; touch leaves
+    // more room for the descriptions inside action rows. On very short panes
+    // even the prose floor must scale down so actions cannot disappear.
     // Measure the action column, not the whole main grid: on a narrow screen
     // the ledger is stacked above it and has already spent some of that room.
     const paneHeight = this.contentEl.clientHeight;
-    const proseReserve = Math.max(90, Math.min(240, paneHeight * 0.42));
+    const proseReserve = Math.max(
+      Math.min(90, paneHeight * 0.35),
+      Math.min(isTouch() ? 140 : 240, paneHeight * (isTouch() ? 0.32 : 0.42)),
+    );
     const contentHeight = isTouch() ? [...this.bodyEl.children].reduce((height, child) => {
       if (!(child instanceof HTMLElement)) return height;
       const style = getComputedStyle(child);
