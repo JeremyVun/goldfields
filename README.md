@@ -16,8 +16,8 @@ success. At the year's end it simply reckons up what you have and what became of
 
 ## Running it
 
-Requires Node 22 or later. No runtime dependencies; nothing is fetched from the network while
-you play.
+Requires Node 22 or later. No runtime dependencies, external media, or webfonts.
+The map, journal, and sound synthesis modules load on demand.
 
 ```bash
 npm install
@@ -43,13 +43,18 @@ failure.
 | `HOME` `END` | jump the highlight to the first or last item |
 | `RETURN` | choose the highlighted item |
 | `SPACE` | advance a page of narration ("press the SPACE BAR"), and start the game from the title screen |
-| `ESC` | open **the menu** — your money, gold, the exchange rate of the day, your kit, health, legal standing and licence. From here you may exchange gold, save the game, or finish it. Press `ESC` or `0` to close. |
+| `ESC` | open **the menu** — your supplies, equipment, and standing. Save, finish, or change sound and colour settings here. Press `ESC` or `0` to close. |
 | `M` | open the **map** of the goldfields, marked with where you stand, where your pegs are, where a rush is on and where your company's workings lie. Any key closes it. |
 | `0` | back / leave the current counter |
 
 **The colour of the glass.** The game ships as ink on paper; the title screen (`T`)
-and the menu (`ESC`, then `D`) cycle the schemes: ink on paper, black & white, or the deep blue
+and the menu (`ESC`, then `T`) cycle the schemes: ink on paper, black & white, or the deep blue
 glass. Your choice is remembered between sittings.
+
+**Sound.** Choose **Sound: on/off** on the title screen (`S`) or in the menu (`ESC`, then `S`).
+Quiet harbour, creek, town, and bush ambience accompanies the story, with effects for mining,
+travel, trading, discoveries, and saving. Sound starts after interaction and stops when the
+tab is hidden. Your mute setting is remembered on this device. No sound is required to play.
 
 ### By hand, on a phone or a tablet
 

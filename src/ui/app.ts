@@ -17,6 +17,7 @@ import { MenuController, type UIMenuItem } from './menu';
 import { paragraphsOf } from './narration';
 import { forTouch, isTouch, onInputModeChange } from './phrasing';
 import { cycleTheme, currentTheme, loadTheme } from './theme';
+import { GameAudio, cueForAction, sceneFor, type SoundCue } from './sound';
 
 /**
  * One entry in the quiet legend at the foot of the glass. Where it carries an
@@ -66,6 +67,12 @@ export class App {
   private readonly overlayEl: HTMLElement;
 
   private readonly rng: RNG;
+  private readonly audio = new GameAudio();
+  private narrationCue: SoundCue | undefined;
+  private readonly onAudioGesture = (event: Event): void => {
+    if (event instanceof KeyboardEvent && (event.repeat || event.ctrlKey || event.metaKey || event.altKey || event.isComposing)) return;
+    this.audio.unlock();
+  };
 
   /**
    * The world, and whatever tale is still being told over the top of it. The
@@ -148,6 +155,8 @@ export class App {
     this.root.append(this.frame, this.statusEl, this.overlayEl);
 
     this.root.addEventListener('keydown', this.onKeyDown);
+    this.root.addEventListener('click', this.onAudioGesture, true);
+    this.root.addEventListener('keydown', this.onAudioGesture, true);
     // How many columns a menu needs depends on the room there is for it.
     window.addEventListener('resize', this.onViewportChange);
     window.addEventListener('orientationchange', this.onViewportChange);
@@ -171,6 +180,9 @@ export class App {
   /** Release the global listeners so an embedded or tested cabinet can be remounted safely. */
   destroy(): void {
     this.root.removeEventListener('keydown', this.onKeyDown);
+    this.root.removeEventListener('click', this.onAudioGesture, true);
+    this.root.removeEventListener('keydown', this.onAudioGesture, true);
+    this.audio.destroy();
     window.removeEventListener('resize', this.onViewportChange);
     window.removeEventListener('orientationchange', this.onViewportChange);
     window.visualViewport?.removeEventListener('resize', this.onViewportChange);
@@ -204,6 +216,7 @@ export class App {
     }
 
     try {
+      const before = this.session.live;
       const result = this.session.act(normalised, this.rng);
 
       if (normalised.type === 'save') {
@@ -214,7 +227,9 @@ export class App {
         }
       }
 
+      this.narrationCue = cueForAction(normalised, before, result.state);
       this.session.show(result);
+      if (!this.session.telling) this.audio.play(this.narrationCue);
       if (this.session.telling) this.renderNarration();
       else this.render();
     } catch (err) {
@@ -232,6 +247,7 @@ export class App {
   }
 
   private showStorageFailure(message: string): void {
+    this.narrationCue = undefined;
     this.session.remark([{
       id: 'storage-failure',
       text: `The game was not saved. ${message}`,
@@ -404,12 +420,14 @@ export class App {
   // -------------------------------------------------------------------
 
   private openOverlay(kind: Exclude<Overlay, null>): void {
+    this.audio.play('paper');
     this.overlay = kind;
     this.renderOverlay();
   }
 
   private closeOverlay(): void {
     if (!this.overlay) return;
+    this.audio.play('paper');
     this.overlay = null;
     this.overlayMenu = null;
     this.frame.inert = false;
@@ -560,7 +578,10 @@ export class App {
         else this.dispatch(m.action, { fromOverlay: true });
       },
     }));
-    items.splice(items.length - 1, 0, this.themeMenuItem('T', () => this.renderOverlay()));
+    items.splice(items.length - 1, 0,
+      this.themeMenuItem('T', () => this.renderOverlay()),
+      this.soundMenuItem(() => this.renderOverlay()),
+    );
     const inspector = el('p', { className: 'gf-inspector', attrs: { 'aria-live': 'polite' } });
     panel.appendChild(inspector);
     this.overlayMenu = new MenuController(items, {
@@ -642,6 +663,9 @@ export class App {
   private renderNarration(): void {
     const page = this.session.page;
     if (!page) return;
+    this.audio.setScene(page.some((event) => event.tone === 'grave') ? null : sceneFor(this.state));
+    this.audio.page(page, this.narrationCue);
+    this.narrationCue = undefined;
     this.titleEl.classList.remove('gf-title--cover');
 
     // Keep the screen the player was just on as a backdrop while the tale unfolds.
@@ -703,6 +727,7 @@ export class App {
   // -------------------------------------------------------------------
 
   private render(): void {
+    if (!this.session.telling) this.audio.setScene(sceneFor(this.state));
     this.bodyEl.onclick = null;
     if (this.session.telling) {
       this.renderNarration();
@@ -791,6 +816,7 @@ export class App {
         });
       }
       items.push(this.themeMenuItem('T', () => this.render()));
+      items.push(this.soundMenuItem(() => this.render()));
     }
 
     clear(this.menuEl);
@@ -1054,6 +1080,19 @@ export class App {
       note: isTouch() ? undefined : 'as you please; the diggings are the same in any light',
       onSelect: () => {
         cycleTheme();
+        rerender();
+      },
+    };
+  }
+
+  private soundMenuItem(rerender: () => void): UIMenuItem {
+    return {
+      key: 'S',
+      label: this.audio.available ? `Sound: ${this.audio.enabled ? 'on' : 'off'}` : 'Sound unavailable',
+      note: 'Ambient sounds and effects. Your choice is remembered on this device.',
+      disabled: !this.audio.available,
+      onSelect: () => {
+        this.audio.toggle();
         rerender();
       },
     };

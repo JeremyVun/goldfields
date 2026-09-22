@@ -27,7 +27,8 @@ Run a single suite with `npx vitest run tests/<name>.test.ts`.
 - `src/content/` — all prose/strings (`text.ts`, `hearthText.ts`, `library.ts`,
   `say.ts`), looked up by key with a visible placeholder fallback for missing keys.
 - `src/ui/` — DOM rendering: `app.ts` (root), `map.ts`, `menu.ts`,
-  `narration.ts`, `styles.css`, `theme.ts`.
+  `narration.ts`, `styles.css`, `theme.ts`. `sound.ts` handles optional audio;
+  `sound-palette.ts` is the lazy-loaded Web Audio synthesis module.
 - `src/main.ts` — entry point; `index.html` at repo root.
 - `tests/` — one suite per engine system, plus `balance.test.ts` (long-running
   bot simulation, driven by `bots.ts`), `ux.test.ts`, `responsive.test.ts`,
@@ -42,6 +43,9 @@ Run a single suite with `npx vitest run tests/<name>.test.ts`.
     `npm run dev`. Scenario templates in `scratch/scenarios/`; usage in header.
   - Browser smoke checks: `node scratch/keys.mjs [port]` (keyboard-only),
     `node scratch/touch.mjs [port]` (touch-only).
+  - Audio: `node scratch/audio.mjs [port or URL] [--webkit]` checks keyboard/touch
+    unlock, mute, visibility, and cleanup in a real browser. Add `--render` against
+    dev to measure the effects and export `/tmp/goldrush-sound-palette.wav`.
 - `docs/GAME_SPEC.md` — the design spec (numbered §-sections);
   `docs/CODE_REVIEW.md` — review notes.
 
