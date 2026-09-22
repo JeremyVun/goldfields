@@ -95,7 +95,7 @@ for (const size of [{ width: 1024, height: 768 }, { width: 820, height: 1180 }, 
 await press('0');
 
 // A game number, typed at the frame with nothing focused.
-await page.goto(`http://localhost:${PORT}/`, { waitUntil: 'networkidle' });
+await page.goto(URL, { waitUntil: 'networkidle' });
 await page.click('#screen');
 await press('2');
 check(/press RETURN/.test(await page.textContent('.gf-body')), 'the number screen still names RETURN');
