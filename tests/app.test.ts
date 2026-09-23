@@ -53,6 +53,7 @@ describe('browser application', () => {
     const overlay = root.querySelector('.gf-overlay-layer') as HTMLElement;
     expect(overlay.getAttribute('role')).toBe('dialog');
     expect(overlay.getAttribute('aria-modal')).toBe('true');
+    expect(document.activeElement?.classList.contains('gf-menu-item')).toBe(true);
     expect((root.querySelector('.gf-frame') as HTMLElement).inert).toBe(true);
 
     root.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));

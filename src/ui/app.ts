@@ -294,6 +294,11 @@ export class App {
     if (e.target instanceof HTMLButtonElement && !e.target.classList.contains('gf-menu-item') &&
       (e.key === 'Enter' || e.key === ' ')) return;
 
+    if (e.target instanceof HTMLElement && e.target.classList.contains('gf-sound-toggle') &&
+      ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) {
+      (this.overlay ? this.overlayEl : this.menuEl).querySelector<HTMLElement>('[tabindex="0"]')?.focus({ preventScroll: true });
+    }
+
     if (e.key === ' ') e.preventDefault(); // never let space scroll the page
 
     if (this.overlay === 'map') {
@@ -454,7 +459,7 @@ export class App {
     if (this.overlay === 'finish') this.renderFinishOverlay();
     else if (this.overlay === 'menu') this.renderMenuOverlay();
     else this.renderMapOverlay();
-    const focusTarget = this.overlayEl.querySelector('[tabindex="0"], button');
+    const focusTarget = this.overlayEl.querySelector('[tabindex="0"]') ?? this.overlayEl.querySelector('button:not(:disabled)');
     if (focusTarget instanceof HTMLElement) focusTarget.focus({ preventScroll: true });
   }
 
@@ -479,7 +484,7 @@ export class App {
     if (subtitle) {
       titleWrap.appendChild(el('span', { className: 'gf-overlay-sub', text: this.say(subtitle) }));
     }
-    const row = el('div', { className: 'gf-overlay-titlerow' }, [titleWrap]);
+    const row = el('div', { className: 'gf-overlay-titlerow' }, [titleWrap, this.soundButton()]);
     if (isTouch()) {
       const close = el('button', {
         className: 'gf-overlay-close',
@@ -581,6 +586,7 @@ export class App {
     items.splice(items.length - 1, 0,
       this.themeMenuItem('T', () => this.renderOverlay()),
       this.soundMenuItem(() => this.renderOverlay()),
+      this.ambienceMenuItem(() => this.renderOverlay()),
     );
     const inspector = el('p', { className: 'gf-inspector', attrs: { 'aria-live': 'polite' } });
     panel.appendChild(inspector);
@@ -817,6 +823,7 @@ export class App {
       }
       items.push(this.themeMenuItem('T', () => this.render()));
       items.push(this.soundMenuItem(() => this.render()));
+      items.push(this.ambienceMenuItem(() => this.render()));
     }
 
     clear(this.menuEl);
@@ -999,6 +1006,7 @@ export class App {
       button.addEventListener('click', part.act);
       this.legendEl.appendChild(button);
     });
+    this.legendEl.appendChild(this.soundButton());
   }
 
   /** What the frame's own keys are doing on an ordinary screen, just now. */
@@ -1085,15 +1093,54 @@ export class App {
     };
   }
 
+  private soundButton(): HTMLButtonElement {
+    const button = el('button', { className: 'gf-legend-act gf-sound-toggle', attrs: { type: 'button' } });
+    this.paintSoundButton(button);
+    button.addEventListener('click', () => {
+      this.audio.toggle();
+      if (this.overlay) this.renderOverlay();
+      else if (this.state.screen === 'title' && !this.session.telling) this.render();
+      this.refreshSoundButtons();
+      // Keep keyboard focus on the control, including after a menu redraw.
+      (this.overlay ? this.overlayEl : this.legendEl).querySelector<HTMLButtonElement>('.gf-sound-toggle')?.focus();
+    });
+    return button;
+  }
+
+  private paintSoundButton(button: HTMLButtonElement): void {
+    button.textContent = this.audio.enabled ? 'Mute' : 'Sound off';
+    button.setAttribute('aria-label', this.audio.enabled ? 'Mute sound' : 'Turn sound on');
+    button.disabled = !this.audio.available;
+    if (!this.audio.available) {
+      button.textContent = 'No audio';
+      button.setAttribute('aria-label', 'Sound unavailable');
+    }
+  }
+
+  private refreshSoundButtons(): void {
+    this.root.querySelectorAll<HTMLButtonElement>('.gf-sound-toggle').forEach((button) => this.paintSoundButton(button));
+  }
+
+  private ambienceMenuItem(rerender: () => void): UIMenuItem {
+    return {
+      key: 'N',
+      label: `Ambience: ${this.audio.ambienceEnabled ? 'on' : 'off'}`,
+      note: this.audio.enabled ? 'Background sounds for each location.' : 'Background sounds for each location. Turn sound on to hear them.',
+      disabled: !this.audio.available,
+      onSelect: () => { this.audio.toggleAmbience(); rerender(); },
+    };
+  }
+
   private soundMenuItem(rerender: () => void): UIMenuItem {
     return {
       key: 'S',
       label: this.audio.available ? `Sound: ${this.audio.enabled ? 'on' : 'off'}` : 'Sound unavailable',
-      note: 'Ambient sounds and effects. Your choice is remembered on this device.',
+      note: 'Turn all sound on or off. Your choice is remembered on this device.',
       disabled: !this.audio.available,
       onSelect: () => {
         this.audio.toggle();
         rerender();
+        this.refreshSoundButtons();
       },
     };
   }

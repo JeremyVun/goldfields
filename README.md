@@ -51,10 +51,12 @@ failure.
 and the menu (`ESC`, then `T`) cycle the schemes: ink on paper, black & white, or the deep blue
 glass. Your choice is remembered between sittings.
 
-**Sound.** Choose **Sound: on/off** on the title screen (`S`) or in the menu (`ESC`, then `S`).
-Quiet harbour, creek, town, and bush ambience accompanies the story, with effects for mining,
-travel, trading, discoveries, and saving. Sound starts after interaction and stops when the
-tab is hidden. Your mute setting is remembered on this device. No sound is required to play.
+**Sound.** Sound is off by default. Use the **Sound off** / **Mute** button in the
+footer or overlay header, or choose **Sound: on/off** on the title screen (`S`) or
+in the menu (`ESC`, then `S`). Effects accompany mining, trading, travel and discoveries.
+Location ambience is separately off by default; enable **Ambience** (`N`) in the title
+screen or menu if you want background sound. Both choices are remembered on this device.
+All sound stops when the tab is hidden. No sound is required to play.
 
 ### By hand, on a phone or a tablet
 

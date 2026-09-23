@@ -917,6 +917,7 @@ body {
 }
 
 .gf-overlay-close {
+  order: 2;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1951,4 +1952,14 @@ button:focus-visible,
   .gf-legend {
     flex-wrap: nowrap;
   }
+}
+
+.gf-sound-toggle {
+  flex-shrink: 0;
+  justify-content: center;
+  min-width: 72px;
+  border: 1px solid var(--gf-body-dim);
+  font-size: var(--gf-fs-status);
+  white-space: nowrap;
+  order: 2;
 }

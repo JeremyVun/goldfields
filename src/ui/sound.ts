@@ -3,6 +3,7 @@ import type { SoundCue, SoundPalette, SoundScene } from './sound-palette';
 export type { SoundCue } from './sound-palette';
 
 const SOUND_KEY = 'goldrush.sound';
+const AMBIENCE_KEY = 'goldrush.ambience';
 
 /** Only the page being read may announce an outcome, never a future page. */
 export function cueForPage(events: readonly NarrationEvent[]): SoundCue | null {
@@ -60,7 +61,8 @@ export class GameAudio {
   private lastPage: readonly NarrationEvent[] | null = null;
   private lastCueAt = -Infinity;
   private lastCue: SoundCue | null = null;
-  private enabledValue = true;
+  private enabledValue = false;
+  private ambienceValue = false;
   private disposed = false;
   private failed = false;
   private queued: { cue: SoundCue; at: number } | null = null;
@@ -70,11 +72,15 @@ export class GameAudio {
   };
 
   constructor() {
-    try { this.enabledValue = localStorage.getItem(SOUND_KEY) !== 'off'; } catch { /* Private browsing. */ }
+    try {
+      this.enabledValue = localStorage.getItem(SOUND_KEY) === 'on';
+      this.ambienceValue = localStorage.getItem(AMBIENCE_KEY) === 'on';
+    } catch { /* Private browsing stays silent by default. */ }
     document.addEventListener('visibilitychange', this.onVisibility);
   }
 
   get enabled(): boolean { return this.enabledValue; }
+  get ambienceEnabled(): boolean { return this.ambienceValue; }
   get available(): boolean { return !this.failed && typeof AudioContext !== 'undefined'; }
 
   /** Called synchronously inside a pointer/key gesture, before any await. */
@@ -118,6 +124,12 @@ export class GameAudio {
     else this.quiet();
   }
 
+  toggleAmbience(): void {
+    this.ambienceValue = !this.ambienceValue;
+    try { localStorage.setItem(AMBIENCE_KEY, this.ambienceEnabled ? 'on' : 'off'); } catch { /* Session-only preference. */ }
+    this.syncAmbience();
+  }
+
   setScene(scene: SoundScene | null): void {
     this.scene = scene;
     this.syncAmbience();
@@ -145,6 +157,7 @@ export class GameAudio {
   }
 
   private syncAmbience(): void {
+    if (!this.ambienceEnabled) { this.stopBed(); return; }
     if (!this.palette || !this.enabled || document.hidden || this.context?.state !== 'running') return;
     if (this.playingScene === this.scene) return;
     this.stopBed();
@@ -159,7 +172,7 @@ export class GameAudio {
   private scheduleDetail(): void {
     this.ambientTimer = setTimeout(() => {
       this.ambientTimer = null;
-      if (!this.enabled || document.hidden || !this.playingScene || this.context?.state !== 'running') return;
+      if (!this.enabled || !this.ambienceEnabled || document.hidden || !this.playingScene || this.context?.state !== 'running') return;
       const cue: SoundCue | null = this.playingScene === 'room' ? null
         : this.playingScene === 'harbour' ? 'bell'
         : this.playingScene === 'town' ? 'hooves'

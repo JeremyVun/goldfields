@@ -57,6 +57,8 @@ describe('optional audio', () => {
     vi.stubGlobal('localStorage', { getItem: () => { throw new Error('denied'); }, setItem: () => { throw new Error('denied'); } });
     const audio = new GameAudio();
     expect(audio.available).toBe(false);
+    expect(audio.enabled).toBe(false);
+    expect(audio.ambienceEnabled).toBe(false);
     expect(() => {
       audio.unlock();
       audio.setScene('harbour');
@@ -79,6 +81,28 @@ describe('optional audio', () => {
     audio.destroy();
   });
 
+  it('keeps ambience opt-in independent of sound and persists both choices', () => {
+    const data = new Map<string, string>();
+    vi.stubGlobal('localStorage', { getItem: (key: string) => data.get(key), setItem: (key: string, value: string) => data.set(key, value) });
+    vi.stubGlobal('AudioContext', undefined);
+    const audio = new GameAudio();
+    expect(audio.enabled).toBe(false);
+    expect(audio.ambienceEnabled).toBe(false);
+    audio.toggle();
+    expect(audio.ambienceEnabled).toBe(false);
+    audio.toggleAmbience();
+    audio.toggle();
+    expect(audio.enabled).toBe(false);
+    expect(audio.ambienceEnabled).toBe(true);
+    audio.destroy();
+    const restored = new GameAudio();
+    expect(restored.enabled).toBe(false);
+    expect(restored.ambienceEnabled).toBe(true);
+    restored.toggleAmbience();
+    expect(data.get('goldrush.ambience')).toBe('off');
+    restored.destroy();
+  });
+
   it('never creates an audio context until a gesture, and contains device failure', () => {
     const ctor = vi.fn(function () { throw new Error('no audio device'); });
     vi.stubGlobal('AudioContext', ctor);
@@ -87,7 +111,9 @@ describe('optional audio', () => {
     audio.setScene('harbour');
     audio.play('coins');
     expect(ctor).not.toHaveBeenCalled();
-    expect(() => audio.unlock()).not.toThrow();
+    audio.unlock();
+    expect(ctor).not.toHaveBeenCalled(); // even gestures stay silent until explicit opt-in
+    expect(() => audio.toggle()).not.toThrow();
     expect(ctor).toHaveBeenCalledTimes(1);
     expect(audio.available).toBe(false);
     audio.unlock();

@@ -21,6 +21,7 @@ try {
       constructor(...args) {
         super(...args);
         this.starts = 0;
+        this.loops = 0;
         window.audioContexts.push(this);
       }
       createGain() {
@@ -31,13 +32,13 @@ try {
       createOscillator() {
         const source = super.createOscillator();
         const start = source.start.bind(source);
-        source.start = (...args) => { this.starts++; start(...args); };
+        source.start = (...args) => { this.starts++; if (source.loop) this.loops++; start(...args); };
         return source;
       }
       createBufferSource() {
         const source = super.createBufferSource();
         const start = source.start.bind(source);
-        source.start = (...args) => { this.starts++; start(...args); };
+        source.start = (...args) => { this.starts++; if (source.loop) this.loops++; start(...args); };
         return source;
       }
     };
@@ -47,19 +48,16 @@ try {
   page.on('pageerror', (error) => failures.push(error.message));
   await page.goto(url, { waitUntil: 'networkidle' });
   check(await page.evaluate(() => window.audioContexts.length === 0), 'no audio context or autoplay before interaction');
-  await page.locator('#screen').focus();
-  await page.keyboard.press('s');
-  await page.waitForTimeout(250);
-  check(await page.evaluate(() => localStorage.getItem('goldrush.sound') === 'off' && window.audioContexts.every((c) => c.state === 'suspended' && c.master.gain.value === 0)), 'mute silences the graph and persists');
-  await page.reload({ waitUntil: 'networkidle' });
-  check(await page.locator('.gf-menu-item', { hasText: 'Sound: off' }).count() === 1, 'mute survives reload');
+  check(await page.getByRole('button', { name: 'Turn sound on', exact: true }).count() === 1, 'visible sound control starts off');
   await page.locator('#screen').focus();
   await page.keyboard.press('Space');
-  check(await page.evaluate(() => window.audioContexts.length === 0), 'starting a muted game creates no audio context');
-  await page.keyboard.press('Escape');
-  await page.keyboard.press('s');
+  await page.waitForTimeout(200);
+  check(await page.evaluate(() => window.audioContexts.length === 0), 'starting a fresh game stays silent without creating audio');
+  const story = await page.locator('.gf-body').textContent();
+  await page.getByRole('button', { name: 'Turn sound on', exact: true }).click();
   await page.waitForFunction(() => window.audioContexts[0]?.state === 'running' && window.audioContexts[0].starts > 0);
-  check(await page.evaluate(() => window.audioContexts.length === 1), 'unmute resumes one context and produces sound');
+  check(await page.evaluate(() => window.audioContexts.length === 1 && window.audioContexts[0].loops === 0), 'sound opt-in plays effects without ambience');
+  check(await page.locator('.gf-body').textContent() === story, 'sound control does not advance narration');
   // Listen at the actual master bus with an analyser, without routing extra sound.
   await page.evaluate(() => {
     const c = window.audioContexts[0];
@@ -74,7 +72,7 @@ try {
     c.meter.getFloatTimeDomainData(data);
     return data.some((n) => Math.abs(n) > 0.0001);
   }), 'the live sound bus contains audible samples');
-  await page.keyboard.press('Escape');
+  await page.locator('#screen').focus();
   const dev = await page.evaluate(() => !!window.__gf);
   if (dev) {
     check(await page.evaluate(() => {
@@ -97,6 +95,16 @@ try {
   }
   await page.waitForTimeout(200);
   check(await page.evaluate(() => window.audioContexts.length === 1), 'scene changes reuse the existing audio context');
+  check(await page.evaluate(() => window.audioContexts[0].loops === 0), 'location changes never enable ambience by themselves');
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('n');
+  await page.waitForFunction(() => window.audioContexts[0].loops > 0);
+  check(await page.evaluate(() => localStorage.getItem('goldrush.ambience') === 'on'), 'ambience requires a separate opt-in');
+  await page.keyboard.press('n');
+  const loops = await page.evaluate(() => window.audioContexts[0].loops);
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('ArrowDown');
+  check(await page.evaluate((before) => window.audioContexts[0].loops === before && localStorage.getItem('goldrush.ambience') === 'off', loops), 'ambience stays off while effects remain enabled');
   await page.evaluate(() => {
     Object.defineProperty(document, 'hidden', { configurable: true, value: true });
     document.dispatchEvent(new Event('visibilitychange'));
@@ -112,7 +120,7 @@ try {
   await page.waitForFunction(() => window.audioContexts[0].state === 'running');
   check(true, 'interaction restores audio after tab suspension');
   await page.keyboard.press('Escape');
-  await page.keyboard.press('s');
+  await page.getByRole('dialog').getByRole('button', { name: 'Mute sound', exact: true }).click();
   await page.waitForFunction(() => window.audioContexts[0].state === 'suspended');
   const starts = await page.evaluate(() => window.audioContexts[0].starts);
   await page.keyboard.press('Escape');
@@ -120,24 +128,31 @@ try {
   await page.waitForTimeout(300);
   check(await page.evaluate((before) => window.audioContexts[0].starts === before, starts), 'muted page and map interactions create no new voices');
 
+  await page.reload({ waitUntil: 'networkidle' });
+  check(await page.locator('.gf-menu-item', { hasText: 'Sound: off' }).count() === 1 && await page.evaluate(() => window.audioContexts.length === 0), 'mute survives reload without creating audio');
+
   const mobile = await browser.newContext({ viewport: { width: 393, height: 852 }, isMobile: true, hasTouch: true });
   await mobile.addInitScript(observeAudio);
   const touch = await mobile.newPage();
   touch.on('pageerror', (error) => failures.push(error.message));
   await touch.goto(url, { waitUntil: 'networkidle' });
   await touch.locator('.gf-menu-item', { hasText: 'Begin a new game' }).tap();
+  check(await touch.evaluate(() => window.audioContexts.length === 0), 'touch play also starts silent');
+  await touch.getByRole('button', { name: 'Turn sound on', exact: true }).tap();
   await touch.waitForFunction(() => window.audioContexts[0]?.state === 'running' && window.audioContexts[0].starts > 0);
   check(true, 'a touch gesture starts audio without a keyboard');
   for (let i = 0; i < 12 && await touch.locator('.gf-prompt').count(); i++) await touch.locator('.gf-prompt').tap();
   if ((await touch.textContent('.gf-title')).includes('NEW ARRIVALS')) await touch.locator('.gf-menu-item').first().tap();
   for (let i = 0; i < 12 && await touch.locator('.gf-prompt').count(); i++) await touch.locator('.gf-prompt').tap();
   await touch.locator('.gf-legend-act', { hasText: 'MENU' }).tap();
-  await touch.locator('.gf-menu-item', { hasText: 'Sound: on' }).tap();
+  await touch.getByRole('dialog').getByRole('button', { name: 'Mute sound', exact: true }).tap();
   await touch.waitForFunction(() => window.audioContexts[0].state === 'suspended');
   check(await touch.evaluate(() => window.audioContexts[0].master.gain.value === 0 && localStorage.getItem('goldrush.sound') === 'off'),
     'the touch menu mutes every sound and remembers the choice');
   await mobile.close();
   if (dev) {
+    await page.getByRole('button', { name: 'Turn sound on', exact: true }).click();
+    await page.waitForFunction(() => window.audioContexts[0]?.state === 'running');
     await page.evaluate(() => window.__gf.app.destroy());
     await page.waitForFunction(() => window.audioContexts[0].state === 'closed');
     check(true, 'unmounting the game releases its audio context');
